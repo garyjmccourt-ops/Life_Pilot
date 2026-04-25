@@ -8,6 +8,7 @@ import commsRouter from "./comms";
 import weeksRouter from "./weeks";
 import dashboardRouter from "./dashboard";
 import exportRouter from "./export";
+import importRouter from "./import";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(commsRouter);
 router.use(weeksRouter);
 router.use(dashboardRouter);
 router.use(exportRouter);
+router.use(importRouter);
 
 export default router;

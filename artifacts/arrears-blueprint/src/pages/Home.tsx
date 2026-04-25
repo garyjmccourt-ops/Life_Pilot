@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, CheckCircle2, Clock, Wallet, TrendingUp, TrendingDown, ArrowRight, Circle, CheckCircle, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ImportDialog } from "@/components/ImportDialog";
 
 function ExportButton() {
   const { toast } = useToast();
@@ -258,7 +259,10 @@ export default function Home() {
           <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">Dashboard</h1>
           <p className="text-muted-foreground mt-2 text-lg">Your financial control center.</p>
         </div>
-        <ExportButton />
+        <div className="flex gap-2">
+          <ImportDialog />
+          <ExportButton />
+        </div>
       </div>
 
       <SummaryCards />
