@@ -1,0 +1,115 @@
+Help me design a practical arrears-management and budgeting system that I can implement quickly across a spreadsheet, a notes/wiki system, an email system, and a task/reminder system.
+
+I do NOT want app-specific instructions. I want a tool-agnostic operating model that could be implemented in different platforms.
+
+Context:
+I am managing multiple arrears, ongoing bills, payment arrangements, communication records, and weekly budget decisions. I need a system that is simple, structured, and easy to maintain under pressure.
+
+Key requirements:
+- Keep all numbers, calculations, balances, weekly equivalents, and scenarios in a spreadsheet
+- Keep detailed plan notes, agreements, call logs, communication notes, and evidence links in a notes/wiki system
+- Keep bills, receipts, arrears correspondence, and reminders organised through an email and calendar workflow
+- Keep actions, follow-ups, deadlines, and review tasks in a task/reminder system
+- The system must support both internal/private planning and sanitised external communication
+- Internal notes can include full realism and private assumptions
+- External communication planning must stay concise and not overshare
+- The system should be easy to revise if income changes
+- The system should support multiple arrears items such as rent, utilities, fines, child support, and personal debts
+
+Please produce the output in this exact order:
+
+1. Overall system architecture
+- explain what belongs in:
+  - the spreadsheet
+  - the notes/wiki system
+  - the email/calendar system
+  - the task/reminder system
+
+2. Recommended notebook / wiki section structure
+- keep it lean
+- give section names
+- explain each section in 1–2 lines max
+
+3. Recommended starter pages under each notebook / wiki section
+- list page names only
+- group them under the section they belong to
+
+4. Reusable arrears reduction plan template
+- one page per arrears item
+- short headings only
+- should include:
+  - summary
+  - current position
+  - objective
+  - current arrangement
+  - working plan
+  - communication position
+  - evidence links
+  - call log
+  - change log
+  - review date
+
+5. Reusable sanitised external-plan template
+- suitable for planning communications to a landlord or creditor
+- should not over-disclose private information
+- should focus on:
+  - acknowledgement
+  - current payment intent
+  - staged arrears reduction
+  - review points
+  - communication tracking
+
+6. Spreadsheet tab structure
+- recommend the core spreadsheet tabs
+- explain what each tab should contain
+- include ideas like:
+  - income assumptions
+  - budget summary
+  - weekly tracker
+  - monthly tracker
+  - arrears matrix
+  - personal expenses
+  - inputs / assumptions
+
+7. Email and evidence workflow
+- recommend a folder structure
+- recommend categories / labels
+- explain how bills, receipts, arrears correspondence, and evidence should be stored
+- explain how the notes/wiki should link to these items
+
+8. Task and reminder workflow
+- recommend task buckets or categories
+- recommend labels or tags
+- explain weekly, monthly, quarterly, and trigger-based reminders
+
+9. Weekly operating rhythm
+- what should be reviewed weekly in the spreadsheet
+- what should be updated in the notes/wiki
+- what should be checked in the email system
+- what should be advanced in the task system
+
+10. Minimal 1-hour implementation version
+- if I only had 1 hour to build this system, what exact structure should I create first?
+
+11. Naming conventions
+- for spreadsheet files
+- notebook/wiki pages
+- arrears plans
+- evidence items
+- communication logs
+
+Formatting requirements:
+- Use headings and bullet points
+- Keep it compact and practical
+- No long intro
+- No motivational language
+- No product-specific instructions
+- Make it look like an implementation blueprint I can use immediately
+
+Also include a short final section called:
+“Best operating principle”
+This should explain, in a few lines, how to keep:
+- numbers in the spreadsheet
+- decisions and logic in the notes/wiki
+- evidence in the email/archive layer
+- actions in the task system
