@@ -7,6 +7,7 @@ import tasksRouter from "./tasks";
 import commsRouter from "./comms";
 import weeksRouter from "./weeks";
 import dashboardRouter from "./dashboard";
+import exportRouter from "./export";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(tasksRouter);
 router.use(commsRouter);
 router.use(weeksRouter);
 router.use(dashboardRouter);
+router.use(exportRouter);
 
 export default router;

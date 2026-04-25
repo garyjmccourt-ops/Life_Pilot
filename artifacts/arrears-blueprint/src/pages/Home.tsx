@@ -13,7 +13,46 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, CheckCircle2, Clock, Wallet, TrendingUp, TrendingDown, ArrowRight, Circle, CheckCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Wallet, TrendingUp, TrendingDown, ArrowRight, Circle, CheckCircle, Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+function ExportButton() {
+  const { toast } = useToast();
+  async function handleExport() {
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}api/export`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const disposition = res.headers.get("content-disposition") ?? "";
+      const match = disposition.match(/filename="?([^"]+)"?/);
+      const filename = match?.[1] ?? `arrears-budget-export-${new Date().toISOString().slice(0,10)}.json`;
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast({
+        title: "Export ready",
+        description: "Open the file and paste it into ChatGPT — the schema and field rules are bundled in.",
+      });
+    } catch (err) {
+      toast({
+        title: "Export failed",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    }
+  }
+  return (
+    <Button onClick={handleExport} variant="outline" size="sm" className="gap-2">
+      <Download className="h-4 w-4" />
+      Export for ChatGPT
+    </Button>
+  );
+}
 
 function SummaryCards() {
   const { data: summary, isLoading } = useGetDashboardSummary();
@@ -214,9 +253,12 @@ function PriorityTasks() {
 export default function Home() {
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-2 text-lg">Your financial control center.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-2 text-lg">Your financial control center.</p>
+        </div>
+        <ExportButton />
       </div>
 
       <SummaryCards />
