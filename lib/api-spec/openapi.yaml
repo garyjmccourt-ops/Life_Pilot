@@ -3,20 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Arrears Management & Budget API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: income
+  - name: bills
+  - name: arrears
+  - name: tasks
+  - name: comms
+  - name: weeks
+  - name: dashboard
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +29,613 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /income:
+    get:
+      operationId: listIncome
+      tags: [income]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/IncomeSource" }
+    post:
+      operationId: createIncome
+      tags: [income]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IncomeSourceInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IncomeSource" }
+  /income/{id}:
+    patch:
+      operationId: updateIncome
+      tags: [income]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IncomeSourceInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IncomeSource" }
+    delete:
+      operationId: deleteIncome
+      tags: [income]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /bills:
+    get:
+      operationId: listBills
+      tags: [bills]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Bill" }
+    post:
+      operationId: createBill
+      tags: [bills]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BillInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Bill" }
+  /bills/{id}:
+    patch:
+      operationId: updateBill
+      tags: [bills]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BillInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Bill" }
+    delete:
+      operationId: deleteBill
+      tags: [bills]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /arrears:
+    get:
+      operationId: listArrears
+      tags: [arrears]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ArrearsItem" }
+    post:
+      operationId: createArrears
+      tags: [arrears]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ArrearsItemInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ArrearsItem" }
+  /arrears/{id}:
+    get:
+      operationId: getArrears
+      tags: [arrears]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ArrearsItem" }
+    patch:
+      operationId: updateArrears
+      tags: [arrears]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ArrearsItemInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ArrearsItem" }
+    delete:
+      operationId: deleteArrears
+      tags: [arrears]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Task" }
+    post:
+      operationId: createTask
+      tags: [tasks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TaskInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+  /tasks/{id}:
+    patch:
+      operationId: updateTask
+      tags: [tasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TaskInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+    delete:
+      operationId: deleteTask
+      tags: [tasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /comms:
+    get:
+      operationId: listComms
+      tags: [comms]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CommsEntry" }
+    post:
+      operationId: createComms
+      tags: [comms]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CommsEntryInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CommsEntry" }
+  /comms/{id}:
+    delete:
+      operationId: deleteComms
+      tags: [comms]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /weeks:
+    get:
+      operationId: listWeeks
+      tags: [weeks]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/WeeklyEntry" }
+    post:
+      operationId: upsertWeek
+      tags: [weeks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WeeklyEntryInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WeeklyEntry" }
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+  /dashboard/arrears-matrix:
+    get:
+      operationId: getArrearsMatrix
+      tags: [dashboard]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ArrearsMatrixRow" }
+  /dashboard/upcoming:
+    get:
+      operationId: getUpcomingSchedule
+      tags: [dashboard]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ScheduledPayment" }
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    Frequency:
+      type: string
+      enum: [weekly, fortnightly, monthly, quarterly, annual, one-off]
+
+    ArrearsCategory:
+      type: string
+      enum: [rent, utility, council, fine, child-support, personal-debt, other]
+
+    RiskLevel:
+      type: string
+      enum: [low, medium, high]
+
+    ArrangementStatus:
+      type: string
+      enum: [none, pending, active, broken, completed]
+
+    TaskBucket:
+      type: string
+      enum: [pay, contact, file, review, negotiate, watch]
+
+    TaskStatus:
+      type: string
+      enum: [open, in-progress, blocked, awaiting-reply, done]
+
+    Priority:
+      type: string
+      enum: [p1, p2, p3]
+
+    Channel:
+      type: string
+      enum: [phone, email, letter, sms, in-person, portal]
+
+    IncomeSource:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        amount: { type: number }
+        frequency: { $ref: "#/components/schemas/Frequency" }
+        notes: { type: ["string", "null"] }
+        weeklyEquivalent: { type: number }
+      required: [id, name, amount, frequency, weeklyEquivalent]
+    IncomeSourceInput:
+      type: object
+      properties:
+        name: { type: string }
+        amount: { type: number }
+        frequency: { $ref: "#/components/schemas/Frequency" }
+        notes: { type: ["string", "null"] }
+      required: [name, amount, frequency]
+
+    Bill:
+      type: object
+      properties:
+        id: { type: integer }
+        provider: { type: string }
+        category: { type: string }
+        amount: { type: number }
+        frequency: { $ref: "#/components/schemas/Frequency" }
+        dueDay: { type: ["integer", "null"] }
+        accountRef: { type: ["string", "null"] }
+        autopay: { type: boolean }
+        weeklyEquivalent: { type: number }
+        notes: { type: ["string", "null"] }
+      required: [id, provider, category, amount, frequency, autopay, weeklyEquivalent]
+    BillInput:
+      type: object
+      properties:
+        provider: { type: string }
+        category: { type: string }
+        amount: { type: number }
+        frequency: { $ref: "#/components/schemas/Frequency" }
+        dueDay: { type: ["integer", "null"] }
+        accountRef: { type: ["string", "null"] }
+        autopay: { type: boolean }
+        notes: { type: ["string", "null"] }
+      required: [provider, category, amount, frequency, autopay]
+
+    ArrearsItem:
+      type: object
+      properties:
+        id: { type: integer }
+        creditor: { type: string }
+        category: { $ref: "#/components/schemas/ArrearsCategory" }
+        balance: { type: number }
+        ongoingCharge: { type: number }
+        ongoingFrequency: { $ref: "#/components/schemas/Frequency" }
+        arrearsPayment: { type: number }
+        arrearsFrequency: { $ref: "#/components/schemas/Frequency" }
+        riskLevel: { $ref: "#/components/schemas/RiskLevel" }
+        status: { $ref: "#/components/schemas/ArrangementStatus" }
+        nextReviewDate: { type: ["string", "null"], format: date }
+        accountRef: { type: ["string", "null"] }
+        # Internal plan
+        summary: { type: ["string", "null"] }
+        objective: { type: ["string", "null"] }
+        workingPlan: { type: ["string", "null"] }
+        communicationPosition: { type: ["string", "null"] }
+        # External (sanitised) plan
+        externalAcknowledgement: { type: ["string", "null"] }
+        externalPaymentIntent: { type: ["string", "null"] }
+        externalStagedReduction: { type: ["string", "null"] }
+        externalReviewPoints: { type: ["string", "null"] }
+        externalChannel: { type: ["string", "null"] }
+        evidenceLinks: { type: ["string", "null"] }
+        weeklyOngoing: { type: number }
+        weeklyArrears: { type: number }
+        weeklyTotal: { type: number }
+      required:
+        [id, creditor, category, balance, ongoingCharge, ongoingFrequency,
+         arrearsPayment, arrearsFrequency, riskLevel, status,
+         weeklyOngoing, weeklyArrears, weeklyTotal]
+    ArrearsItemInput:
+      type: object
+      properties:
+        creditor: { type: string }
+        category: { $ref: "#/components/schemas/ArrearsCategory" }
+        balance: { type: number }
+        ongoingCharge: { type: number }
+        ongoingFrequency: { $ref: "#/components/schemas/Frequency" }
+        arrearsPayment: { type: number }
+        arrearsFrequency: { $ref: "#/components/schemas/Frequency" }
+        riskLevel: { $ref: "#/components/schemas/RiskLevel" }
+        status: { $ref: "#/components/schemas/ArrangementStatus" }
+        nextReviewDate: { type: ["string", "null"], format: date }
+        accountRef: { type: ["string", "null"] }
+        summary: { type: ["string", "null"] }
+        objective: { type: ["string", "null"] }
+        workingPlan: { type: ["string", "null"] }
+        communicationPosition: { type: ["string", "null"] }
+        externalAcknowledgement: { type: ["string", "null"] }
+        externalPaymentIntent: { type: ["string", "null"] }
+        externalStagedReduction: { type: ["string", "null"] }
+        externalReviewPoints: { type: ["string", "null"] }
+        externalChannel: { type: ["string", "null"] }
+        evidenceLinks: { type: ["string", "null"] }
+      required:
+        [creditor, category, balance, ongoingCharge, ongoingFrequency,
+         arrearsPayment, arrearsFrequency, riskLevel, status]
+
+    Task:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        bucket: { $ref: "#/components/schemas/TaskBucket" }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        priority: { $ref: "#/components/schemas/Priority" }
+        dueDate: { type: ["string", "null"], format: date }
+        creditorTag: { type: ["string", "null"] }
+        arrearsItemId: { type: ["integer", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, title, bucket, status, priority, createdAt]
+    TaskInput:
+      type: object
+      properties:
+        title: { type: string }
+        bucket: { $ref: "#/components/schemas/TaskBucket" }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        priority: { $ref: "#/components/schemas/Priority" }
+        dueDate: { type: ["string", "null"], format: date }
+        creditorTag: { type: ["string", "null"] }
+        arrearsItemId: { type: ["integer", "null"] }
+        notes: { type: ["string", "null"] }
+      required: [title, bucket, status, priority]
+
+    CommsEntry:
+      type: object
+      properties:
+        id: { type: integer }
+        occurredAt: { type: string, format: date-time }
+        channel: { $ref: "#/components/schemas/Channel" }
+        creditor: { type: string }
+        arrearsItemId: { type: ["integer", "null"] }
+        who: { type: ["string", "null"] }
+        outcome: { type: string }
+        nextStep: { type: ["string", "null"] }
+      required: [id, occurredAt, channel, creditor, outcome]
+    CommsEntryInput:
+      type: object
+      properties:
+        occurredAt: { type: string, format: date-time }
+        channel: { $ref: "#/components/schemas/Channel" }
+        creditor: { type: string }
+        arrearsItemId: { type: ["integer", "null"] }
+        who: { type: ["string", "null"] }
+        outcome: { type: string }
+        nextStep: { type: ["string", "null"] }
+      required: [occurredAt, channel, creditor, outcome]
+
+    WeeklyEntry:
+      type: object
+      properties:
+        id: { type: integer }
+        weekStart: { type: string, format: date }
+        plannedIn: { type: number }
+        actualIn: { type: number }
+        plannedOut: { type: number }
+        actualOut: { type: number }
+        notes: { type: ["string", "null"] }
+      required: [id, weekStart, plannedIn, actualIn, plannedOut, actualOut]
+    WeeklyEntryInput:
+      type: object
+      properties:
+        weekStart: { type: string, format: date }
+        plannedIn: { type: number }
+        actualIn: { type: number }
+        plannedOut: { type: number }
+        actualOut: { type: number }
+        notes: { type: ["string", "null"] }
+      required: [weekStart, plannedIn, actualIn, plannedOut, actualOut]
+
+    DashboardSummary:
+      type: object
+      properties:
+        weeklyIncome: { type: number }
+        weeklyBills: { type: number }
+        weeklyArrears: { type: number }
+        weeklyOut: { type: number }
+        weeklySurplus: { type: number }
+        totalArrearsBalance: { type: number }
+        arrearsShareOfIncome: { type: number }
+        openTasks: { type: integer }
+        overdueTasks: { type: integer }
+        arrearsCount: { type: integer }
+        highRiskCount: { type: integer }
+      required:
+        [weeklyIncome, weeklyBills, weeklyArrears, weeklyOut, weeklySurplus,
+         totalArrearsBalance, arrearsShareOfIncome, openTasks, overdueTasks,
+         arrearsCount, highRiskCount]
+
+    ArrearsMatrixRow:
+      type: object
+      properties:
+        id: { type: integer }
+        creditor: { type: string }
+        category: { $ref: "#/components/schemas/ArrearsCategory" }
+        balance: { type: number }
+        weeklyOngoing: { type: number }
+        weeklyArrears: { type: number }
+        weeklyTotal: { type: number }
+        riskLevel: { $ref: "#/components/schemas/RiskLevel" }
+        status: { $ref: "#/components/schemas/ArrangementStatus" }
+        nextReviewDate: { type: ["string", "null"], format: date }
+        weeksToClear: { type: ["number", "null"] }
+      required:
+        [id, creditor, category, balance, weeklyOngoing, weeklyArrears,
+         weeklyTotal, riskLevel, status]
+
+    ScheduledPayment:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        label: { type: string }
+        amount: { type: number }
+        kind: { type: string, enum: [bill, arrears, ongoing] }
+        creditor: { type: ["string", "null"] }
+      required: [date, label, amount, kind]
