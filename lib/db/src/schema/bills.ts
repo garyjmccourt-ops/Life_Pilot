@@ -5,6 +5,7 @@ import {
   numeric,
   integer,
   boolean,
+  date,
 } from "drizzle-orm/pg-core";
 
 export const billsTable = pgTable("bills", {
@@ -14,6 +15,7 @@ export const billsTable = pgTable("bills", {
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   frequency: text("frequency").notNull(),
   dueDay: integer("due_day"),
+  dueDate: date("due_date"),
   accountRef: text("account_ref"),
   autopay: boolean("autopay").notNull().default(false),
   notes: text("notes"),

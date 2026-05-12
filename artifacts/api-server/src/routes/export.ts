@@ -85,7 +85,7 @@ router.get("/export", async (_req, res): Promise<void> => {
       })),
       bills: bills.map((r) => ({
         id: r.id, provider: r.provider, category: r.category, amount: n(r.amount), frequency: r.frequency,
-        dueDay: r.dueDay, accountRef: r.accountRef, autopay: r.autopay, notes: r.notes,
+        dueDay: r.dueDay, dueDate: r.dueDate ?? null, accountRef: r.accountRef, autopay: r.autopay, notes: r.notes,
       })),
       arrearsItems: arrears.map((r) => ({
         id: r.id, creditor: r.creditor, category: r.category, balance: n(r.balance),

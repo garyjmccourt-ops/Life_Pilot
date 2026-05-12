@@ -213,6 +213,8 @@ export interface Bill {
   /** @nullable */
   dueDay?: number | null;
   /** @nullable */
+  dueDate?: string | null;
+  /** @nullable */
   accountRef?: string | null;
   autopay: boolean;
   weeklyEquivalent: number;
@@ -227,6 +229,8 @@ export interface BillInput {
   frequency: Frequency;
   /** @nullable */
   dueDay?: number | null;
+  /** @nullable */
+  dueDate?: string | null;
   /** @nullable */
   accountRef?: string | null;
   autopay: boolean;

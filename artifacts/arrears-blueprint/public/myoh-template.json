@@ -33,11 +33,12 @@
         "provider": "SA Water – STD Family Trust",
         "category": "Utilities",
         "amount": 201.96,
-        "frequency": "quarterly",
-        "dueDay": 30,
+        "frequency": "one-off",
+        "dueDay": null,
+        "dueDate": "2026-03-30",
         "accountRef": "INV-0440",
         "autopay": false,
-        "notes": "Invoice INV-0440, due 2026-03-30"
+        "notes": "Invoice INV-0440"
       },
       {
         "provider": "Electricity Provider",

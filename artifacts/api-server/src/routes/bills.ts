@@ -20,6 +20,7 @@ function shape(row: typeof billsTable.$inferSelect) {
     amount,
     frequency: row.frequency,
     dueDay: row.dueDay,
+    dueDate: row.dueDate ?? null,
     accountRef: row.accountRef,
     autopay: row.autopay,
     notes: row.notes,

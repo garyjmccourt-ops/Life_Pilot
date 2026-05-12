@@ -162,15 +162,42 @@ router.get("/dashboard/upcoming", async (_req, res): Promise<void> => {
   }
 
   for (const b of bills) {
-    const start = new Date(today);
-    if (b.dueDay) {
-      start.setDate(b.dueDay);
-      if (start < today) {
-        start.setMonth(start.getMonth() + 1);
+    const amount = n(b.amount);
+
+    // One-off bills: show once on their exact dueDate (if within horizon)
+    if (b.frequency === "one-off") {
+      if (b.dueDate) {
+        const d = new Date(b.dueDate);
+        d.setHours(0, 0, 0, 0);
+        if (d >= today && d <= horizon) {
+          items.push({
+            date: b.dueDate,
+            label: b.provider,
+            amount,
+            kind: "bill",
+            creditor: b.provider,
+          });
+        }
+      }
+      continue;
+    }
+
+    // Recurring bills: use dueDate as anchor if supplied, else fall back to dueDay
+    let start: Date;
+    if (b.dueDate) {
+      start = new Date(b.dueDate);
+      start.setHours(0, 0, 0, 0);
+    } else {
+      start = new Date(today);
+      if (b.dueDay) {
         start.setDate(b.dueDay);
+        if (start < today) {
+          start.setMonth(start.getMonth() + 1);
+          start.setDate(b.dueDay);
+        }
       }
     }
-    addRecurring(start, b.frequency, n(b.amount), b.provider, "bill", b.provider);
+    addRecurring(start, b.frequency, amount, b.provider, "bill", b.provider);
   }
 
   for (const a of arrears) {

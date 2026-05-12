@@ -199,7 +199,7 @@ function BillsList() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Recurring Bill</DialogTitle>
+              <DialogTitle>Add Bill</DialogTitle>
             </DialogHeader>
             <BillForm onSuccess={() => setIsCreateOpen(false)} />
           </DialogContent>
@@ -237,11 +237,15 @@ function BillsList() {
                   <div className="text-sm text-muted-foreground">
                     equiv. {formatCurrency(item.weeklyEquivalent)} / wk
                   </div>
-                  {item.dueDay && (
+                  {item.dueDate ? (
+                    <div className="text-xs bg-secondary px-2 py-1 rounded">
+                      Due: {item.dueDate}
+                    </div>
+                  ) : item.dueDay ? (
                     <div className="text-xs bg-secondary px-2 py-1 rounded">
                       Due: {item.dueDay}{[1,21,31].includes(item.dueDay)?'st':[2,22].includes(item.dueDay)?'nd':[3,23].includes(item.dueDay)?'rd':'th'}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </CardContent>
             </Card>
@@ -285,6 +289,7 @@ function BillForm({ onSuccess }: { onSuccess: () => void }) {
     const formData = new FormData(e.currentTarget);
     const amount = Number(formData.get("amount"));
     const dueDayStr = formData.get("dueDay");
+    const dueDateStr = formData.get("dueDate");
     
     if (amount < 0) {
       toast({ title: "Invalid amount", variant: "destructive" });
@@ -298,6 +303,7 @@ function BillForm({ onSuccess }: { onSuccess: () => void }) {
         amount,
         frequency: String(formData.get("frequency")) as any,
         dueDay: dueDayStr ? Number(dueDayStr) : null,
+        dueDate: dueDateStr ? String(dueDateStr) : null,
         accountRef: String(formData.get("accountRef")) || null,
         autopay: formData.get("autopay") === "true",
         notes: String(formData.get("notes")) || null,
@@ -349,9 +355,17 @@ function BillForm({ onSuccess }: { onSuccess: () => void }) {
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="dueDay">Due Day (1-31)</Label>
+          <Label htmlFor="dueDate">Exact Due Date</Label>
+          <Input id="dueDate" name="dueDate" type="date" placeholder="Optional" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="dueDay">Recurring Due Day (1-31)</Label>
           <Input id="dueDay" name="dueDay" type="number" min="1" max="31" placeholder="Optional" />
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2" />
         <div className="space-y-2">
           <Label htmlFor="autopay">Auto-pay</Label>
           <Select name="autopay" defaultValue="false">
