@@ -1,0 +1,712 @@
+I want to continue building my existing family budget and arrears planning app in Replit.
+
+Please use the current exported screenshots/design as the reference for the existing UI, layout, colours, tabs, cards, and general behaviour. Do not redesign the app from scratch unless required. Preserve the current structure and improve it.
+
+Project goal:
+Build a practical family budget, arrears, bills, tasks, income, and gig economy tracker that can be used weekly by a household. It should support real-world irregular income, bills, arrears, planned payments, tasks, and scenario planning.
+
+Current problem areas:
+1. The current Income and Bills tab only lets me add income sources as one-off items.
+2. I would prefer to add weekly income entries as they actually come in.
+3. Those income entries should feed the tracker, budget calculations, arrears plan, and cashflow forecast.
+4. The Tasks tab currently only lets tasks be turned on/off, which is too limited.
+5. I need Google login/authentication added.
+6. I need an additional tab for the entire family budget.
+7. I need scenario planning.
+8. I need a tab for gig economy work, especially DoorDash-style income.
+9. I want downloads/exports of the current budget, plan, task list, arrears plan, bills, income, and gig work records.
+10. Seed/start from the attached/imported data where available.
+
+Please implement the following changes.
+
+========================
+1. AUTHENTICATION / LOGIN
+========================
+
+Add user login using Google authentication.
+
+Requirements:
+- Add “Sign in with Google”.
+- Store data per authenticated user.
+- Support household/family sharing later, but for now keep a simple user-owned data model.
+- After login, load the user’s saved budget data.
+- If no data exists, create starter data from imported/seed data.
+- Add a logout option.
+- Protect all app pages except login.
+- Use Replit-compatible environment variables for Google OAuth/client credentials.
+- Include clear setup instructions for the environment variables.
+
+Suggested auth approach:
+- If the current stack already uses Supabase, Firebase, Clerk, NextAuth/Auth.js, or another auth system, extend that.
+- If no auth exists, choose a Replit-friendly option and document it clearly.
+
+========================
+2. NEW TAB: FAMILY BUDGET
+========================
+
+Add a new top-level tab called “Family Budget”.
+
+Purpose:
+This tab should show the whole household budget in one place, not just individual bills.
+
+Features:
+- Weekly household budget view.
+- Fortnightly and monthly summary views.
+- Total income received this week.
+- Expected income still to come.
+- Essential bills due.
+- Arrears payments due.
+- Food/groceries allowance.
+- Fuel/transport allowance.
+- Rent/housing costs.
+- Utilities.
+- Debt/arrears.
+- Personal spending allowance.
+- Emergency buffer.
+- Surplus/shortfall.
+- “Safe to spend” amount.
+
+Budget categories should include:
+- Rent / housing
+- Utilities
+- Phone / internet
+- Food / groceries
+- Fuel / transport
+- Medical / pharmacy
+- Insurance
+- Debt / arrears
+- Subscriptions
+- School / family costs
+- Pets if applicable
+- Personal spending
+- Emergency buffer
+- Other
+
+Add the ability to:
+- Create budget categories
+- Set weekly planned amount
+- Record actual spend
+- Compare planned vs actual
+- Mark category as essential or flexible
+- Add notes
+- Carry unused money forward optionally
+- Include/exclude category from scenario calculations
+
+Display:
+- Summary cards at the top:
+  - Income received
+  - Bills due
+  - Arrears due
+  - Planned spend
+  - Actual spend
+  - Remaining
+  - Safe to spend
+- A table/list of categories underneath.
+- Visual status labels:
+  - On track
+  - Tight
+  - Over budget
+  - Critical
+
+========================
+3. INCOME MODEL CHANGE
+========================
+
+Change the current Income and Bills behaviour.
+
+Current issue:
+The app currently treats income sources too much like one-off static items.
+
+Required change:
+Separate “Income Sources” from “Income Entries”.
+
+Income Sources:
+These are recurring or expected sources, for example:
+- Gary wages
+- Sam wages
+- Centrelink
+- DoorDash
+- Cash jobs
+- Business income
+- Other
+
+Each income source should have:
+- Name
+- Owner/person
+- Type: wage, Centrelink, gig, business, other
+- Expected frequency: weekly, fortnightly, monthly, irregular
+- Expected amount, optional
+- Active/inactive
+- Notes
+
+Income Entries:
+These are actual amounts received.
+
+Each income entry should have:
+- Date received
+- Income source
+- Person
+- Gross amount
+- Net amount received
+- Payment method/account
+- Tags
+- Notes
+- Whether it has been allocated to the budget
+- Optional linked work session, especially for gig economy income
+
+The budget and tracker should use actual income entries first, not just expected income.
+
+Logic:
+- Actual income received should feed the weekly budget.
+- Expected income should only be used for forecasting.
+- The app should distinguish between:
+  - Expected income
+  - Received income
+  - Allocated income
+  - Unallocated income
+- Weekly totals should be based on actual received income entries.
+- The forecast can show expected future income.
+
+Add:
+- Quick add income button
+- Weekly income entry screen
+- Income history
+- Income by person
+- Income by source
+- Income variance: expected vs actual
+
+========================
+4. BILLS AND ARREARS LOGIC
+========================
+
+Improve bills so they interact with income and budget.
+
+Each bill should include:
+- Bill name
+- Provider
+- Category
+- Amount
+- Due date
+- Frequency
+- Essential/flexible
+- Paid/unpaid/part-paid
+- Amount paid
+- Amount remaining
+- Linked arrears plan, if applicable
+- Notes
+- Attachment/reference field
+
+Seed example:
+- SA Water invoice
+  - Amount: $201.96
+  - Due date: 30 Mar 2026
+  - Category: Utilities
+  - Status: unpaid unless already marked paid by user
+  - Reference: INV-0440
+
+Bills should feed:
+- Current week budget
+- Due soon list
+- Arrears plan
+- Scenario planning
+- Downloads/exports
+
+Add payment tracking:
+- Add payment against bill
+- Support partial payments
+- Mark as paid when amount paid equals amount due
+- Show overdue bills
+- Show bills due in next 7 days, 14 days, 30 days
+
+========================
+5. TASK MANAGEMENT TAB IMPROVEMENT
+========================
+
+Improve the Tasks tab so it is more than just on/off.
+
+Each task should include:
+- Task title
+- Description
+- Category
+- Priority: low, medium, high, critical
+- Status:
+  - Not started
+  - In progress
+  - Waiting
+  - Done
+  - Deferred
+  - Cancelled
+- Due date
+- Start date
+- Assigned person
+- Related bill, arrears item, income item, or budget category
+- Recurring: yes/no
+- Recurrence pattern
+- Reminder date
+- Notes
+- Completion date
+- Created date
+- Updated date
+
+Task views:
+- Today
+- This week
+- Overdue
+- By person
+- By category
+- By status
+- Related to bills/arrears
+- Completed
+
+Actions:
+- Add task
+- Edit task
+- Complete task
+- Defer task
+- Reopen task
+- Delete/archive task
+- Link task to bill
+- Link task to arrears item
+- Link task to scenario
+
+Examples:
+- “Call SA Water about payment extension”
+- “Pay $50 toward arrears”
+- “Upload bill”
+- “Check DoorDash weekly income”
+- “Review family budget Sunday night”
+
+========================
+6. NEW TAB: SCENARIOS
+========================
+
+Add a new top-level tab called “Scenarios”.
+
+Purpose:
+Allow us to model what happens if income or bills change.
+
+Scenario examples:
+- What if DoorDash earns $200 this week?
+- What if only one wage comes in?
+- What if rent is late?
+- What if we pay SA Water this week vs next week?
+- What if we reduce groceries by $40?
+- What if we add an extra arrears payment?
+- What if Centrelink starts on a certain date?
+- What if gig income is higher/lower than expected?
+
+Each scenario should include:
+- Scenario name
+- Start date
+- End date
+- Income assumptions
+- Bill assumptions
+- Arrears assumptions
+- Spending/category changes
+- Notes
+- Status: draft, active, archived
+
+Scenario outputs:
+- Weekly surplus/shortfall
+- Bills paid on time
+- Bills delayed
+- Arrears reduction
+- Safe to spend amount
+- Risk level
+- Suggested actions
+
+Scenario UI:
+- Create scenario from current budget
+- Duplicate scenario
+- Compare scenarios side by side
+- Apply scenario to live plan only after confirmation
+- Export scenario
+
+Add clear labels:
+- Base plan
+- Best case
+- Worst case
+- Minimum survival plan
+- Catch-up plan
+
+========================
+7. NEW TAB: GIG ECONOMY / DOORDASH TRACKER
+========================
+
+Add a new top-level tab called “Gig Work” or “DoorDash”.
+
+Purpose:
+Track DoorDash/gig economy work separately, then feed net income into the budget.
+
+The tracker should support:
+- DoorDash
+- Uber
+- Airtasker
+- Cash jobs
+- Other gig work
+
+Each gig work entry/session should include:
+- Date
+- Platform
+- Person
+- Start time
+- End time
+- Hours worked
+- Gross earnings
+- Tips/bonus
+- Fast pay amount
+- Weekly deposit amount
+- Fees
+- Fuel estimate
+- Other expenses
+- Net income
+- Payment status:
+  - Pending
+  - Fast paid
+  - Deposited
+  - Manually received
+- Linked income entry
+- Notes
+
+Dashboard metrics:
+- Today’s gig income
+- This week’s gig income
+- Average per hour
+- Average per shift
+- Fuel estimate
+- Net after expenses
+- Pending payout
+- Deposited this week
+
+Add quick entry mode:
+- Date
+- Amount
+- Platform
+- Fast pay/deposit
+- Notes
+
+Seed/import data:
+Use the attached DoorDash screenshots as reference data and design reference.
+They show repeated “Fast pay” and “Weekly deposit” entries with Australian dollar amounts.
+Capture these as sample gig income entries where possible:
+- Apr 19: A$68.35 Fast pay
+- Apr 18: A$42.11 Fast pay
+- Apr 16: A$54.38 Fast pay
+- Apr 15: A$35.26 Fast pay
+- Apr 14: A$45.56 Fast pay
+- Apr 13: A$98.44 Fast pay
+- Apr 12: A$155.92 Fast pay
+- Apr 11: A$151.34 Fast pay
+- Apr 10: A$110.41 Fast pay
+- Apr 9: A$68.56 Fast pay
+- Apr 8: A$33.01 Fast pay
+- Apr 7: A$74.63 Fast pay
+- Apr 6: A$30.26 Fast pay
+- Apr 4: A$53.16 Fast pay
+- Apr 3: A$89.46 Fast pay
+- Apr 2: A$144.62 Fast pay
+- Apr 1: A$11.18 Fast pay
+- Mar 30: A$41.62 Fast pay
+- Mar 30: A$7.60 Weekly deposit
+- Mar 29: A$83.48 Fast pay
+- Mar 28: A$34.09 Fast pay
+- Mar 27: A$114.89 Fast pay
+- Mar 26: A$13.40 Fast pay
+- Additional visible entries: A$26.12, A$33.07, A$53.74 Fast pay
+
+Where exact dates are unclear, import them as sample/unconfirmed entries with a note saying “Imported from screenshot - confirm date”.
+
+Gig work should feed the budget:
+- When a gig entry is marked received, create or update a linked income entry.
+- The linked income entry should then feed the Family Budget, Income, Tracker, and Scenarios.
+- Avoid double counting.
+
+========================
+8. DOWNLOADS / EXPORTS
+========================
+
+Add download/export options.
+
+Required exports:
+- Current family budget
+- Current arrears plan
+- Bills list
+- Income sources
+- Income entries
+- Gig work entries
+- Task list
+- Scenario list
+- Full backup/export
+
+Export formats:
+- CSV for tables
+- JSON backup for full app data
+- PDF summary where practical
+
+Add buttons:
+- Download Budget CSV
+- Download Bills CSV
+- Download Income CSV
+- Download Gig Work CSV
+- Download Tasks CSV
+- Download Scenarios CSV
+- Download Full Backup JSON
+- Download Budget Plan PDF
+
+PDF summary should include:
+- Date generated
+- Household summary
+- Income received
+- Bills due
+- Arrears due
+- Budget categories
+- Safe to spend
+- Tasks due
+- Scenario summary if selected
+
+Import:
+- Allow JSON backup restore.
+- Allow CSV import later if easy, but export is the priority.
+
+========================
+9. STARTER / SEED DATA
+========================
+
+Use attached/imported files and screenshots as seed data.
+
+Seed bill:
+- SA Water / STD Family Trust
+- Invoice number: INV-0440
+- Amount: $201.96
+- Due date: 30 Mar 2026
+- Category: Utilities
+- Notes: Imported from uploaded invoice
+
+Seed shopping/budget data:
+Use the uploaded Master Shopping Lists as food/grocery planning reference.
+Create grocery budget categories and optional shopping list starter records from it.
+
+Include sections:
+- Aldi
+- Woolworths
+- Heart and Soul / local
+- Household items
+
+Known estimated totals from the document:
+- Aldi list estimated total: $170.30
+- Woolworths list estimated total: $134.00
+- Heart and Soul / Local estimated total: $39.50
+
+Use these to help create:
+- Grocery budget baseline
+- Weekly shopping estimate
+- Household supplies estimate
+- Optional shopping checklist items
+
+Do not force all shopping list items into active weekly budget automatically. Instead:
+- Add them as reference/planning items
+- Allow user to select which items are needed for the week
+- Allow items to be marked bought/not bought
+- Allow actual price to override estimated price
+
+========================
+10. DATA MODEL
+========================
+
+Please create or update data models for:
+
+Users:
+- id
+- email
+- displayName
+- photoUrl
+- createdAt
+
+IncomeSources:
+- id
+- userId
+- name
+- person
+- type
+- expectedFrequency
+- expectedAmount
+- active
+- notes
+- createdAt
+- updatedAt
+
+IncomeEntries:
+- id
+- userId
+- incomeSourceId
+- dateReceived
+- person
+- grossAmount
+- netAmount
+- account
+- tags
+- allocated
+- linkedGigEntryId
+- notes
+- createdAt
+- updatedAt
+
+Bills:
+- id
+- userId
+- name
+- provider
+- category
+- amount
+- dueDate
+- frequency
+- status
+- amountPaid
+- amountRemaining
+- essential
+- linkedArrearsId
+- notes
+- createdAt
+- updatedAt
+
+BillPayments:
+- id
+- userId
+- billId
+- paymentDate
+- amount
+- account
+- notes
+- createdAt
+
+BudgetCategories:
+- id
+- userId
+- name
+- type
+- plannedWeeklyAmount
+- actualAmount
+- essential
+- flexible
+- carryForward
+- includeInScenarios
+- notes
+- createdAt
+- updatedAt
+
+BudgetPeriods:
+- id
+- userId
+- periodStart
+- periodEnd
+- incomeReceived
+- plannedSpend
+- actualSpend
+- safeToSpend
+- surplusShortfall
+- notes
+
+Tasks:
+- id
+- userId
+- title
+- description
+- category
+- priority
+- status
+- startDate
+- dueDate
+- assignedPerson
+- relatedType
+- relatedId
+- recurring
+- recurrencePattern
+- reminderDate
+- completionDate
+- notes
+- createdAt
+- updatedAt
+
+Scenarios:
+- id
+- userId
+- name
+- startDate
+- endDate
+- status
+- assumptions
+- calculatedOutcome
+- riskLevel
+- notes
+- createdAt
+- updatedAt
+
+GigEntries:
+- id
+- userId
+- date
+- platform
+- person
+- startTime
+- endTime
+- hoursWorked
+- grossEarnings
+- tipsBonus
+- fastPayAmount
+- weeklyDepositAmount
+- fees
+- fuelEstimate
+- otherExpenses
+- netIncome
+- paymentStatus
+- linkedIncomeEntryId
+- notes
+- createdAt
+- updatedAt
+
+ShoppingItems:
+- id
+- userId
+- item
+- category
+- quantity
+- preferredStore
+- alternativeStore
+- estimatedPrice
+- actualPrice
+- neededThisWeek
+- bought
+- notes
+- createdAt
+- updatedAt
+
+========================
+11. CALCULATION RULES
+========================
+
+Family budget:
+- Use actual IncomeEntries where dateReceived falls inside the selected budget period.
+- Include expected income separately as forecast only.
+- Do not double-count gig income if it already created a linked income entry.
+- Safe to spend = received income - unpaid essential bills due in period - planned essential category spend - arrears commitments - emergency buffer.
+- Show warning if safe to spend is negative.
+- Show expected shortfall if upcoming bills exceed expected income.
+
+Bills:
+- amountRemaining = amount - amountPaid.
+- status:
+  - unpaid if amountPaid = 0
+  - part-paid if amountPaid > 0 and amountPaid < amount
+  - paid if amountPaid >= amount
+  - overdue if dueDate has passed and amountRemaining > 0
+
+Gig work:
+- netIncome = grossEarnings + tipsBonus - fees - fuelEstimate - otherExpenses
+- If fastPayAmount is entered, use that as received income unless otherwise overridden.
+- If weeklyDepositAmount is entered, use that as received income unless otherwise overridden.
+- Allow manual override.
+
+Scenarios:
+- Base scenario starts from current actual budget.
+- Scenario assumptions should not alter live data until user applies them.
+- Compare base vs

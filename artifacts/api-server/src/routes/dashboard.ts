@@ -1,22 +1,23 @@
 import { Router, type IRouter } from "express";
-import { and, eq, ne } from "drizzle-orm";
 import {
   db,
   arrearsItemsTable,
   billsTable,
   incomeSourcesTable,
   tasksTable,
+  gigEntriesTable,
 } from "@workspace/db";
 import { n, toWeekly } from "../lib/calc";
 
 const router: IRouter = Router();
 
 router.get("/dashboard/summary", async (_req, res): Promise<void> => {
-  const [income, bills, arrears, tasks] = await Promise.all([
+  const [income, bills, arrears, tasks, gigEntries] = await Promise.all([
     db.select().from(incomeSourcesTable),
     db.select().from(billsTable),
     db.select().from(arrearsItemsTable),
     db.select().from(tasksTable),
+    db.select().from(gigEntriesTable),
   ]);
 
   const weeklyIncome =
@@ -47,14 +48,26 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
       : 0;
 
   const today = new Date().toISOString().slice(0, 10);
-  const openTasks = tasks.filter((t) => t.status !== "done").length;
+  const openTasks = tasks.filter((t) => !["done", "deferred", "cancelled"].includes(t.status)).length;
   const overdueTasks = tasks.filter(
-    (t) => t.status !== "done" && t.dueDate && t.dueDate < today,
+    (t) => !["done", "deferred", "cancelled"].includes(t.status) && t.dueDate && t.dueDate < today,
   ).length;
   const arrearsCount = arrears.filter((a) => a.status !== "completed").length;
   const highRiskCount = arrears.filter(
     (a) => a.riskLevel === "high" && a.status !== "completed",
   ).length;
+
+  // Calculate gig income from last 7 days
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const recentGig = gigEntries.filter((g) => g.entryDate >= sevenDaysAgo);
+  const weeklyGigIncome = Math.round(
+    recentGig.reduce((s, g) => s + n(g.netIncome), 0) * 100,
+  ) / 100;
+  const pendingGigPayout = Math.round(
+    gigEntries
+      .filter((g) => g.paymentStatus === "pending")
+      .reduce((s, g) => s + n(g.fastPayAmount) + n(g.weeklyDepositAmount), 0) * 100,
+  ) / 100;
 
   res.json({
     weeklyIncome,
@@ -68,6 +81,8 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
     overdueTasks,
     arrearsCount,
     highRiskCount,
+    weeklyGigIncome,
+    pendingGigPayout,
   });
 });
 
@@ -182,8 +197,5 @@ router.get("/dashboard/upcoming", async (_req, res): Promise<void> => {
   items.sort((x, y) => (x.date < y.date ? -1 : x.date > y.date ? 1 : 0));
   res.json(items.slice(0, 60));
 });
-
-// Avoid unused imports
-void and; void eq; void ne;
 
 export default router;

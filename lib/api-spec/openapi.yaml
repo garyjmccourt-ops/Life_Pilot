@@ -2,20 +2,25 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: Arrears Management & Budget API
+  version: 0.2.0
+  description: Household Master Manager API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
   - name: income
+  - name: incomeEntries
   - name: bills
   - name: arrears
   - name: tasks
   - name: comms
   - name: weeks
   - name: dashboard
+  - name: gig
+  - name: budget
+  - name: scenarios
+  - name: shopping
 paths:
   /healthz:
     get:
@@ -79,6 +84,63 @@ paths:
     delete:
       operationId: deleteIncome
       tags: [income]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /income-entries:
+    get:
+      operationId: listIncomeEntries
+      tags: [incomeEntries]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/IncomeEntry" }
+    post:
+      operationId: createIncomeEntry
+      tags: [incomeEntries]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IncomeEntryInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IncomeEntry" }
+  /income-entries/{id}:
+    patch:
+      operationId: updateIncomeEntry
+      tags: [incomeEntries]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IncomeEntryInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IncomeEntry" }
+    delete:
+      operationId: deleteIncomeEntry
+      tags: [incomeEntries]
       parameters:
         - name: id
           in: path
@@ -372,6 +434,358 @@ paths:
                 type: array
                 items: { $ref: "#/components/schemas/ScheduledPayment" }
 
+  /gig:
+    get:
+      operationId: listGigEntries
+      tags: [gig]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/GigEntry" }
+    post:
+      operationId: createGigEntry
+      tags: [gig]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GigEntryInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GigEntry" }
+  /gig/{id}:
+    patch:
+      operationId: updateGigEntry
+      tags: [gig]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GigEntryInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GigEntry" }
+    delete:
+      operationId: deleteGigEntry
+      tags: [gig]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /budget-categories:
+    get:
+      operationId: listBudgetCategories
+      tags: [budget]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/BudgetCategory" }
+    post:
+      operationId: createBudgetCategory
+      tags: [budget]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BudgetCategoryInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetCategory" }
+  /budget-categories/{id}:
+    patch:
+      operationId: updateBudgetCategory
+      tags: [budget]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BudgetCategoryInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BudgetCategory" }
+    delete:
+      operationId: deleteBudgetCategory
+      tags: [budget]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /scenarios:
+    get:
+      operationId: listScenarios
+      tags: [scenarios]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Scenario" }
+    post:
+      operationId: createScenario
+      tags: [scenarios]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ScenarioInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Scenario" }
+  /scenarios/{id}:
+    patch:
+      operationId: updateScenario
+      tags: [scenarios]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ScenarioInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Scenario" }
+    delete:
+      operationId: deleteScenario
+      tags: [scenarios]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /shopping-items:
+    get:
+      operationId: listShoppingItems
+      tags: [shopping]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ShoppingItem" }
+    post:
+      operationId: createShoppingItem
+      tags: [shopping]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ShoppingItemInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShoppingItem" }
+  /shopping-items/{id}:
+    patch:
+      operationId: updateShoppingItem
+      tags: [shopping]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ShoppingItemInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShoppingItem" }
+    delete:
+      operationId: deleteShoppingItem
+      tags: [shopping]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /shopping-lists:
+    get:
+      operationId: listShoppingLists
+      tags: [shopping]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ShoppingList" }
+    post:
+      operationId: createShoppingList
+      tags: [shopping]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ShoppingListInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShoppingList" }
+  /shopping-lists/{id}:
+    patch:
+      operationId: updateShoppingList
+      tags: [shopping]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ShoppingListInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShoppingList" }
+    delete:
+      operationId: deleteShoppingList
+      tags: [shopping]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /shopping-lists/{listId}/items:
+    get:
+      operationId: listShoppingListItems
+      tags: [shopping]
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ShoppingListItem" }
+    post:
+      operationId: createShoppingListItem
+      tags: [shopping]
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ShoppingListItemInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShoppingListItem" }
+  /shopping-list-items/{id}:
+    patch:
+      operationId: updateShoppingListItem
+      tags: [shopping]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ShoppingListItemInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ShoppingListItem" }
+    delete:
+      operationId: deleteShoppingListItem
+      tags: [shopping]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
 components:
   schemas:
     HealthStatus:
@@ -386,7 +800,7 @@ components:
 
     ArrearsCategory:
       type: string
-      enum: [rent, utility, council, fine, child-support, personal-debt, other]
+      enum: [rent, utility, council, fine, child-support, personal-debt, tax, other]
 
     RiskLevel:
       type: string
@@ -402,15 +816,35 @@ components:
 
     TaskStatus:
       type: string
-      enum: [open, in-progress, blocked, awaiting-reply, done]
+      enum: [open, in-progress, waiting, done, deferred, cancelled]
 
     Priority:
       type: string
-      enum: [p1, p2, p3]
+      enum: [p1, p2, p3, critical]
 
     Channel:
       type: string
       enum: [phone, email, letter, sms, in-person, portal]
+
+    GigPlatform:
+      type: string
+      enum: [doordash, uber, airtasker, cash, other]
+
+    GigPaymentStatus:
+      type: string
+      enum: [pending, fast-paid, deposited, received]
+
+    ShoppingPriority:
+      type: string
+      enum: [essential, normal, optional]
+
+    ScenarioLabel:
+      type: string
+      enum: [base, best-case, worst-case, minimum-survival, catch-up, custom]
+
+    ScenarioStatus:
+      type: string
+      enum: [draft, active, archived]
 
     IncomeSource:
       type: object
@@ -430,6 +864,39 @@ components:
         frequency: { $ref: "#/components/schemas/Frequency" }
         notes: { type: ["string", "null"] }
       required: [name, amount, frequency]
+
+    IncomeEntry:
+      type: object
+      properties:
+        id: { type: integer }
+        dateReceived: { type: string, format: date }
+        incomeSourceId: { type: ["integer", "null"] }
+        sourceName: { type: string }
+        person: { type: ["string", "null"] }
+        grossAmount: { type: number }
+        netAmount: { type: number }
+        paymentMethod: { type: ["string", "null"] }
+        tags: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        allocated: { type: boolean }
+        gigEntryId: { type: ["integer", "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, dateReceived, sourceName, grossAmount, netAmount, allocated, createdAt]
+    IncomeEntryInput:
+      type: object
+      properties:
+        dateReceived: { type: string, format: date }
+        incomeSourceId: { type: ["integer", "null"] }
+        sourceName: { type: string }
+        person: { type: ["string", "null"] }
+        grossAmount: { type: number }
+        netAmount: { type: number }
+        paymentMethod: { type: ["string", "null"] }
+        tags: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        allocated: { type: boolean }
+        gigEntryId: { type: ["integer", "null"] }
+      required: [dateReceived, sourceName, grossAmount, netAmount, allocated]
 
     Bill:
       type: object
@@ -473,12 +940,10 @@ components:
         status: { $ref: "#/components/schemas/ArrangementStatus" }
         nextReviewDate: { type: ["string", "null"], format: date }
         accountRef: { type: ["string", "null"] }
-        # Internal plan
         summary: { type: ["string", "null"] }
         objective: { type: ["string", "null"] }
         workingPlan: { type: ["string", "null"] }
         communicationPosition: { type: ["string", "null"] }
-        # External (sanitised) plan
         externalAcknowledgement: { type: ["string", "null"] }
         externalPaymentIntent: { type: ["string", "null"] }
         externalStagedReduction: { type: ["string", "null"] }
@@ -525,27 +990,39 @@ components:
       properties:
         id: { type: integer }
         title: { type: string }
+        description: { type: ["string", "null"] }
+        category: { type: ["string", "null"] }
         bucket: { $ref: "#/components/schemas/TaskBucket" }
         status: { $ref: "#/components/schemas/TaskStatus" }
         priority: { $ref: "#/components/schemas/Priority" }
         dueDate: { type: ["string", "null"], format: date }
+        startDate: { type: ["string", "null"], format: date }
+        assignedPerson: { type: ["string", "null"] }
         creditorTag: { type: ["string", "null"] }
         arrearsItemId: { type: ["integer", "null"] }
+        recurring: { type: boolean }
+        completedAt: { type: ["string", "null"], format: date }
         notes: { type: ["string", "null"] }
         createdAt: { type: string, format: date-time }
-      required: [id, title, bucket, status, priority, createdAt]
+      required: [id, title, bucket, status, priority, recurring, createdAt]
     TaskInput:
       type: object
       properties:
         title: { type: string }
+        description: { type: ["string", "null"] }
+        category: { type: ["string", "null"] }
         bucket: { $ref: "#/components/schemas/TaskBucket" }
         status: { $ref: "#/components/schemas/TaskStatus" }
         priority: { $ref: "#/components/schemas/Priority" }
         dueDate: { type: ["string", "null"], format: date }
+        startDate: { type: ["string", "null"], format: date }
+        assignedPerson: { type: ["string", "null"] }
         creditorTag: { type: ["string", "null"] }
         arrearsItemId: { type: ["integer", "null"] }
+        recurring: { type: boolean }
+        completedAt: { type: ["string", "null"], format: date }
         notes: { type: ["string", "null"] }
-      required: [title, bucket, status, priority]
+      required: [title, bucket, status, priority, recurring]
 
     CommsEntry:
       type: object
@@ -593,6 +1070,211 @@ components:
         notes: { type: ["string", "null"] }
       required: [weekStart, plannedIn, actualIn, plannedOut, actualOut]
 
+    GigEntry:
+      type: object
+      properties:
+        id: { type: integer }
+        entryDate: { type: string, format: date }
+        platform: { $ref: "#/components/schemas/GigPlatform" }
+        person: { type: ["string", "null"] }
+        startTime: { type: ["string", "null"] }
+        endTime: { type: ["string", "null"] }
+        hoursWorked: { type: ["number", "null"] }
+        grossEarnings: { type: number }
+        tips: { type: number }
+        fastPayAmount: { type: number }
+        weeklyDepositAmount: { type: number }
+        fees: { type: number }
+        fuelEstimate: { type: number }
+        otherExpenses: { type: number }
+        netIncome: { type: number }
+        paymentStatus: { $ref: "#/components/schemas/GigPaymentStatus" }
+        incomeEntryId: { type: ["integer", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, entryDate, platform, grossEarnings, tips, fastPayAmount,
+                 weeklyDepositAmount, fees, fuelEstimate, otherExpenses, netIncome,
+                 paymentStatus, createdAt]
+    GigEntryInput:
+      type: object
+      properties:
+        entryDate: { type: string, format: date }
+        platform: { $ref: "#/components/schemas/GigPlatform" }
+        person: { type: ["string", "null"] }
+        startTime: { type: ["string", "null"] }
+        endTime: { type: ["string", "null"] }
+        hoursWorked: { type: ["number", "null"] }
+        grossEarnings: { type: number }
+        tips: { type: number }
+        fastPayAmount: { type: number }
+        weeklyDepositAmount: { type: number }
+        fees: { type: number }
+        fuelEstimate: { type: number }
+        otherExpenses: { type: number }
+        netIncome: { type: number }
+        paymentStatus: { $ref: "#/components/schemas/GigPaymentStatus" }
+        incomeEntryId: { type: ["integer", "null"] }
+        notes: { type: ["string", "null"] }
+      required: [entryDate, platform, grossEarnings, tips, fastPayAmount,
+                 weeklyDepositAmount, fees, fuelEstimate, otherExpenses, netIncome,
+                 paymentStatus]
+
+    BudgetCategory:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        group: { type: string }
+        plannedWeekly: { type: number }
+        actualWeekly: { type: number }
+        essential: { type: boolean }
+        includeInScenario: { type: boolean }
+        carryForward: { type: boolean }
+        notes: { type: ["string", "null"] }
+        color: { type: ["string", "null"] }
+      required: [id, name, group, plannedWeekly, actualWeekly, essential, includeInScenario, carryForward]
+    BudgetCategoryInput:
+      type: object
+      properties:
+        name: { type: string }
+        group: { type: string }
+        plannedWeekly: { type: number }
+        actualWeekly: { type: number }
+        essential: { type: boolean }
+        includeInScenario: { type: boolean }
+        carryForward: { type: boolean }
+        notes: { type: ["string", "null"] }
+        color: { type: ["string", "null"] }
+      required: [name, group, plannedWeekly, actualWeekly, essential, includeInScenario, carryForward]
+
+    Scenario:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        label: { $ref: "#/components/schemas/ScenarioLabel" }
+        status: { $ref: "#/components/schemas/ScenarioStatus" }
+        startDate: { type: ["string", "null"], format: date }
+        endDate: { type: ["string", "null"], format: date }
+        incomeAssumptions: { type: ["string", "null"] }
+        billAssumptions: { type: ["string", "null"] }
+        arrearsAssumptions: { type: ["string", "null"] }
+        spendingChanges: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, name, label, status, createdAt]
+    ScenarioInput:
+      type: object
+      properties:
+        name: { type: string }
+        label: { $ref: "#/components/schemas/ScenarioLabel" }
+        status: { $ref: "#/components/schemas/ScenarioStatus" }
+        startDate: { type: ["string", "null"], format: date }
+        endDate: { type: ["string", "null"], format: date }
+        incomeAssumptions: { type: ["string", "null"] }
+        billAssumptions: { type: ["string", "null"] }
+        arrearsAssumptions: { type: ["string", "null"] }
+        spendingChanges: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+      required: [name, label, status]
+
+    ShoppingItem:
+      type: object
+      properties:
+        id: { type: integer }
+        item: { type: string }
+        category: { type: string }
+        quantitySize: { type: ["string", "null"] }
+        preferredStore: { type: string }
+        alternativeStore: { type: ["string", "null"] }
+        alternativeItem: { type: ["string", "null"] }
+        estimatedPrice: { type: ["number", "null"] }
+        actualPrice: { type: ["number", "null"] }
+        priority: { $ref: "#/components/schemas/ShoppingPriority" }
+        usualFrequency: { type: string }
+        lastPurchasedDate: { type: ["string", "null"], format: date }
+        linkedBudgetCategoryId: { type: ["integer", "null"] }
+        notes: { type: ["string", "null"] }
+        active: { type: boolean }
+      required: [id, item, category, preferredStore, priority, usualFrequency, active]
+    ShoppingItemInput:
+      type: object
+      properties:
+        item: { type: string }
+        category: { type: string }
+        quantitySize: { type: ["string", "null"] }
+        preferredStore: { type: string }
+        alternativeStore: { type: ["string", "null"] }
+        alternativeItem: { type: ["string", "null"] }
+        estimatedPrice: { type: ["number", "null"] }
+        actualPrice: { type: ["number", "null"] }
+        priority: { $ref: "#/components/schemas/ShoppingPriority" }
+        usualFrequency: { type: string }
+        lastPurchasedDate: { type: ["string", "null"], format: date }
+        linkedBudgetCategoryId: { type: ["integer", "null"] }
+        notes: { type: ["string", "null"] }
+        active: { type: boolean }
+      required: [item, category, preferredStore, priority, usualFrequency, active]
+
+    ShoppingList:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        weekStart: { type: ["string", "null"], format: date }
+        weekEnd: { type: ["string", "null"], format: date }
+        status: { type: string }
+        estimatedTotal: { type: number }
+        actualTotal: { type: number }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, name, status, estimatedTotal, actualTotal, createdAt]
+    ShoppingListInput:
+      type: object
+      properties:
+        name: { type: string }
+        weekStart: { type: ["string", "null"], format: date }
+        weekEnd: { type: ["string", "null"], format: date }
+        status: { type: string }
+        estimatedTotal: { type: number }
+        actualTotal: { type: number }
+        notes: { type: ["string", "null"] }
+      required: [name, status, estimatedTotal, actualTotal]
+
+    ShoppingListItem:
+      type: object
+      properties:
+        id: { type: integer }
+        shoppingListId: { type: integer }
+        shoppingItemId: { type: ["integer", "null"] }
+        item: { type: string }
+        category: { type: string }
+        quantitySize: { type: ["string", "null"] }
+        store: { type: ["string", "null"] }
+        estimatedPrice: { type: ["number", "null"] }
+        actualPrice: { type: ["number", "null"] }
+        needed: { type: boolean }
+        bought: { type: boolean }
+        priority: { $ref: "#/components/schemas/ShoppingPriority" }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, shoppingListId, item, category, needed, bought, priority, createdAt]
+    ShoppingListItemInput:
+      type: object
+      properties:
+        shoppingItemId: { type: ["integer", "null"] }
+        item: { type: string }
+        category: { type: string }
+        quantitySize: { type: ["string", "null"] }
+        store: { type: ["string", "null"] }
+        estimatedPrice: { type: ["number", "null"] }
+        actualPrice: { type: ["number", "null"] }
+        needed: { type: boolean }
+        bought: { type: boolean }
+        priority: { $ref: "#/components/schemas/ShoppingPriority" }
+        notes: { type: ["string", "null"] }
+      required: [item, category, needed, bought, priority]
+
     DashboardSummary:
       type: object
       properties:
@@ -607,10 +1289,12 @@ components:
         overdueTasks: { type: integer }
         arrearsCount: { type: integer }
         highRiskCount: { type: integer }
+        weeklyGigIncome: { type: number }
+        pendingGigPayout: { type: number }
       required:
         [weeklyIncome, weeklyBills, weeklyArrears, weeklyOut, weeklySurplus,
          totalArrearsBalance, arrearsShareOfIncome, openTasks, overdueTasks,
-         arrearsCount, highRiskCount]
+         arrearsCount, highRiskCount, weeklyGigIncome, pendingGigPayout]
 
     ArrearsMatrixRow:
       type: object

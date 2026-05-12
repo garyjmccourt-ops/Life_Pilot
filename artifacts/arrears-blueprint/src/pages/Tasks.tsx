@@ -156,6 +156,7 @@ function TaskForm({ onSuccess }: { onSuccess: () => void }) {
         creditorTag: String(formData.get("creditorTag")) || null,
         arrearsItemId: arrearsIdStr && arrearsIdStr !== "none" ? Number(arrearsIdStr) : null,
         notes: String(formData.get("notes")) || null,
+        recurring: false,
       }
     }, {
       onSuccess: () => {

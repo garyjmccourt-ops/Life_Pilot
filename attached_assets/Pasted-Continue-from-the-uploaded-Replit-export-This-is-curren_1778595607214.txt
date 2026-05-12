@@ -1,0 +1,458 @@
+Continue from the uploaded Replit export. This is currently called Arrears & Budget Manager, but I want to evolve it into a broader Household Master Manager.
+
+Do not rebuild from scratch. Use the existing monorepo structure:
+
+- artifacts/arrears-blueprint for the React/Vite frontend
+- artifacts/api-server for the Express API
+- lib/db for PostgreSQL/Drizzle schema
+- existing generated API hooks and Zod schema patterns
+- existing pages, cards, tabs, and styling as the design base
+
+Rename the product concept in the UI from “Arrears & Budget Manager” to:
+
+Household Master Manager
+
+Subtitle/description:
+Budget, bills, arrears, income, tasks, shopping, gig work, and household planning in one place.
+
+Keep arrears management as a major part of the app, but make it part of a wider household system.
+
+==================================================
+NEW TOP-LEVEL NAVIGATION / TABS
+==================================================
+
+Please evolve the app navigation to support these main areas:
+
+1. Dashboard
+2. Family Budget
+3. Income & Bills
+4. Arrears
+5. Weekly Tracker
+6. Tasks
+7. Shopping
+8. Gig Work
+9. Scenarios
+10. Communications / Notes
+11. Exports / Backup
+
+Where practical, preserve existing pages and routes, but add the new ones.
+
+==================================================
+NEW TAB: SHOPPING
+==================================================
+
+Add a new top-level tab called “Shopping”.
+
+Purpose:
+The Shopping tab should act as a household shopping planner, master shopping list, weekly checklist, and grocery budget helper.
+
+It should connect to the Family Budget tab so grocery and household spending can be planned and tracked properly.
+
+Use the uploaded Master Shopping Lists document as the seed/reference data. It includes Aldi, Woolworths, Heart and Soul/local, and household supplies sections, with estimated prices and alternative stores.
+
+Known estimated totals from the uploaded shopping list:
+- Aldi list estimated total: $170.30
+- Woolworths list estimated total: $134.00
+- Heart and Soul / Local list estimated total: $39.50
+
+Important:
+Do not force every shopping item into the weekly active budget. Treat the uploaded list as a master list / planning reference. The user should choose which items are needed each week.
+
+Shopping tab features:
+
+A. Master Shopping List
+Each item should include:
+- Item name
+- Category
+- Quantity / size
+- Preferred store
+- Alternative store
+- Alternative item
+- Estimated price
+- Actual price
+- Needed this week: yes/no
+- Bought: yes/no
+- Priority: essential, normal, optional
+- Notes
+- Last purchased date
+- Usual purchase frequency
+- Linked budget category
+
+B. Weekly Shopping List
+Allow user to create a weekly shopping list from the master list.
+
+Features:
+- Select items needed this week
+- Add one-off items
+- Group by store
+- Group by category
+- Mark items bought
+- Add actual price
+- Show estimated total
+- Show actual total
+- Show remaining grocery budget
+- Show over/under budget
+
+C. Store Sections
+Support these store/group sections:
+- Aldi
+- Woolworths
+- Heart and Soul / local
+- Buy where best
+- Household supplies
+- Other
+
+D. Budget Connection
+Shopping should feed into the Family Budget.
+
+Rules:
+- Estimated shopping total should feed the planned grocery/household budget.
+- Actual shopping total should feed actual spend.
+- Allow shopping items to be linked to:
+  - Food / groceries
+  - Household supplies
+  - Cleaning
+  - Personal care
+  - Pets
+  - Other
+- Show warning if shopping list exceeds the available grocery budget.
+- Show “safe remaining grocery spend”.
+
+E. Shopping Views
+Add views:
+- This week
+- Master list
+- By store
+- By category
+- Essentials only
+- Optional items
+- Bought history
+
+F. Quick Actions
+Add buttons/actions:
+- Add item
+- Add one-off item
+- Mark bought
+- Mark not needed
+- Copy last week’s list
+- Start new weekly list
+- Download shopping list CSV
+- Download printable shopping list PDF if practical
+
+G. Shopping Dashboard Cards
+At top of the Shopping tab, show:
+- Estimated total
+- Actual total
+- Grocery budget
+- Remaining grocery budget
+- Essential items count
+- Optional items count
+- Items bought
+- Items still needed
+
+==================================================
+SHOPPING DATA MODEL
+==================================================
+
+Add or update database tables using Drizzle.
+
+ShoppingItems:
+- id
+- userId
+- item
+- category
+- quantitySize
+- preferredStore
+- alternativeStore
+- alternativeItem
+- estimatedPrice
+- actualPrice
+- priority
+- usualFrequency
+- lastPurchasedDate
+- linkedBudgetCategoryId
+- notes
+- active
+- createdAt
+- updatedAt
+
+ShoppingLists:
+- id
+- userId
+- name
+- weekStart
+- weekEnd
+- status: draft, active, completed, archived
+- estimatedTotal
+- actualTotal
+- linkedBudgetPeriodId
+- notes
+- createdAt
+- updatedAt
+
+ShoppingListItems:
+- id
+- userId
+- shoppingListId
+- shoppingItemId
+- item
+- category
+- quantitySize
+- store
+- estimatedPrice
+- actualPrice
+- needed
+- bought
+- priority
+- notes
+- createdAt
+- updatedAt
+
+==================================================
+HOUSEHOLD MASTER MANAGER CONCEPT
+==================================================
+
+Please update the UI wording so the app feels like a complete household operating system.
+
+The dashboard should summarise:
+- Income received this week
+- Expected income
+- Bills due
+- Arrears due
+- Tasks due
+- Shopping budget
+- Gig work income
+- Safe to spend
+- Current risk level
+
+Add a dashboard section called “Household Status”.
+
+Status levels:
+- Stable
+- Tight
+- Watch closely
+- Critical
+
+This status should consider:
+- Available income
+- Bills due soon
+- Arrears risk
+- Grocery budget remaining
+- Overdue tasks
+- Upcoming shortfalls
+
+==================================================
+INCOME CHANGE
+==================================================
+
+Change income handling so that income sources and actual income entries are separate.
+
+Income Sources are recurring/expected sources.
+Income Entries are actual payments received.
+
+The Family Budget and Weekly Tracker should use actual income entries first.
+
+Income entries should feed:
+- Weekly tracker
+- Family budget
+- Arrears plan
+- Scenarios
+- Dashboard
+
+Expected income should be used for forecast only.
+
+==================================================
+TASK MANAGEMENT IMPROVEMENT
+==================================================
+
+Improve Tasks so it is not just on/off.
+
+Tasks need:
+- Status: not started, in progress, waiting, done, deferred, cancelled
+- Priority: low, medium, high, critical
+- Due date
+- Start date
+- Assigned person
+- Category
+- Related bill, arrears item, shopping list, income item, gig entry, or scenario
+- Notes
+- Recurring option
+- Completion date
+
+Task views:
+- Today
+- This week
+- Overdue
+- By person
+- By status
+- By category
+- Related to bills
+- Related to shopping
+- Related to arrears
+
+Example tasks:
+- Pay SA Water
+- Call utility provider
+- Do weekly grocery shop
+- Check DoorDash payout
+- Review Sunday family budget
+- Update arrears payment plan
+
+==================================================
+GIG WORK / DOORDASH TAB
+==================================================
+
+Add a Gig Work tab for DoorDash and other gig economy income.
+
+Each gig entry should include:
+- Date
+- Platform
+- Person
+- Start time
+- End time
+- Hours worked
+- Gross earnings
+- Tips / bonus
+- Fast pay amount
+- Weekly deposit amount
+- Fees
+- Fuel estimate
+- Other expenses
+- Net income
+- Payment status
+- Linked income entry
+- Notes
+
+When gig income is marked received, create or update a linked Income Entry.
+
+Avoid double counting.
+
+Dashboard cards:
+- Today’s gig income
+- This week’s gig income
+- Average hourly rate
+- Net after expenses
+- Pending payout
+- Deposited this week
+
+Use uploaded DoorDash screenshots as seed/reference data where possible.
+
+==================================================
+SCENARIOS TAB
+==================================================
+
+Add a Scenarios tab.
+
+Purpose:
+Model different household budget outcomes.
+
+Scenario examples:
+- DoorDash earns $200 this week
+- One wage is delayed
+- Groceries reduced by $40
+- SA Water paid this week vs next week
+- Extra arrears payment made
+- Centrelink starts on a future date
+
+Scenario outputs:
+- Weekly surplus/shortfall
+- Safe to spend
+- Bills paid on time
+- Bills delayed
+- Arrears reduction
+- Grocery budget impact
+- Risk level
+- Suggested actions
+
+Allow:
+- Create from current budget
+- Duplicate scenario
+- Compare scenarios
+- Export scenario
+- Apply scenario to live plan only after confirmation
+
+==================================================
+EXPORTS / DOWNLOADS
+==================================================
+
+Add exports/downloads for:
+
+- Current family budget
+- Arrears plan
+- Bills
+- Income sources
+- Income entries
+- Gig work
+- Tasks
+- Shopping master list
+- Weekly shopping list
+- Scenarios
+- Full backup JSON
+
+Formats:
+- CSV for table data
+- JSON for full backup
+- PDF summary where practical
+
+Add an Exports / Backup tab or section.
+
+==================================================
+SEED DATA
+==================================================
+
+Use available uploaded/imported data as seed/reference data.
+
+Seed bill:
+- SA Water / STD Family Trust
+- Invoice number: INV-0440
+- Amount: $201.96
+- Due date: 30 Mar 2026
+- Category: Utilities
+- Notes: Imported from uploaded invoice
+
+Seed shopping:
+Use the uploaded Master Shopping Lists as the basis for ShoppingItems.
+
+Store groups:
+- Aldi
+- Woolworths
+- Heart and Soul / local
+- Household supplies
+
+Important shopping preferences:
+- Aldi is the default for meat/protein and most staples.
+- Woolworths is mainly for harder-to-find Asian pantry items, sweetener, and preferred branded items like Nescafe.
+- Fresh fruit, vegetables, and salad can sit in “buy where best”.
+- Heart and Soul/local can supply fresh produce, bread, and some chicken if value/quality is better.
+- Shopping should work as both a master list and a weekly inventory/checklist.
+
+==================================================
+TECHNICAL REQUIREMENTS
+==================================================
+
+Use the existing stack:
+- pnpm workspace
+- React + Vite frontend
+- Express API
+- PostgreSQL + Drizzle
+- Zod validation
+- Existing API generation patterns
+
+Please update:
+- Drizzle schema
+- API routes
+- Zod schemas
+- Generated API hooks if required
+- Frontend routes/pages
+- Navigation
+- Dashboard calculations
+- Seed script
+- TypeScript types
+
+Run:
+- pnpm run typecheck
+- pnpm run build
+
+Fix any errors before finishing.
+
+Do not remove existing arrears functionality. Expand it into the broader Household Master Manager.

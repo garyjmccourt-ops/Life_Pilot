@@ -6,6 +6,8 @@ import {
   tasksTable,
   commsEntriesTable,
   weeklyEntriesTable,
+  gigEntriesTable,
+  budgetCategoriesTable,
 } from "@workspace/db";
 
 async function main() {
@@ -15,21 +17,14 @@ async function main() {
     return;
   }
 
+  // Income sources
   await db.insert(incomeSourcesTable).values([
-    {
-      name: "Primary wage",
-      amount: "1850.00",
-      frequency: "fortnightly",
-      notes: "Net pay after tax",
-    },
-    {
-      name: "Family payment",
-      amount: "320.00",
-      frequency: "fortnightly",
-      notes: null,
-    },
+    { name: "Primary wage", amount: "1850.00", frequency: "fortnightly", notes: "Net pay after tax" },
+    { name: "Family payment", amount: "320.00", frequency: "fortnightly", notes: null },
+    { name: "DoorDash (net weekly avg)", amount: "180.00", frequency: "weekly", notes: "Variable — estimate" },
   ]);
 
+  // Bills — including SA Water invoice
   await db.insert(billsTable).values([
     {
       provider: "Internet",
@@ -61,8 +56,19 @@ async function main() {
       autopay: false,
       notes: "Estimated weekly average",
     },
+    {
+      provider: "SA Water",
+      category: "Utilities",
+      amount: "201.96",
+      frequency: "quarterly",
+      dueDay: 30,
+      accountRef: "INV-0440",
+      autopay: false,
+      notes: "Invoice INV-0440 due 2026-03-30",
+    },
   ]);
 
+  // Arrears
   const [{ id: rentId }] = await db
     .insert(arrearsItemsTable)
     .values([
@@ -76,29 +82,20 @@ async function main() {
         arrearsFrequency: "weekly",
         riskLevel: "high",
         status: "active",
-        nextReviewDate: new Date(Date.now() + 14 * 86400000)
-          .toISOString()
-          .slice(0, 10),
+        nextReviewDate: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
         accountRef: "Tenancy 4471",
-        summary:
-          "Rent fell behind during a three-week reduced-hours period. Currently paying full rent plus a weekly catch-up.",
-        objective:
-          "Clear the full balance within 22 weeks while never falling further behind on ongoing rent.",
+        summary: "Rent fell behind during a three-week reduced-hours period. Currently paying full rent plus a weekly catch-up.",
+        objective: "Clear the full balance within 22 weeks while never falling further behind on ongoing rent.",
         workingPlan:
           "Step 1 — pay $580/wk ($520 rent + $60 arrears) every Friday.\nStep 2 — review at the 6-week mark and consider lifting catch-up to $80/wk if income holds.\nContingency — if shifts drop, contact landlord same week before missing.",
-        communicationPosition:
-          "Be transparent about the catch-up plan, do not disclose specific income figures or other creditors.",
-        externalAcknowledgement:
-          "I acknowledge the outstanding rent balance and want to keep our arrangement on track.",
-        externalPaymentIntent:
-          "Ongoing weekly rent of $520 will continue to be paid every Friday by direct transfer.",
+        communicationPosition: "Be transparent about the catch-up plan, do not disclose specific income figures or other creditors.",
+        externalAcknowledgement: "I acknowledge the outstanding rent balance and want to keep our arrangement on track.",
+        externalPaymentIntent: "Ongoing weekly rent of $520 will continue to be paid every Friday by direct transfer.",
         externalStagedReduction:
           "Stage 1: $60/week toward arrears starting this Friday. Stage 2 (from week 7): review and consider increasing to $80/week.",
-        externalReviewPoints:
-          "First review at 6 weeks. I will contact you proactively if my income changes before then.",
+        externalReviewPoints: "First review at 6 weeks. I will contact you proactively if my income changes before then.",
         externalChannel: "Email",
-        evidenceLinks:
-          "Tenancy agreement (email 2025-11-04)\nLatest statement (email 2026-04-12)",
+        evidenceLinks: "Tenancy agreement (email 2025-11-04)\nLatest statement (email 2026-04-12)",
       },
     ])
     .returning({ id: arrearsItemsTable.id });
@@ -120,10 +117,8 @@ async function main() {
         accountRef: "EL-99003",
         summary: "Quarterly statement arrived higher than expected after winter usage.",
         objective: "Clear within ~6 months without disconnection notice.",
-        workingPlan:
-          "Pay ongoing usage monthly via autopay; add $30 fortnightly to chip down arrears.",
-        communicationPosition:
-          "Use hardship line; do not volunteer information about other arrears.",
+        workingPlan: "Pay ongoing usage monthly via autopay; add $30 fortnightly to chip down arrears.",
+        communicationPosition: "Use hardship line; do not volunteer information about other arrears.",
         externalAcknowledgement: null,
         externalPaymentIntent: null,
         externalStagedReduction: null,
@@ -160,6 +155,7 @@ async function main() {
     },
   ]);
 
+  // Tasks
   await db.insert(tasksTable).values([
     {
       title: "Pay rent + arrears instalment",
@@ -169,6 +165,7 @@ async function main() {
       dueDate: new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10),
       creditorTag: "rent",
       arrearsItemId: rentId,
+      recurring: "true",
       notes: "$580 total — Friday transfer",
     },
     {
@@ -179,7 +176,19 @@ async function main() {
       dueDate: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10),
       creditorTag: "electric",
       arrearsItemId: elecId,
+      recurring: "false",
       notes: "Confirm fortnightly arrears amount is sufficient.",
+    },
+    {
+      title: "Pay SA Water — INV-0440",
+      bucket: "pay",
+      status: "open",
+      priority: "p1",
+      dueDate: "2026-03-30",
+      creditorTag: "sa-water",
+      arrearsItemId: null,
+      recurring: "false",
+      notes: "$201.96 — account INV-0440",
     },
     {
       title: "File latest electricity bill PDF",
@@ -189,6 +198,7 @@ async function main() {
       dueDate: null,
       creditorTag: "electric",
       arrearsItemId: elecId,
+      recurring: "false",
       notes: null,
     },
     {
@@ -199,10 +209,12 @@ async function main() {
       dueDate: new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10),
       creditorTag: null,
       arrearsItemId: null,
+      recurring: "true",
       notes: "30-45 min — see Weekly tab",
     },
   ]);
 
+  // Comms
   await db.insert(commsEntriesTable).values([
     {
       occurredAt: new Date(Date.now() - 2 * 86400000),
@@ -224,6 +236,7 @@ async function main() {
     },
   ]);
 
+  // Weekly entry
   const monday = (() => {
     const d = new Date();
     const day = d.getDay();
@@ -243,7 +256,295 @@ async function main() {
     },
   ]);
 
-  console.log("Seeded.");
+  // DoorDash gig entries — Mar/Apr 2026 FastPay data
+  await db.insert(gigEntriesTable).values([
+    // March 2026
+    {
+      entryDate: "2026-03-02",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "47.50",
+      tips: "3.00",
+      fastPayAmount: "47.50",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "8.00",
+      otherExpenses: "0",
+      netIncome: "40.51",
+      paymentStatus: "received",
+      notes: "FastPay same day",
+    },
+    {
+      entryDate: "2026-03-05",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "62.10",
+      tips: "5.50",
+      fastPayAmount: "62.10",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "10.00",
+      otherExpenses: "0",
+      netIncome: "55.61",
+      paymentStatus: "received",
+      notes: "FastPay",
+    },
+    {
+      entryDate: "2026-03-09",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "53.25",
+      tips: "4.00",
+      fastPayAmount: "0",
+      weeklyDepositAmount: "53.25",
+      fees: "0",
+      fuelEstimate: "9.00",
+      otherExpenses: "0",
+      netIncome: "48.25",
+      paymentStatus: "deposited",
+      notes: "Weekly deposit Mon",
+    },
+    {
+      entryDate: "2026-03-12",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "71.80",
+      tips: "6.00",
+      fastPayAmount: "71.80",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "12.00",
+      otherExpenses: "0",
+      netIncome: "63.81",
+      paymentStatus: "received",
+      notes: "FastPay",
+    },
+    {
+      entryDate: "2026-03-16",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "58.60",
+      tips: "2.50",
+      fastPayAmount: "58.60",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "10.00",
+      otherExpenses: "0",
+      netIncome: "49.11",
+      paymentStatus: "received",
+      notes: "FastPay",
+    },
+    {
+      entryDate: "2026-03-19",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "44.90",
+      tips: "3.50",
+      fastPayAmount: "0",
+      weeklyDepositAmount: "44.90",
+      fees: "0",
+      fuelEstimate: "8.00",
+      otherExpenses: "0",
+      netIncome: "40.40",
+      paymentStatus: "deposited",
+      notes: "Weekly deposit",
+    },
+    {
+      entryDate: "2026-03-23",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "66.40",
+      tips: "4.50",
+      fastPayAmount: "66.40",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "11.00",
+      otherExpenses: "0",
+      netIncome: "57.91",
+      paymentStatus: "received",
+      notes: "FastPay",
+    },
+    {
+      entryDate: "2026-03-26",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "55.20",
+      tips: "5.00",
+      fastPayAmount: "55.20",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "9.50",
+      otherExpenses: "0",
+      netIncome: "48.71",
+      paymentStatus: "received",
+      notes: "FastPay",
+    },
+    {
+      entryDate: "2026-03-30",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "49.75",
+      tips: "3.00",
+      fastPayAmount: "0",
+      weeklyDepositAmount: "49.75",
+      fees: "0",
+      fuelEstimate: "8.50",
+      otherExpenses: "0",
+      netIncome: "44.25",
+      paymentStatus: "deposited",
+      notes: "Weekly deposit",
+    },
+    // April 2026
+    {
+      entryDate: "2026-04-02",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "68.30",
+      tips: "6.50",
+      fastPayAmount: "68.30",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "11.50",
+      otherExpenses: "0",
+      netIncome: "61.31",
+      paymentStatus: "received",
+      notes: "FastPay",
+    },
+    {
+      entryDate: "2026-04-06",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "74.90",
+      tips: "7.00",
+      fastPayAmount: "74.90",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "12.50",
+      otherExpenses: "0",
+      netIncome: "67.41",
+      paymentStatus: "received",
+      notes: "FastPay — good night",
+    },
+    {
+      entryDate: "2026-04-09",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "51.60",
+      tips: "3.50",
+      fastPayAmount: "0",
+      weeklyDepositAmount: "51.60",
+      fees: "0",
+      fuelEstimate: "9.00",
+      otherExpenses: "0",
+      netIncome: "46.10",
+      paymentStatus: "deposited",
+      notes: "Weekly deposit",
+    },
+    {
+      entryDate: "2026-04-13",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "60.15",
+      tips: "4.00",
+      fastPayAmount: "60.15",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "10.00",
+      otherExpenses: "0",
+      netIncome: "52.16",
+      paymentStatus: "received",
+      notes: "FastPay",
+    },
+    {
+      entryDate: "2026-04-16",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "57.80",
+      tips: "5.00",
+      fastPayAmount: "57.80",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "9.50",
+      otherExpenses: "0",
+      netIncome: "50.31",
+      paymentStatus: "received",
+      notes: "FastPay",
+    },
+    {
+      entryDate: "2026-04-20",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "63.40",
+      tips: "4.50",
+      fastPayAmount: "0",
+      weeklyDepositAmount: "63.40",
+      fees: "0",
+      fuelEstimate: "10.50",
+      otherExpenses: "0",
+      netIncome: "56.40",
+      paymentStatus: "deposited",
+      notes: "Weekly deposit Mon",
+    },
+    {
+      entryDate: "2026-04-23",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "79.20",
+      tips: "8.00",
+      fastPayAmount: "79.20",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "13.00",
+      otherExpenses: "0",
+      netIncome: "72.21",
+      paymentStatus: "received",
+      notes: "FastPay — best shift",
+    },
+    {
+      entryDate: "2026-04-27",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "55.50",
+      tips: "3.00",
+      fastPayAmount: "0",
+      weeklyDepositAmount: "55.50",
+      fees: "0",
+      fuelEstimate: "9.50",
+      otherExpenses: "0",
+      netIncome: "49.00",
+      paymentStatus: "deposited",
+      notes: "Weekly deposit",
+    },
+    {
+      entryDate: "2026-04-30",
+      platform: "doordash",
+      person: "Jess",
+      grossEarnings: "48.90",
+      tips: "2.50",
+      fastPayAmount: "48.90",
+      weeklyDepositAmount: "0",
+      fees: "1.99",
+      fuelEstimate: "8.50",
+      otherExpenses: "0",
+      netIncome: "40.91",
+      paymentStatus: "received",
+      notes: "FastPay",
+    },
+  ]);
+
+  // Budget categories
+  await db.insert(budgetCategoriesTable).values([
+    { name: "Groceries", group: "living", plannedWeekly: "180.00", actualWeekly: "185.00", essential: true, includeInScenario: true, carryForward: false, color: "#2D6A4F" },
+    { name: "Transport / Fuel", group: "transport", plannedWeekly: "60.00", actualWeekly: "55.00", essential: true, includeInScenario: true, carryForward: false, color: "#4ECDC4" },
+    { name: "Electricity (ongoing)", group: "utilities", plannedWeekly: "15.00", actualWeekly: "15.00", essential: true, includeInScenario: true, carryForward: false, color: "#FFA726" },
+    { name: "Internet", group: "utilities", plannedWeekly: "18.23", actualWeekly: "18.23", essential: true, includeInScenario: true, carryForward: false, color: "#7E57C2" },
+    { name: "Mobile", group: "utilities", plannedWeekly: "10.38", actualWeekly: "10.38", essential: true, includeInScenario: true, carryForward: false, color: "#7E57C2" },
+    { name: "Eating Out", group: "living", plannedWeekly: "30.00", actualWeekly: "40.00", essential: false, includeInScenario: true, carryForward: false, color: "#EF5350" },
+    { name: "Kids Activities", group: "family", plannedWeekly: "20.00", actualWeekly: "15.00", essential: false, includeInScenario: true, carryForward: false, color: "#66BB6A" },
+    { name: "Clothing", group: "personal", plannedWeekly: "15.00", actualWeekly: "0.00", essential: false, includeInScenario: false, carryForward: true, color: "#FF7043" },
+  ]);
+
+  console.log("Seeded with DoorDash gig data and SA Water bill.");
 }
 
 main()

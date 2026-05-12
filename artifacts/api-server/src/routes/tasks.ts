@@ -14,12 +14,18 @@ function shape(row: typeof tasksTable.$inferSelect) {
   return {
     id: row.id,
     title: row.title,
+    description: row.description,
+    category: row.category,
     bucket: row.bucket,
     status: row.status,
     priority: row.priority,
     dueDate: row.dueDate,
+    startDate: row.startDate,
+    assignedPerson: row.assignedPerson,
     creditorTag: row.creditorTag,
     arrearsItemId: row.arrearsItemId,
+    recurring: row.recurring === "true",
+    completedAt: row.completedAt,
     notes: row.notes,
     createdAt: row.createdAt.toISOString(),
   };
@@ -42,10 +48,16 @@ router.post("/tasks", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const { dueDate, ...rest } = parsed.data;
+  const { dueDate, startDate, completedAt, recurring, ...rest } = parsed.data;
   const [row] = await db
     .insert(tasksTable)
-    .values({ ...rest, dueDate: dateStr(dueDate) ?? null })
+    .values({
+      ...rest,
+      dueDate: dateStr(dueDate) ?? null,
+      startDate: dateStr(startDate) ?? null,
+      completedAt: dateStr(completedAt) ?? null,
+      recurring: recurring ? "true" : "false",
+    })
     .returning();
   res.status(201).json(shape(row));
 });
@@ -61,11 +73,12 @@ router.patch("/tasks/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const { dueDate, ...rest } = parsed.data;
+  const { dueDate, startDate, completedAt, recurring, ...rest } = parsed.data;
   const updateValues: Partial<typeof tasksTable.$inferInsert> = { ...rest };
-  if ("dueDate" in parsed.data) {
-    updateValues.dueDate = dateStr(dueDate) ?? null;
-  }
+  if ("dueDate" in parsed.data) updateValues.dueDate = dateStr(dueDate) ?? null;
+  if ("startDate" in parsed.data) updateValues.startDate = dateStr(startDate) ?? null;
+  if ("completedAt" in parsed.data) updateValues.completedAt = dateStr(completedAt) ?? null;
+  if ("recurring" in parsed.data) updateValues.recurring = recurring ? "true" : "false";
   const [row] = await db
     .update(tasksTable)
     .set(updateValues)
