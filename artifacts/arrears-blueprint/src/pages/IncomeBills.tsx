@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   useListIncome, getListIncomeQueryKey,
@@ -13,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PlusCircle, Trash2, Wallet, Receipt, RefreshCw, CreditCard, Building } from "lucide-react";
+import { PlusCircle, Trash2, Wallet, Receipt, RefreshCw, CreditCard, Building, ArrowRight } from "lucide-react";
 import { formatCurrency, formatFrequency } from "@/lib/formatters";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -31,19 +32,26 @@ function IncomeList() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-serif font-bold">Income Sources</h2>
-          <p className="text-sm text-muted-foreground">{income?.length || 0} sources • {formatCurrency(totalWeekly)}/wk total</p>
+          <p className="text-sm text-muted-foreground">{income?.length || 0} sources • {formatCurrency(totalWeekly)}/wk forecast</p>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button><PlusCircle className="h-4 w-4 mr-2" /> Add Income</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Income Source</DialogTitle>
-            </DialogHeader>
-            <IncomeForm onSuccess={() => setIsCreateOpen(false)} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <Link href="/weekly">
+            <Button variant="outline" size="sm">
+              Record actual income received <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button><PlusCircle className="h-4 w-4 mr-2" /> Add Income</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Income Source</DialogTitle>
+              </DialogHeader>
+              <IncomeForm onSuccess={() => setIsCreateOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {!income?.length ? (
