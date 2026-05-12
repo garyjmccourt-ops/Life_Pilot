@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Bike, Plus, Pencil, Trash2, TrendingUp, Clock, DollarSign, Zap,
   ScanLine, Loader2, Settings, Fuel, MapPin, Package,
+  AlertTriangle, ChevronDown, ChevronUp, ChevronRight,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -176,6 +177,213 @@ type FormState = {
   routeChain: string;
 };
 
+// ── OCR Review Dialog ─────────────────────────────────────────────────────────
+
+function OcrReviewDialog({
+  open,
+  onOpenChange,
+  data,
+  onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  data: Record<string, unknown>;
+  onConfirm: (corrected: Record<string, unknown>) => void;
+}) {
+  const [date, setDate] = useState("");
+  const [grossEarnings, setGrossEarnings] = useState("");
+  const [fastPayAmount, setFastPayAmount] = useState("");
+  const [weeklyDepositAmount, setWeeklyDepositAmount] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [showMore, setShowMore] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setDate((data.entryDate as string) ?? "");
+    setGrossEarnings(data.grossEarnings != null ? String(data.grossEarnings) : "");
+    setFastPayAmount(data.fastPayAmount != null ? String(data.fastPayAmount) : "");
+    setWeeklyDepositAmount(data.weeklyDepositAmount != null ? String(data.weeklyDepositAmount) : "");
+    setPaymentStatus((data.paymentStatus as string) ?? "");
+    setShowMore(false);
+  }, [data, open]);
+
+  const missingCritical = [
+    !date && "date",
+    !grossEarnings && "gross earnings",
+    !paymentStatus && "payout type",
+  ].filter(Boolean) as string[];
+
+  function handleConfirm() {
+    onConfirm({
+      ...data,
+      entryDate: date || null,
+      grossEarnings: grossEarnings ? parseFloat(grossEarnings) : null,
+      fastPayAmount: fastPayAmount ? parseFloat(fastPayAmount) : null,
+      weeklyDepositAmount: weeklyDepositAmount ? parseFloat(weeklyDepositAmount) : null,
+      paymentStatus: paymentStatus || null,
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ScanLine className="h-4 w-4" />
+            Review Scanned Entry
+          </DialogTitle>
+        </DialogHeader>
+
+        {missingCritical.length > 0 && (
+          <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-500" />
+            <div>
+              <span className="font-medium">Check before confirming: </span>
+              {missingCritical.join(", ")} could not be read from the screenshot — fill in manually.
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-4 py-1">
+          <div className="rounded-lg border p-4 space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Critical Fields — Verify These
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="flex items-center gap-1.5 mb-1">
+                  Date
+                  {!date && <AlertTriangle className="h-3 w-3 text-amber-500" />}
+                </Label>
+                <Input
+                  type="date"
+                  value={date}
+                  onChange={e => setDate(e.target.value)}
+                  className={!date ? "border-amber-300 bg-amber-50" : ""}
+                />
+              </div>
+              <div>
+                <Label className="flex items-center gap-1.5 mb-1">
+                  Payout Type
+                  {!paymentStatus && <AlertTriangle className="h-3 w-3 text-amber-500" />}
+                </Label>
+                <Select value={paymentStatus} onValueChange={setPaymentStatus}>
+                  <SelectTrigger className={!paymentStatus ? "border-amber-300 bg-amber-50" : ""}>
+                    <SelectValue placeholder="Select…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="fast-paid">Fast-Paid</SelectItem>
+                    <SelectItem value="deposited">Deposited</SelectItem>
+                    <SelectItem value="received">Received</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label className="flex items-center gap-1.5 mb-1 text-xs">
+                  Gross Earnings ($)
+                  {!grossEarnings && <AlertTriangle className="h-3 w-3 text-amber-500" />}
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={grossEarnings}
+                  onChange={e => setGrossEarnings(e.target.value)}
+                  className={`text-right ${!grossEarnings ? "border-amber-300 bg-amber-50" : ""}`}
+                />
+              </div>
+              <div>
+                <Label className="flex items-center gap-1.5 mb-1 text-xs">
+                  FastPay ($)
+                  {!fastPayAmount && data.paymentStatus === "fast-paid" && <AlertTriangle className="h-3 w-3 text-amber-500" />}
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={fastPayAmount}
+                  onChange={e => setFastPayAmount(e.target.value)}
+                  className="text-right"
+                />
+              </div>
+              <div>
+                <Label className="flex items-center gap-1.5 mb-1 text-xs">
+                  Weekly Deposit ($)
+                  {!weeklyDepositAmount && data.paymentStatus === "deposited" && <AlertTriangle className="h-3 w-3 text-amber-500" />}
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={weeklyDepositAmount}
+                  onChange={e => setWeeklyDepositAmount(e.target.value)}
+                  className="text-right"
+                />
+              </div>
+            </div>
+          </div>
+
+          {(data.notes as string | null) && (
+            <div className="text-xs text-muted-foreground italic border-l-2 border-muted pl-3">
+              AI summary: {data.notes as string}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowMore(v => !v)}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showMore ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {showMore ? "Hide" : "Show"} all extracted fields
+          </button>
+
+          {showMore && (
+            <div className="rounded-md border bg-muted/20 p-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
+              {([
+                ["Platform", data.platform],
+                ["Person", data.person],
+                ["Start Time", data.startTime],
+                ["End Time", data.endTime],
+                ["Active Mins", data.activeMinutes],
+                ["Deliveries", data.deliveriesCount],
+                ["Offers", data.offersCount],
+                ["KM", data.estimatedKm],
+                ["Tips ($)", data.tips != null ? `$${data.tips}` : null],
+                ["Fees ($)", data.fees != null ? `$${data.fees}` : null],
+              ] as [string, unknown][]).map(([label, val]) => (
+                <div key={label} className="flex items-baseline gap-1.5">
+                  <span className="text-muted-foreground text-xs min-w-[80px]">{label}:</span>
+                  <span className={val == null ? "text-muted-foreground italic text-xs" : "font-medium text-xs"}>
+                    {val == null ? "not found" : String(val)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Discard Scan
+          </Button>
+          <Button onClick={handleConfirm}>
+            Confirm & Edit Entry <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function GigWork() {
@@ -189,6 +397,8 @@ export default function GigWork() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(makeDefault());
   const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrRawData, setOcrRawData] = useState<Record<string, unknown> | null>(null);
+  const [ocrReviewOpen, setOcrReviewOpen] = useState(false);
   const [routeKmLoading, setRouteKmLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -381,31 +591,8 @@ export default function GigWork() {
         throw new Error(body.error ?? `HTTP ${res.status}`);
       }
       const { data } = await res.json() as { data: Record<string, unknown> };
-      setForm((prev) => ({
-        ...prev,
-        entryDate: (data.entryDate as string) || prev.entryDate,
-        platform: (data.platform as string) || prev.platform,
-        person: (data.person as string) || prev.person,
-        startTime: (data.startTime as string) || prev.startTime,
-        endTime: (data.endTime as string) || prev.endTime,
-        activeMinutes: data.activeMinutes != null ? String(data.activeMinutes) : prev.activeMinutes,
-        grossEarnings: data.grossEarnings != null ? String(data.grossEarnings) : prev.grossEarnings,
-        tips: data.tips != null ? String(data.tips) : prev.tips,
-        fastPayAmount: data.fastPayAmount != null ? String(data.fastPayAmount) : prev.fastPayAmount,
-        weeklyDepositAmount: data.weeklyDepositAmount != null ? String(data.weeklyDepositAmount) : prev.weeklyDepositAmount,
-        fees: data.fees != null ? String(data.fees) : prev.fees,
-        fuelEstimate: data.fuelEstimate != null ? String(data.fuelEstimate) : prev.fuelEstimate,
-        otherExpenses: data.otherExpenses != null ? String(data.otherExpenses) : prev.otherExpenses,
-        netIncome: data.netIncome != null ? String(data.netIncome) : prev.netIncome,
-        estimatedKm: data.estimatedKm != null ? String(data.estimatedKm) : prev.estimatedKm,
-        deliveriesCount: data.deliveriesCount != null ? String(data.deliveriesCount) : prev.deliveriesCount,
-        offersCount: data.offersCount != null ? String(data.offersCount) : prev.offersCount,
-        paymentStatus: (data.paymentStatus as string) || prev.paymentStatus,
-        notes: (data.notes as string) || prev.notes,
-      }));
-      setEditingId(null);
-      setDialogOpen(true);
-      toast({ title: "Screenshot scanned", description: "Review the pre-filled fields before saving." });
+      setOcrRawData(data);
+      setOcrReviewOpen(true);
     } catch (err) {
       toast({
         title: "Scan failed",
@@ -415,6 +602,35 @@ export default function GigWork() {
     } finally {
       setOcrLoading(false);
     }
+  }
+
+  // ── Apply OCR data to form ─────────────────────────────────────────────────
+
+  function applyOcrData(data: Record<string, unknown>) {
+    setForm((prev) => ({
+      ...prev,
+      entryDate: (data.entryDate as string) || prev.entryDate,
+      platform: (data.platform as string) || prev.platform,
+      person: (data.person as string) || prev.person,
+      startTime: (data.startTime as string) || prev.startTime,
+      endTime: (data.endTime as string) || prev.endTime,
+      activeMinutes: data.activeMinutes != null ? String(data.activeMinutes) : prev.activeMinutes,
+      grossEarnings: data.grossEarnings != null ? String(data.grossEarnings) : prev.grossEarnings,
+      tips: data.tips != null ? String(data.tips) : prev.tips,
+      fastPayAmount: data.fastPayAmount != null ? String(data.fastPayAmount) : prev.fastPayAmount,
+      weeklyDepositAmount: data.weeklyDepositAmount != null ? String(data.weeklyDepositAmount) : prev.weeklyDepositAmount,
+      fees: data.fees != null ? String(data.fees) : prev.fees,
+      fuelEstimate: data.fuelEstimate != null ? String(data.fuelEstimate) : prev.fuelEstimate,
+      otherExpenses: data.otherExpenses != null ? String(data.otherExpenses) : prev.otherExpenses,
+      netIncome: data.netIncome != null ? String(data.netIncome) : prev.netIncome,
+      estimatedKm: data.estimatedKm != null ? String(data.estimatedKm) : prev.estimatedKm,
+      deliveriesCount: data.deliveriesCount != null ? String(data.deliveriesCount) : prev.deliveriesCount,
+      offersCount: data.offersCount != null ? String(data.offersCount) : prev.offersCount,
+      paymentStatus: (data.paymentStatus as string) || prev.paymentStatus,
+      notes: (data.notes as string) || prev.notes,
+    }));
+    setEditingId(null);
+    setDialogOpen(true);
   }
 
   // ── Route KM ──────────────────────────────────────────────────────────────
@@ -899,6 +1115,19 @@ export default function GigWork() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* OCR Review Dialog */}
+      {ocrRawData && (
+        <OcrReviewDialog
+          open={ocrReviewOpen}
+          onOpenChange={setOcrReviewOpen}
+          data={ocrRawData}
+          onConfirm={(corrected) => {
+            setOcrReviewOpen(false);
+            applyOcrData(corrected);
+          }}
+        />
+      )}
     </div>
   );
 }
