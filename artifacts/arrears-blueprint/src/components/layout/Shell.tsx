@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   PieChart,
   GitBranch,
+  Settings2,
   Menu,
   X,
 } from "lucide-react";
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
   { href: "/comms", label: "Comms Log", icon: MessageSquare },
   { href: "/weekly", label: "Weekly Tracker", icon: CalendarDays },
   { href: "/scenarios", label: "Scenarios", icon: GitBranch },
+  { href: "/settings", label: "Settings", icon: Settings2 },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {

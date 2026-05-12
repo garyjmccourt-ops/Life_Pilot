@@ -16,6 +16,7 @@ import gigRouteKmRouter from "./gig-route-km";
 import budgetRouter from "./budget";
 import scenariosRouter from "./scenarios";
 import shoppingRouter from "./shopping";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -36,5 +37,6 @@ router.use(gigRouteKmRouter);
 router.use(budgetRouter);
 router.use(scenariosRouter);
 router.use(shoppingRouter);
+router.use(settingsRouter);
 
 export default router;
