@@ -1,3 +1,7 @@
+// TODO: Auth is disabled for the current development phase.
+// When Clerk (or another auth provider) is reintroduced, restore
+// useUser / useClerk hooks and the sign-out button here.
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
@@ -13,10 +17,8 @@ import {
   GitBranch,
   Menu,
   X,
-  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUser, useClerk } from "@clerk/react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -34,8 +36,6 @@ const NAV_ITEMS = [
 export function Shell({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user } = useUser();
-  const { signOut } = useClerk();
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -89,25 +89,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* User footer */}
-        <div className="border-t border-sidebar-border px-4 py-3 flex items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium text-sidebar-foreground truncate">
-              {user?.firstName ?? user?.emailAddresses?.[0]?.emailAddress ?? "User"}
-            </div>
-            <div className="text-xs text-sidebar-foreground/60 truncate">
-              {user?.emailAddresses?.[0]?.emailAddress}
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex-shrink-0 h-8 w-8 text-sidebar-foreground/60 hover:text-sidebar-foreground"
-            onClick={() => signOut()}
-            title="Sign out"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
+        {/* Household label footer */}
+        <div className="border-t border-sidebar-border px-4 py-3">
+          <div className="text-xs font-medium text-sidebar-foreground">My Household</div>
+          <div className="text-xs text-sidebar-foreground/60">Single-household mode</div>
         </div>
       </aside>
 
