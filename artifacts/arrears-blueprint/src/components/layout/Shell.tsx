@@ -59,8 +59,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
       `}>
         <div className="hidden md:flex items-center gap-3 px-5 h-16 border-b border-sidebar-border">
           <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Logo" className="w-7 h-7 flex-shrink-0" />
-          <div className="font-serif font-bold text-sm text-sidebar-primary tracking-tight leading-tight">
-            Household<br />Master Manager
+          <div className="leading-tight">
+            <div className="font-serif font-bold text-base text-sidebar-primary tracking-tight">MYOH</div>
+            <div className="text-[10px] text-sidebar-foreground/50 font-medium tracking-wide uppercase">Manage Your Own Household</div>
           </div>
         </div>
 

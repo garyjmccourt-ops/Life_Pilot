@@ -187,9 +187,10 @@ function LandingPage() {
     <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background px-4 gap-6">
       <div className="flex flex-col items-center gap-3 text-center">
         <img src={`${basePath}/logo.svg`} alt="Logo" className="w-16 h-16" />
-        <h1 className="text-3xl font-bold text-foreground font-serif">Household Master Manager</h1>
-        <p className="text-muted-foreground max-w-sm text-sm">
-          Your all-in-one household finance system — budgets, arrears, gig work, shopping, and more.
+        <h1 className="text-3xl font-bold text-foreground font-serif">Manage Your Own Household</h1>
+        <p className="text-xs font-semibold tracking-widest uppercase text-primary/70 -mt-1">MYOH</p>
+        <p className="text-muted-foreground max-w-xs text-sm text-center leading-relaxed">
+          Your household budget, bills, arrears, income, tasks, shopping, gig work, and weekly plan in one place.
         </p>
       </div>
       <div className="flex gap-3">
@@ -224,13 +225,13 @@ function ClerkProviderWithRoutes() {
         signIn: {
           start: {
             title: "Welcome back",
-            subtitle: "Sign in to Household Master Manager",
+            subtitle: "Sign in to Manage Your Own Household",
           },
         },
         signUp: {
           start: {
             title: "Create your account",
-            subtitle: "Get started with Household Master Manager",
+            subtitle: "Get started with Manage Your Own Household",
           },
         },
       }}

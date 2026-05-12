@@ -40,7 +40,7 @@ function toCsv(headers: string[], rows: (string | number | boolean | null | unde
 // ── full JSON export (existing, updated) ──────────────────────────────
 const SCHEMA_DOC = {
   description:
-    "Household Master Manager export. Share this whole JSON with an LLM (e.g. ChatGPT/Claude) and ask it to help you clean, restructure or expand the `data` section. Then paste corrected entries back into the app one section at a time. Field rules below are authoritative — values outside the listed enums will be rejected on import.",
+    "MYOH – Manage Your Own Household export. Share this whole JSON with an LLM (e.g. ChatGPT/Claude) and ask it to help you clean, restructure or expand the `data` section. Then paste corrected entries back into the app one section at a time. Field rules below are authoritative — values outside the listed enums will be rejected on import.",
   enums: {
     frequency: ["weekly", "fortnightly", "monthly", "quarterly", "annual", "one-off"],
     arrearsCategory: ["rent", "utility", "council", "fine", "child-support", "personal-debt", "tax", "other"],
