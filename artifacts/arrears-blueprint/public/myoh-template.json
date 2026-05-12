@@ -1,0 +1,232 @@
+{
+  "_comment": "MYOH – Manage Your Own Household import template. Remove this comment key before importing. Set mode to 'replace' to wipe existing data first, or 'merge' to upsert by name/provider/creditor (safe for repeated imports).",
+  "mode": "merge",
+  "data": {
+    "incomeSources": [
+      {
+        "name": "Centrelink – Family Tax Benefit",
+        "amount": 420.00,
+        "frequency": "fortnightly",
+        "notes": "FTB Part A + B combined"
+      },
+      {
+        "name": "Gig Work – DoorDash",
+        "amount": 300.00,
+        "frequency": "weekly",
+        "notes": "Estimate based on recent weeks"
+      }
+    ],
+    "incomeEntries": [
+      {
+        "dateReceived": "2026-05-01",
+        "sourceName": "Centrelink – Family Tax Benefit",
+        "person": "Primary",
+        "grossAmount": 420.00,
+        "netAmount": 420.00,
+        "paymentMethod": "bank transfer",
+        "allocated": false,
+        "notes": "FTB fortnightly payment"
+      }
+    ],
+    "bills": [
+      {
+        "provider": "SA Water – STD Family Trust",
+        "category": "Utilities",
+        "amount": 201.96,
+        "frequency": "quarterly",
+        "dueDay": 30,
+        "accountRef": "INV-0440",
+        "autopay": false,
+        "notes": "Invoice INV-0440, due 2026-03-30"
+      },
+      {
+        "provider": "Electricity Provider",
+        "category": "Utilities",
+        "amount": 180.00,
+        "frequency": "quarterly",
+        "dueDay": 15,
+        "accountRef": null,
+        "autopay": false,
+        "notes": null
+      },
+      {
+        "provider": "Internet Provider",
+        "category": "Utilities",
+        "amount": 79.00,
+        "frequency": "monthly",
+        "dueDay": 20,
+        "accountRef": null,
+        "autopay": true,
+        "notes": null
+      }
+    ],
+    "arrearsItems": [
+      {
+        "creditor": "Example Creditor",
+        "category": "utility",
+        "balance": 500.00,
+        "ongoingCharge": 180.00,
+        "ongoingFrequency": "quarterly",
+        "arrearsPayment": 50.00,
+        "arrearsFrequency": "fortnightly",
+        "riskLevel": "medium",
+        "status": "active",
+        "nextReviewDate": "2026-06-01",
+        "accountRef": "ACC-001",
+        "summary": "Arrears accumulated over 6 months",
+        "objective": "Clear balance within 12 months",
+        "workingPlan": "Pay $50 fortnightly toward arrears balance",
+        "communicationPosition": null,
+        "externalAcknowledgement": null,
+        "externalPaymentIntent": null,
+        "externalStagedReduction": null,
+        "externalReviewPoints": null,
+        "externalChannel": null,
+        "evidenceLinks": null
+      }
+    ],
+    "tasks": [
+      {
+        "title": "Pay SA Water invoice INV-0440",
+        "description": "Overdue quarterly water bill",
+        "category": "bills",
+        "bucket": "pay",
+        "status": "open",
+        "priority": "p1",
+        "dueDate": "2026-03-30",
+        "startDate": null,
+        "assignedPerson": null,
+        "creditorTag": "SA Water – STD Family Trust",
+        "arrearsItemId": null,
+        "recurring": false,
+        "completedAt": null,
+        "notes": "$201.96 outstanding"
+      },
+      {
+        "title": "Review household budget",
+        "description": null,
+        "category": "planning",
+        "bucket": "review",
+        "status": "open",
+        "priority": "p2",
+        "dueDate": "2026-05-31",
+        "startDate": null,
+        "assignedPerson": null,
+        "creditorTag": null,
+        "arrearsItemId": null,
+        "recurring": true,
+        "completedAt": null,
+        "notes": "Monthly budget review"
+      }
+    ],
+    "commsEntries": [
+      {
+        "occurredAt": "2026-04-15T10:00:00.000Z",
+        "channel": "phone",
+        "creditor": "Example Creditor",
+        "arrearsItemId": null,
+        "who": "Customer Service",
+        "outcome": "Agreed to payment arrangement of $50 fortnightly",
+        "nextStep": "Confirm in writing via email"
+      }
+    ],
+    "weeklyEntries": [
+      {
+        "weekStart": "2026-05-05",
+        "plannedIn": 700.00,
+        "actualIn": 680.00,
+        "plannedOut": 600.00,
+        "actualOut": 590.00,
+        "notes": "Slightly under income target"
+      },
+      {
+        "weekStart": "2026-05-12",
+        "plannedIn": 700.00,
+        "actualIn": 0.00,
+        "plannedOut": 600.00,
+        "actualOut": 0.00,
+        "notes": null
+      }
+    ],
+    "gigEntries": [
+      {
+        "entryDate": "2026-05-08",
+        "platform": "doordash",
+        "person": "Primary",
+        "startTime": "17:00",
+        "endTime": "21:30",
+        "hoursWorked": 4.5,
+        "grossEarnings": 95.50,
+        "tips": 12.00,
+        "fastPayAmount": 0.00,
+        "weeklyDepositAmount": 107.50,
+        "fees": 3.50,
+        "fuelEstimate": 8.00,
+        "otherExpenses": 0.00,
+        "netIncome": 96.00,
+        "paymentStatus": "deposited",
+        "notes": null
+      }
+    ],
+    "budgetCategories": [
+      {
+        "name": "Groceries",
+        "group": "food",
+        "plannedWeekly": 150.00,
+        "actualWeekly": 0.00,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": "#4CAF50"
+      },
+      {
+        "name": "Transport & Fuel",
+        "group": "transport",
+        "plannedWeekly": 60.00,
+        "actualWeekly": 0.00,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": "#2196F3"
+      },
+      {
+        "name": "School & Kids",
+        "group": "family",
+        "plannedWeekly": 40.00,
+        "actualWeekly": 0.00,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": true,
+        "notes": "Includes uniforms, excursions, fees",
+        "color": "#FF9800"
+      },
+      {
+        "name": "Personal & Misc",
+        "group": "personal",
+        "plannedWeekly": 30.00,
+        "actualWeekly": 0.00,
+        "essential": false,
+        "includeInScenario": false,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "Base – Current Household",
+        "label": "base",
+        "status": "active",
+        "startDate": "2026-05-01",
+        "endDate": null,
+        "incomeAssumptions": "FTB fortnightly + gig income ~$300/week",
+        "billAssumptions": "SA Water quarterly $201.96, electricity quarterly $180, internet monthly $79",
+        "arrearsAssumptions": "Paying down arrears at $50/fortnight",
+        "spendingChanges": null,
+        "notes": "Baseline scenario — update monthly"
+      }
+    ]
+  }
+}

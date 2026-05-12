@@ -149,7 +149,7 @@ router.get("/export", async (_req, res): Promise<void> => {
     },
   };
 
-  const filename = `household-master-export-${new Date().toISOString().slice(0, 10)}.json`;
+  const filename = `myoh-export-${new Date().toISOString().slice(0, 10)}.json`;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
   res.send(JSON.stringify(payload, null, 2));
@@ -252,4 +252,24 @@ router.get("/export/csv/shopping", async (_req, res): Promise<void> => {
   res.send(toCsv(headers, data));
 });
 
+// ── GET /export/template — downloadable blank starter JSON ────────────
+router.get("/export/template", async (_req, res): Promise<void> => {
+  const { readFileSync } = await import("fs");
+  const { resolve } = await import("path");
+  // Served from frontend public dir; fall back to inline if not found
+  try {
+    const templatePath = resolve(
+      process.cwd(),
+      "../../artifacts/arrears-blueprint/public/myoh-template.json"
+    );
+    const raw = readFileSync(templatePath, "utf-8");
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="myoh-template.json"');
+    res.send(raw);
+  } catch {
+    res.status(404).json({ error: "Template file not found" });
+  }
+});
+
 export default router;
+
