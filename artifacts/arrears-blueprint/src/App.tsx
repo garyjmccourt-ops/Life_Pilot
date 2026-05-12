@@ -138,6 +138,7 @@ function AppRouter() {
   return (
     <Shell>
       <Switch>
+        <Route path="/dashboard" component={Home} />
         <Route path="/" component={Home} />
         <Route path="/income-bills" component={IncomeBills} />
         <Route path="/arrears" component={ArrearsList} />

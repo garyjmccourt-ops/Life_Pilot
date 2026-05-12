@@ -45,7 +45,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <div className="min-h-[100dvh] flex flex-col md:flex-row bg-background">
       {/* Mobile Topbar */}
       <header className="md:hidden flex items-center justify-between px-4 h-14 border-b border-border bg-sidebar z-50 sticky top-0">
-        <div className="font-serif font-bold text-sidebar-primary text-sm">HH Master</div>
+        <div className="font-serif font-bold text-sidebar-primary text-sm">MYOH</div>
         <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
