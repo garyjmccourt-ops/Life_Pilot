@@ -225,7 +225,7 @@ const ScenarioSchema = z.object({
 });
 
 const ImportBody = z.object({
-  mode: z.enum(["replace", "merge"]).default("merge"),
+  mode: z.enum(["replace", "merge", "add-only"]).default("merge"),
   data: z.object({
     incomeSources: z.array(IncomeSourceSchema).optional().default([]),
     incomeEntries: z.array(IncomeEntrySchema).optional().default([]),
@@ -269,30 +269,31 @@ router.post("/import", async (req, res): Promise<void> => {
 
   try {
     const counts = await db.transaction(async (tx) => {
-      // ── REPLACE mode: clear all tables in safe order ──────────────
+      // ── REPLACE mode: only delete tables for sections being imported ─
       if (mode === "replace") {
-        await tx.delete(commsEntriesTable);
-        await tx.delete(tasksTable);
-        await tx.delete(weeklyEntriesTable);
-        await tx.delete(incomeEntriesTable);
-        await tx.delete(gigEntriesTable);
-        await tx.delete(arrearsItemsTable);
-        await tx.delete(billsTable);
-        await tx.delete(incomeSourcesTable);
-        await tx.delete(budgetCategoriesTable);
-        await tx.delete(scenariosTable);
+        // Delete child-like tables first to avoid FK-like ordering issues
+        if (data.commsEntries.length > 0) await tx.delete(commsEntriesTable);
+        if (data.tasks.length > 0) await tx.delete(tasksTable);
+        if (data.weeklyEntries.length > 0) await tx.delete(weeklyEntriesTable);
+        if (data.incomeEntries.length > 0) await tx.delete(incomeEntriesTable);
+        if (data.gigEntries.length > 0) await tx.delete(gigEntriesTable);
+        if (data.arrearsItems.length > 0) await tx.delete(arrearsItemsTable);
+        if (data.bills.length > 0) await tx.delete(billsTable);
+        if (data.incomeSources.length > 0) await tx.delete(incomeSourcesTable);
+        if (data.budgetCategories.length > 0) await tx.delete(budgetCategoriesTable);
+        if (data.scenarios.length > 0) await tx.delete(scenariosTable);
       }
 
-      // ── Lookup maps for merge-mode dedup ──────────────────────────
-      // These are only populated in merge mode; in replace mode the tables
-      // are already empty so they'll be empty maps and all paths go to insert.
+      // ── Lookup maps for merge/add-only dedup ─────────────────────
+      // Populated for merge and add-only modes; empty in replace mode
+      // (tables already cleared so all paths go to insert).
       const existingSourcesByName = new Map<string, number>();
       const existingBillsByProvider = new Map<string, number>();
       const existingArrearssByCreditor = new Map<string, number>();
       const existingBudgetByName = new Map<string, number>();
       const existingScenariosByName = new Map<string, number>();
 
-      if (mode === "merge") {
+      if (mode === "merge" || mode === "add-only") {
         const [srcs, bls, arr, bud, scn] = await Promise.all([
           tx.select({ id: incomeSourcesTable.id, name: incomeSourcesTable.name }).from(incomeSourcesTable),
           tx.select({ id: billsTable.id, provider: billsTable.provider }).from(billsTable),
@@ -316,9 +317,11 @@ router.post("/import", async (req, res): Promise<void> => {
         const key = r.name.toLowerCase();
         const existingId = existingSourcesByName.get(key);
         if (existingId != null) {
-          await tx.update(incomeSourcesTable)
-            .set({ amount: String(r.amount), frequency: r.frequency, notes: r.notes ?? null })
-            .where(eq(incomeSourcesTable.id, existingId));
+          if (mode !== "add-only") {
+            await tx.update(incomeSourcesTable)
+              .set({ amount: String(r.amount), frequency: r.frequency, notes: r.notes ?? null })
+              .where(eq(incomeSourcesTable.id, existingId));
+          }
         } else {
           await tx.insert(incomeSourcesTable).values({
             ...(r.id != null ? { id: r.id } : {}),
@@ -347,7 +350,7 @@ router.post("/import", async (req, res): Promise<void> => {
           notes: r.notes ?? null,
         };
         if (existingId != null) {
-          await tx.update(billsTable).set(values).where(eq(billsTable.id, existingId));
+          if (mode !== "add-only") await tx.update(billsTable).set(values).where(eq(billsTable.id, existingId));
         } else {
           await tx.insert(billsTable).values({ ...(r.id != null ? { id: r.id } : {}), ...values });
         }
@@ -383,7 +386,7 @@ router.post("/import", async (req, res): Promise<void> => {
           evidenceLinks: r.evidenceLinks ?? null,
         };
         if (existingId != null) {
-          await tx.update(arrearsItemsTable).set(values).where(eq(arrearsItemsTable.id, existingId));
+          if (mode !== "add-only") await tx.update(arrearsItemsTable).set(values).where(eq(arrearsItemsTable.id, existingId));
           if (r.id != null) arrearsIdMap.set(r.id, existingId);
         } else {
           const [ins] = await tx.insert(arrearsItemsTable)
@@ -529,7 +532,7 @@ router.post("/import", async (req, res): Promise<void> => {
           color: r.color ?? null,
         };
         if (existingId != null) {
-          await tx.update(budgetCategoriesTable).set(values).where(eq(budgetCategoriesTable.id, existingId));
+          if (mode !== "add-only") await tx.update(budgetCategoriesTable).set(values).where(eq(budgetCategoriesTable.id, existingId));
         } else {
           await tx.insert(budgetCategoriesTable).values({ ...(r.id != null ? { id: r.id } : {}), ...values });
         }
@@ -554,7 +557,7 @@ router.post("/import", async (req, res): Promise<void> => {
           notes: r.notes ?? null,
         };
         if (existingId != null) {
-          await tx.update(scenariosTable).set(values).where(eq(scenariosTable.id, existingId));
+          if (mode !== "add-only") await tx.update(scenariosTable).set(values).where(eq(scenariosTable.id, existingId));
         } else {
           await tx.insert(scenariosTable).values({ ...(r.id != null ? { id: r.id } : {}), ...values });
         }
