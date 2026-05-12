@@ -57,15 +57,18 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
     (a) => a.riskLevel === "high" && a.status !== "completed",
   ).length;
 
-  // Calculate gig income from last 7 days
+  // Calculate gig income from last 7 days — exclude entries already linked to an income record
+  // (those are counted via income_entries to avoid double-counting)
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-  const recentGig = gigEntries.filter((g) => g.entryDate >= sevenDaysAgo);
+  const recentGig = gigEntries.filter(
+    (g) => g.entryDate >= sevenDaysAgo && g.incomeEntryId == null,
+  );
   const weeklyGigIncome = Math.round(
     recentGig.reduce((s, g) => s + n(g.netIncome), 0) * 100,
   ) / 100;
   const pendingGigPayout = Math.round(
     gigEntries
-      .filter((g) => g.paymentStatus === "pending")
+      .filter((g) => g.paymentStatus === "pending" && g.incomeEntryId == null)
       .reduce((s, g) => s + n(g.fastPayAmount) + n(g.weeklyDepositAmount), 0) * 100,
   ) / 100;
 

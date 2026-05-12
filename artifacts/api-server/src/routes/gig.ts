@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
-import { db, gigEntriesTable } from "@workspace/db";
+import { db, gigEntriesTable, incomeEntriesTable } from "@workspace/db";
 import {
   CreateGigEntryBody,
   UpdateGigEntryBody,
@@ -8,6 +8,15 @@ import {
   DeleteGigEntryParams,
 } from "@workspace/api-zod";
 import { n } from "../lib/calc";
+
+const PLATFORM_LABELS: Record<string, string> = {
+  doordash: "DoorDash",
+  uber: "Uber Eats",
+  airtasker: "Airtasker",
+  menulog: "Menulog",
+  cash: "Cash",
+  other: "Other",
+};
 
 const router: IRouter = Router();
 
@@ -147,6 +156,61 @@ router.delete("/gig/:id", async (req, res): Promise<void> => {
   }
   await db.delete(gigEntriesTable).where(eq(gigEntriesTable.id, params.data.id));
   res.sendStatus(204);
+});
+
+router.post("/gig/:id/link-income", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [gig] = await db
+    .select()
+    .from(gigEntriesTable)
+    .where(eq(gigEntriesTable.id, id));
+
+  if (!gig) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  if (gig.incomeEntryId != null) {
+    res.status(409).json({ error: "already_linked", incomeEntryId: gig.incomeEntryId });
+    return;
+  }
+
+  const platformLabel = PLATFORM_LABELS[gig.platform] ?? gig.platform;
+  const paymentMethod =
+    gig.paymentStatus === "fast-paid" ? "FastPay" :
+    gig.paymentStatus === "deposited" ? "Weekly Deposit" : "Cash";
+
+  const grossAmount = n(gig.grossEarnings) + n(gig.tips);
+  const netAmount = n(gig.netIncome);
+  const noteText = `Gig shift #${gig.id} (${platformLabel})${gig.notes ? " — " + gig.notes : ""}`;
+
+  const [incomeRow] = await db
+    .insert(incomeEntriesTable)
+    .values({
+      dateReceived: gig.entryDate,
+      sourceName: platformLabel,
+      person: gig.person ?? null,
+      grossAmount: String(grossAmount),
+      netAmount: String(netAmount),
+      paymentMethod,
+      notes: noteText,
+      gigEntryId: gig.id,
+      allocated: false,
+    })
+    .returning();
+
+  const [updatedGig] = await db
+    .update(gigEntriesTable)
+    .set({ incomeEntryId: incomeRow.id })
+    .where(eq(gigEntriesTable.id, id))
+    .returning();
+
+  res.status(201).json({ gigEntry: shape(updatedGig), incomeEntryId: incomeRow.id });
 });
 
 export default router;

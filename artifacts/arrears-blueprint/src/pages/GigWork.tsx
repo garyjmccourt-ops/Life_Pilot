@@ -15,6 +15,7 @@ import {
   Bike, Plus, Pencil, Trash2, TrendingUp, Clock, DollarSign, Zap,
   ScanLine, Loader2, Settings, Fuel, MapPin, Package,
   AlertTriangle, ChevronDown, ChevronUp, ChevronRight,
+  Link2, ArrowRightCircle,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ type GigEntry = {
   otherExpenses: number;
   netIncome: number;
   paymentStatus: string;
+  incomeEntryId?: number | null;
   notes?: string | null;
   estimatedKm?: number | null;
   activeMinutes?: number | null;
@@ -400,6 +402,7 @@ export default function GigWork() {
   const [ocrRawData, setOcrRawData] = useState<Record<string, unknown> | null>(null);
   const [ocrReviewOpen, setOcrReviewOpen] = useState(false);
   const [routeKmLoading, setRouteKmLoading] = useState(false);
+  const [linkingId, setLinkingId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fuelSettings, setFuelSettings] = useState<FuelSettings>(loadFuelSettings);
@@ -561,6 +564,48 @@ export default function GigWork() {
       refetch();
     } catch {
       toast({ title: "Error deleting entry", variant: "destructive" });
+    }
+  }
+
+  async function handleLinkIncome(entry: GigEntry) {
+    if (entry.incomeEntryId != null) {
+      toast({
+        title: "Already linked",
+        description: `This shift is already recorded as income entry #${entry.incomeEntryId}.`,
+      });
+      return;
+    }
+    setLinkingId(entry.id);
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}api/gig/${entry.id}/link-income`, {
+        method: "POST",
+      });
+      if (res.status === 409) {
+        const body = await res.json() as { incomeEntryId: number };
+        toast({
+          title: "Already linked",
+          description: `This shift is already recorded as income entry #${body.incomeEntryId}.`,
+        });
+        refetch();
+        return;
+      }
+      if (!res.ok) {
+        const body = await res.json() as { error?: string };
+        throw new Error(body.error ?? `HTTP ${res.status}`);
+      }
+      toast({
+        title: "Income entry created",
+        description: "The payout has been recorded in Actual Income Received.",
+      });
+      refetch();
+    } catch (err) {
+      toast({
+        title: "Could not link income",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setLinkingId(null);
     }
   }
 
@@ -820,6 +865,7 @@ export default function GigWork() {
                     <th className="pb-2 text-right font-medium hidden lg:table-cell">$/Act·hr</th>
                     <th className="pb-2 text-right font-medium hidden lg:table-cell">$/Dash·hr</th>
                     <th className="pb-2 text-center font-medium">Status</th>
+                    <th className="pb-2 text-center font-medium hidden sm:table-cell">Income</th>
                     <th className="pb-2"></th>
                   </tr>
                 </thead>
@@ -831,6 +877,9 @@ export default function GigWork() {
                     const dashHrs = dashMins != null ? dashMins / 60 : null;
                     const netPerActiveHr = activeHrs && activeHrs > 0 ? e.netIncome / activeHrs : null;
                     const netPerDashHr = dashHrs && dashHrs > 0 ? e.netIncome / dashHrs : null;
+                    const isLinked = e.incomeEntryId != null;
+                    const canLink = !isLinked && e.paymentStatus !== "pending";
+                    const isLinkingThis = linkingId === e.id;
                     return (
                       <tr key={e.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2.5 text-left">{formatDate(e.entryDate)}</td>
@@ -857,8 +906,36 @@ export default function GigWork() {
                             {e.paymentStatus}
                           </span>
                         </td>
+                        <td className="py-2.5 text-center hidden sm:table-cell">
+                          {isLinked ? (
+                            <span
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700"
+                              title={`Linked to income entry #${e.incomeEntryId}`}
+                            >
+                              <Link2 className="h-3 w-3" /> Linked
+                            </span>
+                          ) : e.paymentStatus === "pending" ? (
+                            <span className="text-xs text-muted-foreground">Pending</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Not linked</span>
+                          )}
+                        </td>
                         <td className="py-2.5">
                           <div className="flex items-center justify-end gap-1">
+                            {canLink && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                title="Create income entry from this payout"
+                                disabled={isLinkingThis}
+                                onClick={() => handleLinkIncome(e)}
+                              >
+                                {isLinkingThis
+                                  ? <Loader2 className="h-3 w-3 animate-spin" />
+                                  : <ArrowRightCircle className="h-3 w-3" />}
+                              </Button>
+                            )}
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(e)}>
                               <Pencil className="h-3 w-3" />
                             </Button>
