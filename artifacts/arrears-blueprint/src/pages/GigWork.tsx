@@ -228,26 +228,26 @@ function OcrReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-lg flex flex-col max-h-[90dvh] p-0 gap-0">
+        <DialogHeader className="px-4 pt-4 pb-3 border-b flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <ScanLine className="h-4 w-4" />
             Review Scanned Entry
           </DialogTitle>
         </DialogHeader>
 
-        {missingCritical.length > 0 && (
-          <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-500" />
-            <div>
-              <span className="font-medium">Check before confirming: </span>
-              {missingCritical.join(", ")} could not be read from the screenshot — fill in manually.
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+          {missingCritical.length > 0 && (
+            <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-500" />
+              <div>
+                <span className="font-medium">Check before confirming: </span>
+                {missingCritical.join(", ")} could not be read from the screenshot — fill in manually.
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="space-y-4 py-1">
-          <div className="rounded-lg border p-4 space-y-3">
+          <div className="rounded-lg border p-3 space-y-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Critical Fields — Verify These
             </p>
@@ -262,7 +262,7 @@ function OcrReviewDialog({
                   type="date"
                   value={date}
                   onChange={e => setDate(e.target.value)}
-                  className={!date ? "border-amber-300 bg-amber-50" : ""}
+                  className={`h-11 ${!date ? "border-amber-300 bg-amber-50" : ""}`}
                 />
               </div>
               <div>
@@ -271,7 +271,7 @@ function OcrReviewDialog({
                   {!paymentStatus && <AlertTriangle className="h-3 w-3 text-amber-500" />}
                 </Label>
                 <Select value={paymentStatus} onValueChange={setPaymentStatus}>
-                  <SelectTrigger className={!paymentStatus ? "border-amber-300 bg-amber-50" : ""}>
+                  <SelectTrigger className={`h-11 ${!paymentStatus ? "border-amber-300 bg-amber-50" : ""}`}>
                     <SelectValue placeholder="Select…" />
                   </SelectTrigger>
                   <SelectContent>
@@ -284,7 +284,7 @@ function OcrReviewDialog({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <Label className="flex items-center gap-1.5 mb-1 text-xs">
                   Gross Earnings ($)
@@ -292,12 +292,13 @@ function OcrReviewDialog({
                 </Label>
                 <Input
                   type="number"
+                  inputMode="decimal"
                   step="0.01"
                   min="0"
                   placeholder="0.00"
                   value={grossEarnings}
                   onChange={e => setGrossEarnings(e.target.value)}
-                  className={`text-right ${!grossEarnings ? "border-amber-300 bg-amber-50" : ""}`}
+                  className={`h-11 text-right ${!grossEarnings ? "border-amber-300 bg-amber-50" : ""}`}
                 />
               </div>
               <div>
@@ -307,12 +308,13 @@ function OcrReviewDialog({
                 </Label>
                 <Input
                   type="number"
+                  inputMode="decimal"
                   step="0.01"
                   min="0"
                   placeholder="0.00"
                   value={fastPayAmount}
                   onChange={e => setFastPayAmount(e.target.value)}
-                  className="text-right"
+                  className="h-11 text-right"
                 />
               </div>
               <div>
@@ -322,12 +324,13 @@ function OcrReviewDialog({
                 </Label>
                 <Input
                   type="number"
+                  inputMode="decimal"
                   step="0.01"
                   min="0"
                   placeholder="0.00"
                   value={weeklyDepositAmount}
                   onChange={e => setWeeklyDepositAmount(e.target.value)}
-                  className="text-right"
+                  className="h-11 text-right"
                 />
               </div>
             </div>
@@ -373,11 +376,11 @@ function OcrReviewDialog({
           )}
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="px-4 py-3 border-t flex-shrink-0 gap-2">
+          <Button variant="ghost" className="h-11" onClick={() => onOpenChange(false)}>
             Discard Scan
           </Button>
-          <Button onClick={handleConfirm}>
+          <Button className="h-11 flex-1 sm:flex-none" onClick={handleConfirm}>
             Confirm & Edit Entry <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </DialogFooter>
@@ -742,30 +745,31 @@ export default function GigWork() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-3 md:p-6 space-y-4 md:space-y-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Bike className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold">Gig Work</h1>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Bike className="h-5 w-5 text-primary shrink-0" />
+          <h1 className="text-xl md:text-2xl font-bold truncate">Gig Work</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={openFuelDialog} title="Fuel settings">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Button variant="ghost" size="icon" className="h-10 w-10" onClick={openFuelDialog} title="Fuel settings">
             <Fuel className="h-4 w-4" />
           </Button>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleScreenshotUpload} />
-          <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={ocrLoading}>
-            {ocrLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ScanLine className="h-4 w-4 mr-1" />}
-            {ocrLoading ? "Scanning…" : "Scan Screenshot"}
+          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScreenshotUpload} />
+          <Button variant="outline" size="sm" className="h-10 px-3" onClick={() => fileInputRef.current?.click()} disabled={ocrLoading}>
+            {ocrLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
+            <span className="hidden sm:inline ml-1.5">{ocrLoading ? "Scanning…" : "Scan"}</span>
           </Button>
-          <Button onClick={openCreate} size="sm">
-            <Plus className="h-4 w-4 mr-1" /> Add Entry
+          <Button onClick={openCreate} size="sm" className="h-10 px-3">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline ml-1.5">Add Shift</span>
           </Button>
         </div>
       </div>
 
       {/* Fuel badge */}
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground -mt-2">
         <Fuel className="h-3 w-3" />
         Fuel: {fuelSettings.pricePerL.toFixed(2)} $/L · {fuelSettings.l100km} L/100km
         <button className="underline ml-0.5" onClick={openFuelDialog}>edit</button>
@@ -839,12 +843,12 @@ export default function GigWork() {
         </Card>
       </div>
 
-      {/* Table */}
+      {/* Entries */}
       <Card>
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 px-3 md:px-6">
           <CardTitle className="text-base">All Entries</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 md:px-6">
           {isLoading ? (
             <p className="text-muted-foreground text-sm py-4 text-center">Loading…</p>
           ) : entries.length === 0 ? (
@@ -852,116 +856,176 @@ export default function GigWork() {
               No gig entries yet — add your first shift or scan a screenshot.
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-muted-foreground text-xs">
-                    <th className="pb-2 text-left font-medium">Date</th>
-                    <th className="pb-2 text-left font-medium">Platform</th>
-                    <th className="pb-2 text-center font-medium hidden md:table-cell">D/O</th>
-                    <th className="pb-2 text-right font-medium">Gross</th>
-                    <th className="pb-2 text-right font-medium hidden md:table-cell">KM / Fuel</th>
-                    <th className="pb-2 text-right font-medium">Net</th>
-                    <th className="pb-2 text-right font-medium hidden lg:table-cell">$/Act·hr</th>
-                    <th className="pb-2 text-right font-medium hidden lg:table-cell">$/Dash·hr</th>
-                    <th className="pb-2 text-center font-medium">Status</th>
-                    <th className="pb-2 text-center font-medium hidden sm:table-cell">Income</th>
-                    <th className="pb-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.map((e) => {
-                    const activeMins = getActiveMinutes(e);
-                    const dashMins = getDashMinutes(e);
-                    const activeHrs = activeMins != null ? activeMins / 60 : null;
-                    const dashHrs = dashMins != null ? dashMins / 60 : null;
-                    const netPerActiveHr = activeHrs && activeHrs > 0 ? e.netIncome / activeHrs : null;
-                    const netPerDashHr = dashHrs && dashHrs > 0 ? e.netIncome / dashHrs : null;
-                    const isLinked = e.incomeEntryId != null;
-                    const canLink = !isLinked && e.paymentStatus !== "pending";
-                    const isLinkingThis = linkingId === e.id;
-                    return (
-                      <tr key={e.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="py-2.5 text-left">{formatDate(e.entryDate)}</td>
-                        <td className="py-2.5 text-left">{PLATFORM_LABELS[e.platform] ?? e.platform}</td>
-                        <td className="py-2.5 text-center hidden md:table-cell text-muted-foreground text-xs">
-                          {e.deliveriesCount != null || e.offersCount != null
-                            ? `${e.deliveriesCount ?? "?"}/${e.offersCount ?? "?"}`
-                            : "—"}
-                        </td>
-                        <td className="py-2.5 text-right">{formatCurrency(e.grossEarnings)}</td>
-                        <td className="py-2.5 text-right hidden md:table-cell text-muted-foreground text-xs">
-                          {e.estimatedKm != null ? (
-                            <span>
-                              {e.estimatedKm.toFixed(1)} km<br />
-                              <span className="text-orange-600">{formatCurrency(e.fuelEstimate)}</span>
-                            </span>
-                          ) : "—"}
-                        </td>
-                        <td className="py-2.5 text-right font-medium text-primary">{formatCurrency(e.netIncome)}</td>
-                        <td className="py-2.5 text-right hidden lg:table-cell text-xs">{fmtRate(netPerActiveHr)}</td>
-                        <td className="py-2.5 text-right hidden lg:table-cell text-xs text-muted-foreground">{fmtRate(netPerDashHr)}</td>
-                        <td className="py-2.5 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[e.paymentStatus] ?? "bg-gray-100 text-gray-600"}`}>
-                            {e.paymentStatus}
-                          </span>
-                        </td>
-                        <td className="py-2.5 text-center hidden sm:table-cell">
-                          {isLinked ? (
-                            <span
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700"
-                              title={`Linked to income entry #${e.incomeEntryId}`}
-                            >
-                              <Link2 className="h-3 w-3" /> Linked
-                            </span>
-                          ) : e.paymentStatus === "pending" ? (
-                            <span className="text-xs text-muted-foreground">Pending</span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">Not linked</span>
-                          )}
-                        </td>
-                        <td className="py-2.5">
-                          <div className="flex items-center justify-end gap-1">
-                            {canLink && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                title="Create income entry from this payout"
-                                disabled={isLinkingThis}
-                                onClick={() => handleLinkIncome(e)}
-                              >
-                                {isLinkingThis
-                                  ? <Loader2 className="h-3 w-3 animate-spin" />
-                                  : <ArrowRightCircle className="h-3 w-3" />}
-                              </Button>
-                            )}
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(e)}>
-                              <Pencil className="h-3 w-3" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(e.id)}>
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+            <>
+              {/* Mobile cards — visible below sm */}
+              <div className="sm:hidden space-y-2">
+                {entries.map((e) => {
+                  const isLinked = e.incomeEntryId != null;
+                  const canLink = !isLinked && e.paymentStatus !== "pending";
+                  const isLinkingThis = linkingId === e.id;
+                  return (
+                    <div key={e.id} className="border rounded-xl p-3 space-y-2">
+                      {/* Row 1: date + platform + status badge */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-medium text-sm leading-tight">{formatDate(e.entryDate)}</p>
+                          <p className="text-xs text-muted-foreground">{PLATFORM_LABELS[e.platform] ?? e.platform}
+                            {e.person ? ` · ${e.person}` : ""}
+                            {(e.deliveriesCount != null || e.offersCount != null) ? ` · ${e.deliveriesCount ?? "?"}/${e.offersCount ?? "?"} orders` : ""}
+                          </p>
+                        </div>
+                        <span className={`shrink-0 inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[e.paymentStatus] ?? "bg-gray-100 text-gray-600"}`}>
+                          {e.paymentStatus}
+                        </span>
+                      </div>
+                      {/* Row 2: key numbers */}
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Gross</p>
+                          <p className="font-medium text-sm">{formatCurrency(e.grossEarnings)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Net</p>
+                          <p className="font-semibold text-sm text-primary">{formatCurrency(e.netIncome)}</p>
+                        </div>
+                        {e.estimatedKm != null && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">KM</p>
+                            <p className="text-sm">{e.estimatedKm.toFixed(1)}</p>
                           </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        )}
+                        {isLinked && (
+                          <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                            <Link2 className="h-3 w-3" /> Linked
+                          </span>
+                        )}
+                      </div>
+                      {/* Row 3: actions */}
+                      <div className="flex items-center justify-end gap-2 pt-1 border-t">
+                        {canLink && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-10 text-xs text-blue-600 border-blue-200 hover:bg-blue-50 flex-1"
+                            disabled={isLinkingThis}
+                            onClick={() => handleLinkIncome(e)}
+                          >
+                            {isLinkingThis ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <ArrowRightCircle className="h-3.5 w-3.5 mr-1" />}
+                            → Income
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => openEdit(e)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive" onClick={() => handleDelete(e.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table — hidden below sm */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-muted-foreground text-xs">
+                      <th className="pb-2 text-left font-medium">Date</th>
+                      <th className="pb-2 text-left font-medium">Platform</th>
+                      <th className="pb-2 text-center font-medium hidden md:table-cell">D/O</th>
+                      <th className="pb-2 text-right font-medium">Gross</th>
+                      <th className="pb-2 text-right font-medium hidden md:table-cell">KM / Fuel</th>
+                      <th className="pb-2 text-right font-medium">Net</th>
+                      <th className="pb-2 text-right font-medium hidden lg:table-cell">$/Act·hr</th>
+                      <th className="pb-2 text-right font-medium hidden lg:table-cell">$/Dash·hr</th>
+                      <th className="pb-2 text-center font-medium">Status</th>
+                      <th className="pb-2 text-center font-medium">Income</th>
+                      <th className="pb-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {entries.map((e) => {
+                      const activeMins = getActiveMinutes(e);
+                      const dashMins = getDashMinutes(e);
+                      const activeHrs = activeMins != null ? activeMins / 60 : null;
+                      const dashHrs = dashMins != null ? dashMins / 60 : null;
+                      const netPerActiveHr = activeHrs && activeHrs > 0 ? e.netIncome / activeHrs : null;
+                      const netPerDashHr = dashHrs && dashHrs > 0 ? e.netIncome / dashHrs : null;
+                      const isLinked = e.incomeEntryId != null;
+                      const canLink = !isLinked && e.paymentStatus !== "pending";
+                      const isLinkingThis = linkingId === e.id;
+                      return (
+                        <tr key={e.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                          <td className="py-2.5 text-left">{formatDate(e.entryDate)}</td>
+                          <td className="py-2.5 text-left">{PLATFORM_LABELS[e.platform] ?? e.platform}</td>
+                          <td className="py-2.5 text-center hidden md:table-cell text-muted-foreground text-xs">
+                            {e.deliveriesCount != null || e.offersCount != null
+                              ? `${e.deliveriesCount ?? "?"}/${e.offersCount ?? "?"}`
+                              : "—"}
+                          </td>
+                          <td className="py-2.5 text-right">{formatCurrency(e.grossEarnings)}</td>
+                          <td className="py-2.5 text-right hidden md:table-cell text-muted-foreground text-xs">
+                            {e.estimatedKm != null ? (
+                              <span>
+                                {e.estimatedKm.toFixed(1)} km<br />
+                                <span className="text-orange-600">{formatCurrency(e.fuelEstimate)}</span>
+                              </span>
+                            ) : "—"}
+                          </td>
+                          <td className="py-2.5 text-right font-medium text-primary">{formatCurrency(e.netIncome)}</td>
+                          <td className="py-2.5 text-right hidden lg:table-cell text-xs">{fmtRate(netPerActiveHr)}</td>
+                          <td className="py-2.5 text-right hidden lg:table-cell text-xs text-muted-foreground">{fmtRate(netPerDashHr)}</td>
+                          <td className="py-2.5 text-center">
+                            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[e.paymentStatus] ?? "bg-gray-100 text-gray-600"}`}>
+                              {e.paymentStatus}
+                            </span>
+                          </td>
+                          <td className="py-2.5 text-center">
+                            {isLinked ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700" title={`Linked to income entry #${e.incomeEntryId}`}>
+                                <Link2 className="h-3 w-3" /> Linked
+                              </span>
+                            ) : e.paymentStatus === "pending" ? (
+                              <span className="text-xs text-muted-foreground">Pending</span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Not linked</span>
+                            )}
+                          </td>
+                          <td className="py-2.5">
+                            <div className="flex items-center justify-end gap-1">
+                              {canLink && (
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50" title="Create income entry from this payout" disabled={isLinkingThis} onClick={() => handleLinkIncome(e)}>
+                                  {isLinkingThis ? <Loader2 className="h-3 w-3 animate-spin" /> : <ArrowRightCircle className="h-3 w-3" />}
+                                </Button>
+                              )}
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(e)}>
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(e.id)}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-2xl flex flex-col max-h-[90dvh] p-0 gap-0">
+          <DialogHeader className="px-4 pt-4 pb-3 border-b flex-shrink-0">
             <DialogTitle>{editingId != null ? "Edit Entry" : "Add Gig Entry"}</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-5 py-1">
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
 
             {/* Section: Session */}
             <div>
@@ -969,12 +1033,12 @@ export default function GigWork() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Date</Label>
-                  <Input type="date" value={form.entryDate} onChange={sf("entryDate")} />
+                  <Input className="h-11" type="date" value={form.entryDate} onChange={sf("entryDate")} />
                 </div>
                 <div>
                   <Label>Platform</Label>
                   <Select value={form.platform} onValueChange={(v) => setForm((p) => ({ ...p, platform: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {Object.entries(PLATFORM_LABELS).map(([k, v]) => (
                         <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -984,12 +1048,12 @@ export default function GigWork() {
                 </div>
                 <div>
                   <Label>Person</Label>
-                  <Input placeholder="e.g. Jess" value={form.person} onChange={sf("person")} />
+                  <Input className="h-11" placeholder="e.g. Jess" value={form.person} onChange={sf("person")} />
                 </div>
                 <div>
                   <Label>Payment Status</Label>
                   <Select value={form.paymentStatus} onValueChange={(v) => setForm((p) => ({ ...p, paymentStatus: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="fast-paid">Fast-Paid</SelectItem>
@@ -1007,32 +1071,83 @@ export default function GigWork() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Start Time</Label>
-                  <Input type="time" value={form.startTime} onChange={sf("startTime")} />
+                  <Input className="h-11" type="time" value={form.startTime} onChange={sf("startTime")} />
                 </div>
                 <div>
                   <Label>
                     End Time
                     {dashMinutesPreview != null && (
-                      <span className="ml-2 text-xs text-muted-foreground font-normal">
-                        → {dashMinutesPreview} min dash
-                      </span>
+                      <span className="ml-2 text-xs text-muted-foreground font-normal">→ {dashMinutesPreview} min</span>
                     )}
                   </Label>
-                  <Input type="time" value={form.endTime} onChange={sf("endTime")} />
+                  <Input className="h-11" type="time" value={form.endTime} onChange={sf("endTime")} />
                 </div>
                 <div>
-                  <Label>Active Minutes <span className="text-muted-foreground font-normal">(on deliveries)</span></Label>
-                  <Input type="number" min="0" placeholder="e.g. 45" value={form.activeMinutes} onChange={sf("activeMinutes")} />
+                  <Label>Active Mins <span className="text-muted-foreground font-normal text-xs">(on deliveries)</span></Label>
+                  <Input className="h-11" type="number" inputMode="numeric" min="0" placeholder="e.g. 45" value={form.activeMinutes} onChange={sf("activeMinutes")} />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label>Deliveries</Label>
-                    <Input type="number" min="0" placeholder="0" value={form.deliveriesCount} onChange={sf("deliveriesCount")} />
+                    <Input className="h-11" type="number" inputMode="numeric" min="0" placeholder="0" value={form.deliveriesCount} onChange={sf("deliveriesCount")} />
                   </div>
                   <div>
                     <Label>Offers</Label>
-                    <Input type="number" min="0" placeholder="0" value={form.offersCount} onChange={sf("offersCount")} />
+                    <Input className="h-11" type="number" inputMode="numeric" min="0" placeholder="0" value={form.offersCount} onChange={sf("offersCount")} />
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section: Earnings */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Earnings</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Gross ($)</Label>
+                  <Input className="h-11" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={form.grossEarnings} onChange={sf("grossEarnings")} />
+                </div>
+                <div>
+                  <Label>Tips ($)</Label>
+                  <Input className="h-11" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={form.tips} onChange={sf("tips")} />
+                </div>
+                <div>
+                  <Label>FastPay ($)</Label>
+                  <Input className="h-11" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={form.fastPayAmount} onChange={sf("fastPayAmount")} />
+                </div>
+                <div>
+                  <Label>Weekly Deposit ($)</Label>
+                  <Input className="h-11" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={form.weeklyDepositAmount} onChange={sf("weeklyDepositAmount")} />
+                </div>
+              </div>
+            </div>
+
+            {/* Section: Expenses & Net */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Expenses & Net</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Fees ($)</Label>
+                  <Input className="h-11" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={form.fees} onChange={sf("fees")} />
+                </div>
+                <div>
+                  <Label>Other Expenses ($)</Label>
+                  <Input className="h-11" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={form.otherExpenses} onChange={sf("otherExpenses")} />
+                </div>
+                <div className="col-span-2">
+                  <Label>
+                    Net Income ($)
+                    <span className="ml-2 text-xs text-emerald-600 font-normal">auto</span>
+                  </Label>
+                  <Input
+                    className="h-11 font-semibold text-primary"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.netIncome}
+                    onChange={sf("netIncome")}
+                  />
                 </div>
               </div>
             </div>
@@ -1041,26 +1156,26 @@ export default function GigWork() {
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                 KM & Fuel
-                <span className="ml-2 text-muted-foreground font-normal normal-case">
+                <span className="ml-2 text-muted-foreground font-normal normal-case text-xs">
                   ({fuelSettings.pricePerL} $/L · {fuelSettings.l100km} L/100km)
                 </span>
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Estimated KM</Label>
-                  <Input type="number" step="0.001" min="0" placeholder="e.g. 12.5" value={form.estimatedKm} onChange={sf("estimatedKm")} />
+                  <Input className="h-11" type="number" inputMode="decimal" step="0.001" min="0" placeholder="e.g. 12.5" value={form.estimatedKm} onChange={sf("estimatedKm")} />
                 </div>
                 <div>
                   <Label>
-                    Fuel Estimate ($)
+                    Fuel ($)
                     {form.estimatedKm && parseFloat(form.estimatedKm) > 0 && (
                       <span className="ml-1 text-xs text-orange-600 font-normal">auto</span>
                     )}
                   </Label>
-                  <Input type="number" step="0.01" placeholder="0.00" value={form.fuelEstimate} onChange={sf("fuelEstimate")} />
+                  <Input className="h-11" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={form.fuelEstimate} onChange={sf("fuelEstimate")} />
                 </div>
                 <div className="col-span-2">
-                  <Label>Route Chain <span className="text-muted-foreground font-normal">(Stop A → Stop B → Stop C)</span></Label>
+                  <Label>Route Chain <span className="text-muted-foreground font-normal text-xs">(Stop A → Stop B → Stop C)</span></Label>
                   <div className="flex gap-2">
                     <Textarea
                       placeholder="e.g. Home -> KFC Elizabeth -> Woolworths Salisbury"
@@ -1073,67 +1188,14 @@ export default function GigWork() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="shrink-0 self-center"
+                      className="shrink-0 self-center h-11 w-11"
                       disabled={!form.routeChain.trim() || routeKmLoading}
                       onClick={handleCalculateRouteKm}
-                      title="Calculate KM from route using Mapbox (requires MAPBOX_TOKEN secret)"
+                      title="Calculate KM from route using Mapbox"
                     >
                       {routeKmLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Add a MAPBOX_TOKEN secret to enable auto KM calculation.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Section: Earnings */}
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Earnings</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Gross Earnings ($)</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" value={form.grossEarnings} onChange={sf("grossEarnings")} />
-                </div>
-                <div>
-                  <Label>Tips ($)</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" value={form.tips} onChange={sf("tips")} />
-                </div>
-                <div>
-                  <Label>FastPay Amount ($)</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" value={form.fastPayAmount} onChange={sf("fastPayAmount")} />
-                </div>
-                <div>
-                  <Label>Weekly Deposit ($)</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" value={form.weeklyDepositAmount} onChange={sf("weeklyDepositAmount")} />
-                </div>
-              </div>
-            </div>
-
-            {/* Section: Expenses & Net */}
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Expenses & Net</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Fees ($)</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" value={form.fees} onChange={sf("fees")} />
-                </div>
-                <div>
-                  <Label>Other Expenses ($)</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" value={form.otherExpenses} onChange={sf("otherExpenses")} />
-                </div>
-                <div className="col-span-2">
-                  <Label>
-                    Net Income ($)
-                    <span className="ml-2 text-xs text-emerald-600 font-normal">auto = gross + tips − fees − fuel − other</span>
-                  </Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={form.netIncome}
-                    onChange={sf("netIncome")}
-                    className="font-semibold text-primary"
-                  />
                 </div>
               </div>
             </div>
@@ -1141,14 +1203,14 @@ export default function GigWork() {
             {/* Section: Notes */}
             <div>
               <Label>Notes</Label>
-              <Input placeholder="Optional notes" value={form.notes} onChange={sf("notes")} />
+              <Input className="h-11" placeholder="Optional notes" value={form.notes} onChange={sf("notes")} />
             </div>
 
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave}>Save</Button>
+          <DialogFooter className="px-4 py-3 border-t flex-shrink-0 gap-2">
+            <Button variant="outline" className="h-11" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button className="h-11 flex-1 sm:flex-none" onClick={handleSave}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
