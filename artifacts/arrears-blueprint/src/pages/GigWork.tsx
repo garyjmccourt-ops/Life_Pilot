@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useListGigEntries, useCreateGigEntry, useUpdateGigEntry, useDeleteGigEntry } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatDate } from "@/lib/formatters";
@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bike, Plus, Pencil, Trash2, TrendingUp, Clock, DollarSign, Zap } from "lucide-react";
+import { Bike, Plus, Pencil, Trash2, TrendingUp, Clock, DollarSign, Zap, ScanLine, Loader2 } from "lucide-react";
 
 type GigEntry = {
   id: number;
@@ -77,6 +77,8 @@ export default function GigWork() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ ...defaultForm });
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const totalNetThisMonth = entries
     .filter((e) => e.entryDate >= new Date().toISOString().slice(0, 8))
@@ -169,6 +171,74 @@ export default function GigWork() {
     }
   }
 
+  async function handleScreenshotUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset so the same file can be re-selected if needed
+    e.target.value = "";
+
+    setOcrLoading(true);
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Strip the "data:<mime>;base64," prefix
+      const commaIdx = dataUrl.indexOf(",");
+      const imageBase64 = dataUrl.slice(commaIdx + 1);
+      const mimeType = file.type || "image/png";
+
+      const res = await fetch(`${import.meta.env.BASE_URL}api/gig/ocr`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64, mimeType }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json() as { error?: string };
+        throw new Error(body.error ?? `HTTP ${res.status}`);
+      }
+
+      const { data } = await res.json() as { data: Partial<typeof defaultForm> & { [k: string]: unknown } };
+
+      // Merge extracted data into form (keep defaults for nulls)
+      setForm((prev) => ({
+        ...prev,
+        entryDate: (data.entryDate as string) || prev.entryDate,
+        platform: (data.platform as typeof defaultForm.platform) || prev.platform,
+        person: (data.person as string) || prev.person,
+        startTime: (data.startTime as string) || prev.startTime,
+        endTime: (data.endTime as string) || prev.endTime,
+        hoursWorked: data.hoursWorked != null ? String(data.hoursWorked) : prev.hoursWorked,
+        grossEarnings: data.grossEarnings != null ? String(data.grossEarnings) : prev.grossEarnings,
+        tips: data.tips != null ? String(data.tips) : prev.tips,
+        fastPayAmount: data.fastPayAmount != null ? String(data.fastPayAmount) : prev.fastPayAmount,
+        weeklyDepositAmount: data.weeklyDepositAmount != null ? String(data.weeklyDepositAmount) : prev.weeklyDepositAmount,
+        fees: data.fees != null ? String(data.fees) : prev.fees,
+        fuelEstimate: data.fuelEstimate != null ? String(data.fuelEstimate) : prev.fuelEstimate,
+        otherExpenses: data.otherExpenses != null ? String(data.otherExpenses) : prev.otherExpenses,
+        netIncome: data.netIncome != null ? String(data.netIncome) : prev.netIncome,
+        paymentStatus: (data.paymentStatus as typeof defaultForm.paymentStatus) || prev.paymentStatus,
+        notes: (data.notes as string) || prev.notes,
+      }));
+
+      setEditingId(null);
+      setDialogOpen(true);
+      toast({ title: "Screenshot scanned", description: "Review the pre-filled fields before saving." });
+    } catch (err) {
+      toast({
+        title: "Scan failed",
+        description: err instanceof Error ? err.message : "Could not read screenshot.",
+        variant: "destructive",
+      });
+    } finally {
+      setOcrLoading(false);
+    }
+  }
+
   const f = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
@@ -179,9 +249,31 @@ export default function GigWork() {
           <Bike className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">Gig Work</h1>
         </div>
-        <Button onClick={openCreate} size="sm">
-          <Plus className="h-4 w-4 mr-1" /> Add Entry
-        </Button>
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleScreenshotUpload}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={ocrLoading}
+          >
+            {ocrLoading ? (
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <ScanLine className="h-4 w-4 mr-1" />
+            )}
+            {ocrLoading ? "Scanning…" : "Scan Screenshot"}
+          </Button>
+          <Button onClick={openCreate} size="sm">
+            <Plus className="h-4 w-4 mr-1" /> Add Entry
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
