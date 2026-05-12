@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Arrears & Budget Blueprint"
+title = "MYOH Blueprint"
 version = "1.0.0"
 id = "artifacts/arrears-blueprint"
 router = "path"
