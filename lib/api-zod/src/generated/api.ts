@@ -759,6 +759,11 @@ export const CreateGigEntryBody = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
+  estimatedKm: zod.number().nullish(),
+  activeMinutes: zod.number().int().nullish(),
+  deliveriesCount: zod.number().int().nullish(),
+  offersCount: zod.number().int().nullish(),
+  routeChain: zod.string().nullish(),
 });
 
 export const UpdateGigEntryParams = zod.object({
@@ -783,6 +788,11 @@ export const UpdateGigEntryBody = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
+  estimatedKm: zod.number().nullish(),
+  activeMinutes: zod.number().int().nullish(),
+  deliveriesCount: zod.number().int().nullish(),
+  offersCount: zod.number().int().nullish(),
+  routeChain: zod.string().nullish(),
 });
 
 export const UpdateGigEntryResponse = zod.object({
@@ -804,6 +814,11 @@ export const UpdateGigEntryResponse = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
+  estimatedKm: zod.number().nullish(),
+  activeMinutes: zod.number().int().nullish(),
+  deliveriesCount: zod.number().int().nullish(),
+  offersCount: zod.number().int().nullish(),
+  routeChain: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 

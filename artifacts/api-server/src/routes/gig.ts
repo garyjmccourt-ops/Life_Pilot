@@ -31,6 +31,11 @@ function shape(row: typeof gigEntriesTable.$inferSelect) {
     paymentStatus: row.paymentStatus,
     incomeEntryId: row.incomeEntryId,
     notes: row.notes,
+    estimatedKm: row.estimatedKm != null ? n(row.estimatedKm) : null,
+    activeMinutes: row.activeMinutes ?? null,
+    deliveriesCount: row.deliveriesCount ?? null,
+    offersCount: row.offersCount ?? null,
+    routeChain: row.routeChain ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -56,7 +61,9 @@ router.post("/gig", async (req, res): Promise<void> => {
   }
   const {
     grossEarnings, tips, fastPayAmount, weeklyDepositAmount, fees,
-    fuelEstimate, otherExpenses, netIncome, hoursWorked, entryDate, ...rest
+    fuelEstimate, otherExpenses, netIncome, hoursWorked, entryDate,
+    estimatedKm, activeMinutes, deliveriesCount, offersCount, routeChain,
+    ...rest
   } = parsed.data;
   const toDate = (v: Date | string | null | undefined) =>
     v == null ? v : typeof v === "string" ? v.slice(0, 10) : v.toISOString().slice(0, 10);
@@ -74,6 +81,11 @@ router.post("/gig", async (req, res): Promise<void> => {
       otherExpenses: String(otherExpenses),
       netIncome: String(netIncome),
       hoursWorked: numStr(hoursWorked) ?? null,
+      estimatedKm: estimatedKm != null ? String(estimatedKm) : null,
+      activeMinutes: activeMinutes ?? null,
+      deliveriesCount: deliveriesCount ?? null,
+      offersCount: offersCount ?? null,
+      routeChain: routeChain ?? null,
     })
     .returning();
   res.status(201).json(shape(row));
@@ -92,7 +104,9 @@ router.patch("/gig/:id", async (req, res): Promise<void> => {
   }
   const {
     grossEarnings, tips, fastPayAmount, weeklyDepositAmount, fees,
-    fuelEstimate, otherExpenses, netIncome, hoursWorked, entryDate, ...rest
+    fuelEstimate, otherExpenses, netIncome, hoursWorked, entryDate,
+    estimatedKm, activeMinutes, deliveriesCount, offersCount, routeChain,
+    ...rest
   } = parsed.data;
   const toDate = (v: Date | string | null | undefined) =>
     v == null ? v : typeof v === "string" ? v.slice(0, 10) : v.toISOString().slice(0, 10);
@@ -110,6 +124,11 @@ router.patch("/gig/:id", async (req, res): Promise<void> => {
       ...(otherExpenses !== undefined ? { otherExpenses: String(otherExpenses) } : {}),
       ...(netIncome !== undefined ? { netIncome: String(netIncome) } : {}),
       ...(hoursWorked !== undefined ? { hoursWorked: numStr(hoursWorked) ?? null } : {}),
+      ...(estimatedKm !== undefined ? { estimatedKm: estimatedKm != null ? String(estimatedKm) : null } : {}),
+      ...(activeMinutes !== undefined ? { activeMinutes: activeMinutes ?? null } : {}),
+      ...(deliveriesCount !== undefined ? { deliveriesCount: deliveriesCount ?? null } : {}),
+      ...(offersCount !== undefined ? { offersCount: offersCount ?? null } : {}),
+      ...(routeChain !== undefined ? { routeChain: routeChain ?? null } : {}),
     })
     .where(eq(gigEntriesTable.id, params.data.id))
     .returning();

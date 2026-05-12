@@ -1,0 +1,141 @@
+const SHEET_NAME = 'Gig Worker Earnings Record';
+
+const COL = {
+  estimatedKm: 13,      // M
+  routeChain: 38,       // AL
+  routeKmEstimate: 40,  // AN
+  routeNotes: 41        // AO
+};
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('Gig Routes')
+    .addItem('Calculate route km for selected rows', 'calculateSelectedRouteKm')
+    .addItem('Calculate route km for all rows', 'calculateAllRouteKm')
+    .addToUi();
+}
+
+function calculateSelectedRouteKm() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  const range = sheet.getActiveRange();
+  const startRow = Math.max(range.getRow(), 2);
+  const endRow = startRow + range.getNumRows() - 1;
+  calculateRouteKmForRows_(sheet, startRow, endRow);
+}
+
+function calculateAllRouteKm() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  const lastRow = sheet.getLastRow();
+  calculateRouteKmForRows_(sheet, 2, lastRow);
+}
+
+function calculateRouteKmForRows_(sheet, startRow, endRow) {
+  const token = PropertiesService.getScriptProperties().getProperty('MAPBOX_TOKEN');
+  if (!token) {
+    throw new Error('Missing MAPBOX_TOKEN in Script Properties.');
+  }
+
+  for (let row = startRow; row <= endRow; row++) {
+    const routeChain = sheet.getRange(row, COL.routeChain).getValue();
+
+    if (!routeChain || String(routeChain).trim() === '') {
+      sheet.getRange(row, COL.routeNotes).setValue('No route chain found.');
+      continue;
+    }
+
+    try {
+      const stops = String(routeChain)
+        .split('->')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if (stops.length < 2) {
+        sheet.getRange(row, COL.routeNotes).setValue('Route needs at least 2 stops.');
+        continue;
+      }
+
+      const coords = stops.map(stop => geocodeMapbox_(stop, token));
+      const route = directionsMapbox_(coords, token);
+
+      const km = route.distance / 1000;
+      const minutes = route.duration / 60;
+
+      sheet.getRange(row, COL.routeKmEstimate).setValue(km);
+      sheet.getRange(row, COL.estimatedKm).setValue(km);
+      sheet.getRange(row, COL.routeNotes).setValue(
+        `Mapbox route: ${km.toFixed(2)} km, ${minutes.toFixed(0)} min. Stops: ${stops.length}`
+      );
+
+      Utilities.sleep(250);
+    } catch (err) {
+      sheet.getRange(row, COL.routeNotes).setValue(`Route error: ${err.message}`);
+    }
+  }
+}
+
+function geocodeMapbox_(query, token) {
+  const url =
+    'https://api.mapbox.com/search/geocode/v6/forward?' +
+    'q=' + encodeURIComponent(query + ', South Australia, Australia') +
+    '&country=AU' +
+    '&limit=1' +
+    '&autocomplete=false' +
+    '&access_token=' + encodeURIComponent(token);
+
+  const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  const code = response.getResponseCode();
+  const body = response.getContentText();
+
+  if (code !== 200) {
+    throw new Error(`Geocode failed for "${query}" HTTP ${code}: ${body.slice(0, 160)}`);
+  }
+
+  const json = JSON.parse(body);
+
+  if (!json.features || json.features.length === 0) {
+  throw new Error(`No geocode result for "${query}". Try replacing store codes with suburb/address.`);
+  }
+
+  const feature = json.features[0];
+  const coords = feature.geometry.coordinates; // [lng, lat]
+
+  return {
+    query,
+    lng: coords[0],
+    lat: coords[1],
+    name: feature.properties && feature.properties.full_address
+      ? feature.properties.full_address
+      : query
+  };
+}
+
+function directionsMapbox_(coords, token) {
+  if (coords.length > 25) {
+    throw new Error('Mapbox Directions supports up to 25 coordinates per request.');
+  }
+
+  const coordString = coords.map(c => `${c.lng},${c.lat}`).join(';');
+
+  const url =
+    'https://api.mapbox.com/directions/v5/mapbox/driving/' +
+    coordString +
+    '?overview=false' +
+    '&steps=false' +
+    '&access_token=' + encodeURIComponent(token);
+
+  const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  const code = response.getResponseCode();
+  const body = response.getContentText();
+
+  if (code !== 200) {
+    throw new Error(`Directions failed HTTP ${code}: ${body.slice(0, 160)}`);
+  }
+
+  const json = JSON.parse(body);
+
+  if (!json.routes || json.routes.length === 0) {
+    throw new Error('No route returned.');
+  }
+
+  return json.routes[0];
+}

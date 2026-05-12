@@ -117,6 +117,11 @@ router.get("/export", async (_req, res): Promise<void> => {
         grossEarnings: n(r.grossEarnings), tips: n(r.tips), fastPayAmount: n(r.fastPayAmount),
         weeklyDepositAmount: n(r.weeklyDepositAmount), fees: n(r.fees), fuelEstimate: n(r.fuelEstimate),
         otherExpenses: n(r.otherExpenses), netIncome: n(r.netIncome), paymentStatus: r.paymentStatus, notes: r.notes,
+        estimatedKm: r.estimatedKm != null ? n(r.estimatedKm) : null,
+        activeMinutes: r.activeMinutes ?? null,
+        deliveriesCount: r.deliveriesCount ?? null,
+        offersCount: r.offersCount ?? null,
+        routeChain: r.routeChain ?? null,
       })),
       budgetCategories: budget.map((r) => ({
         id: r.id, name: r.name, group: r.group, plannedWeekly: n(r.plannedWeekly), actualWeekly: n(r.actualWeekly),

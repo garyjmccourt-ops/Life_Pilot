@@ -19,6 +19,11 @@ export const gigEntriesTable = pgTable("gig_entries", {
   paymentStatus: text("payment_status").notNull().default("pending"),
   incomeEntryId: integer("income_entry_id"),
   notes: text("notes"),
+  estimatedKm: numeric("estimated_km", { precision: 8, scale: 3 }),
+  activeMinutes: integer("active_minutes"),
+  deliveriesCount: integer("deliveries_count"),
+  offersCount: integer("offers_count"),
+  routeChain: text("route_chain"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

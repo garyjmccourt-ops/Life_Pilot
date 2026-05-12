@@ -196,6 +196,11 @@ const GigEntrySchema = z.object({
   netIncome: z.number().default(0),
   paymentStatus: z.enum(GIG_PAYMENT_STATUSES).default("pending"),
   notes: z.string().nullable().optional(),
+  estimatedKm: z.number().nullable().optional(),
+  activeMinutes: z.number().int().nullable().optional(),
+  deliveriesCount: z.number().int().nullable().optional(),
+  offersCount: z.number().int().nullable().optional(),
+  routeChain: z.string().nullable().optional(),
 });
 
 const BudgetCategorySchema = z.object({
@@ -496,6 +501,11 @@ router.post("/import", async (req, res): Promise<void> => {
           netIncome: String(r.netIncome),
           paymentStatus: r.paymentStatus,
           notes: r.notes ?? null,
+          estimatedKm: r.estimatedKm != null ? String(r.estimatedKm) : null,
+          activeMinutes: r.activeMinutes ?? null,
+          deliveriesCount: r.deliveriesCount ?? null,
+          offersCount: r.offersCount ?? null,
+          routeChain: r.routeChain ?? null,
         });
         gigCount++;
       }

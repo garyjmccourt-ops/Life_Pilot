@@ -43,7 +43,7 @@ router.post("/gig/ocr", async (req, res): Promise<void> => {
   "person": "driver/worker name or null",
   "startTime": "HH:MM 24h or null",
   "endTime": "HH:MM 24h or null",
-  "hoursWorked": number or null,
+  "activeMinutes": integer minutes actively on deliveries (not total shift time) or null,
   "grossEarnings": number or null,
   "tips": number or null,
   "fastPayAmount": number or null,
@@ -52,6 +52,9 @@ router.post("/gig/ocr", async (req, res): Promise<void> => {
   "fuelEstimate": number or null,
   "otherExpenses": number or null,
   "netIncome": number or null,
+  "estimatedKm": number (km driven) or null,
+  "deliveriesCount": integer (number of deliveries completed) or null,
+  "offersCount": integer (total offers received/accepted) or null,
   "paymentStatus": "pending, fast-paid, deposited, or received — null if unclear",
   "notes": "one-line summary of what this screenshot shows, or null"
 }
