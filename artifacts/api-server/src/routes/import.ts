@@ -227,6 +227,7 @@ const ScenarioSchema = z.object({
 
 const ImportBody = z.object({
   mode: z.enum(["replace", "merge", "add-only"]).default("merge"),
+  sections: z.array(z.string()).optional().default([]),
   data: z.object({
     incomeSources: z.array(IncomeSourceSchema).optional().default([]),
     incomeEntries: z.array(IncomeEntrySchema).optional().default([]),
@@ -266,23 +267,25 @@ router.post("/import", async (req, res): Promise<void> => {
     return;
   }
 
-  const { mode, data } = parsed.data;
+  const { mode, sections, data } = parsed.data;
 
   try {
     const counts = await db.transaction(async (tx) => {
-      // ── REPLACE mode: only delete tables for sections being imported ─
+      // ── REPLACE mode: clear every explicitly selected section ────────
+      // Uses the `sections` list so empty arrays still trigger a clear.
       if (mode === "replace") {
+        const sel = new Set(sections);
         // Delete child-like tables first to avoid FK-like ordering issues
-        if (data.commsEntries.length > 0) await tx.delete(commsEntriesTable);
-        if (data.tasks.length > 0) await tx.delete(tasksTable);
-        if (data.weeklyEntries.length > 0) await tx.delete(weeklyEntriesTable);
-        if (data.incomeEntries.length > 0) await tx.delete(incomeEntriesTable);
-        if (data.gigEntries.length > 0) await tx.delete(gigEntriesTable);
-        if (data.arrearsItems.length > 0) await tx.delete(arrearsItemsTable);
-        if (data.bills.length > 0) await tx.delete(billsTable);
-        if (data.incomeSources.length > 0) await tx.delete(incomeSourcesTable);
-        if (data.budgetCategories.length > 0) await tx.delete(budgetCategoriesTable);
-        if (data.scenarios.length > 0) await tx.delete(scenariosTable);
+        if (sel.has("commsEntries")) await tx.delete(commsEntriesTable);
+        if (sel.has("tasks")) await tx.delete(tasksTable);
+        if (sel.has("weeklyEntries")) await tx.delete(weeklyEntriesTable);
+        if (sel.has("incomeEntries")) await tx.delete(incomeEntriesTable);
+        if (sel.has("gigEntries")) await tx.delete(gigEntriesTable);
+        if (sel.has("arrearsItems")) await tx.delete(arrearsItemsTable);
+        if (sel.has("bills")) await tx.delete(billsTable);
+        if (sel.has("incomeSources")) await tx.delete(incomeSourcesTable);
+        if (sel.has("budgetCategories")) await tx.delete(budgetCategoriesTable);
+        if (sel.has("scenarios")) await tx.delete(scenariosTable);
       }
 
       // ── Lookup maps for merge/add-only dedup ─────────────────────

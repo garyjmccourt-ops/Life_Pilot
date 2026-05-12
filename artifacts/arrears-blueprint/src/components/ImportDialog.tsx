@@ -169,7 +169,7 @@ export function ImportDialog() {
       const res = await fetch(`${import.meta.env.BASE_URL}api/import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, data: filteredData }),
+        body: JSON.stringify({ mode, sections: Array.from(selected), data: filteredData }),
       });
       const body = await res.json() as { counts?: Record<string, number>; error?: string; issues?: { path: string; message: string }[] };
       if (!res.ok) {
