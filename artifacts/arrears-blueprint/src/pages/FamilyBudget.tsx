@@ -4,6 +4,9 @@ import {
   useCreateBudgetCategory,
   useUpdateBudgetCategory,
   useDeleteBudgetCategory,
+  useListIncomeEntries,
+  useListBills,
+  useListArrears,
 } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
@@ -16,7 +19,203 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { PieChart, Plus, Pencil, Trash2, TrendingDown, TrendingUp } from "lucide-react";
+import { PieChart, Plus, Pencil, Trash2, TrendingDown, TrendingUp, ShieldCheck, AlertTriangle, AlertCircle, XCircle } from "lucide-react";
+
+// ── Week helpers ──────────────────────────────────────────────────────────────
+
+function getCurrentMonday(): string {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+  const m = new Date(now.setDate(diff));
+  m.setHours(0, 0, 0, 0);
+  const offset = m.getTimezoneOffset();
+  return new Date(m.getTime() - offset * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + days);
+  const offset = d.getTimezoneOffset();
+  return new Date(d.getTime() - offset * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function billsDueInWeek(bills: any[], weekStart: string, weekEnd: string): any[] {
+  const start = new Date(weekStart + "T00:00:00");
+  const end = new Date(weekEnd + "T23:59:59");
+  return bills.filter(bill => {
+    if (bill.dueDate) {
+      const d = new Date(typeof bill.dueDate === "string" ? bill.dueDate + "T00:00:00" : bill.dueDate);
+      if (d >= start && d <= end) return true;
+    }
+    if (bill.frequency === "weekly" || bill.frequency === "fortnightly") return true;
+    if (bill.dueDay) {
+      for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
+        if (cur.getDate() === bill.dueDay) return true;
+      }
+    }
+    return false;
+  });
+}
+
+// ── Household status ──────────────────────────────────────────────────────────
+
+type HouseholdStatus = "stable" | "tight" | "watch" | "critical";
+
+function getStatus(safeToSpend: number, forecast: number): HouseholdStatus {
+  if (safeToSpend < 0) return "critical";
+  if (forecast <= 0) return "watch";
+  const pct = safeToSpend / forecast;
+  if (pct >= 0.25) return "stable";
+  if (pct >= 0.12) return "tight";
+  if (pct >= 0) return "watch";
+  return "critical";
+}
+
+const STATUS_CONFIG: Record<HouseholdStatus, { label: string; color: string; bg: string; border: string; Icon: any }> = {
+  stable:   { label: "Stable",       color: "text-emerald-700", bg: "bg-emerald-50",  border: "border-emerald-200", Icon: ShieldCheck   },
+  tight:    { label: "Tight",        color: "text-amber-700",   bg: "bg-amber-50",    border: "border-amber-200",   Icon: AlertTriangle },
+  watch:    { label: "Watch closely",color: "text-orange-700",  bg: "bg-orange-50",   border: "border-orange-200",  Icon: AlertCircle   },
+  critical: { label: "Critical",     color: "text-red-700",     bg: "bg-red-50",      border: "border-red-200",     Icon: XCircle       },
+};
+
+// ── BudgetHealthSection ───────────────────────────────────────────────────────
+
+function BudgetHealthSection({ categories }: { categories: BudgetCategory[] }) {
+  const weekStart = getCurrentMonday();
+  const weekEnd = addDays(weekStart, 6);
+
+  const { data: allEntries = [] } = useListIncomeEntries();
+  const { data: bills = [] } = useListBills();
+  const { data: arrears = [] } = useListArrears();
+
+  // Actual income received this week
+  const weekEntries = allEntries.filter(e => {
+    const d = (typeof e.dateReceived === "string" ? e.dateReceived : (e.dateReceived as Date).toISOString()).slice(0, 10);
+    return d >= weekStart && d <= weekEnd;
+  });
+  const actualReceived = weekEntries.reduce((s, e) => s + e.grossAmount, 0);
+
+  // Forecast: sum of all budget categories planned (essential only represents committed spending)
+  // For forecast income, use budget total planned as the baseline target
+  const forecastIncome = categories.reduce((s, c) => s + c.plannedWeekly, 0);
+
+  // Bills due this week
+  const dueBills = billsDueInWeek(bills as any[], weekStart, weekEnd);
+  const billsTotal = dueBills.reduce((s: number, b: any) => s + (b.weeklyEquivalent ?? b.amount ?? 0), 0);
+
+  // Arrears / rent-plan weekly commitments
+  const activeArrears = (arrears as any[]).filter((a: any) => a.status === "active");
+  const arrearsTotal = activeArrears.reduce((s: number, a: any) => s + (a.weeklyOngoing ?? 0) + (a.weeklyArrears ?? 0), 0);
+
+  // Essential budget spending (categories flagged essential, not in arrears/bills groups)
+  const essentialBudget = categories
+    .filter(c => c.essential && c.group !== "arrears" && c.group !== "bills" && c.group !== "buffer")
+    .reduce((s, c) => s + c.plannedWeekly, 0);
+
+  // Buffer
+  const bufferBudget = categories
+    .filter(c => c.group === "buffer")
+    .reduce((s, c) => s + c.plannedWeekly, 0);
+
+  // Safe-to-spend = actual received − bills − arrears − essential budget − buffer
+  const safeToSpend = actualReceived - billsTotal - arrearsTotal - essentialBudget - bufferBudget;
+
+  const status = getStatus(safeToSpend, actualReceived || forecastIncome);
+  const cfg = STATUS_CONFIG[status];
+  const StatusIcon = cfg.Icon;
+
+  // Coverage: actual as % of forecast income total (use budget planned total as proxy)
+  const coveragePct = forecastIncome > 0 ? Math.round((actualReceived / forecastIncome) * 100) : 0;
+
+  return (
+    <div className="space-y-4">
+      {/* Income vs forecast row */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="text-xs text-muted-foreground mb-1">Budget Total (Planned)</div>
+            <div className="text-xl font-bold">{formatCurrency(forecastIncome)}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">All categories planned spend</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="text-xs text-muted-foreground mb-1">Actual Received This Week</div>
+            <div className={`text-xl font-bold ${actualReceived > 0 ? "text-primary" : "text-muted-foreground"}`}>
+              {formatCurrency(actualReceived)}
+            </div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              {weekEntries.length} {weekEntries.length === 1 ? "entry" : "entries"} recorded
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="text-xs text-muted-foreground mb-1">Income Coverage</div>
+            <div className={`text-xl font-bold ${coveragePct >= 80 ? "text-emerald-600" : coveragePct >= 50 ? "text-amber-600" : "text-destructive"}`}>
+              {coveragePct}%
+            </div>
+            <div className="text-xs text-muted-foreground mt-0.5">of planned budget covered</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Safe-to-spend + household status */}
+      <Card className={`border ${cfg.border}`}>
+        <CardContent className="pt-4 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Breakdown */}
+            <div className="space-y-1 flex-1 text-sm">
+              <div className="font-semibold text-foreground mb-2">Safe-to-Spend Calculation</div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Actual income received</span>
+                <span className="font-medium text-foreground">{formatCurrency(actualReceived)}</span>
+              </div>
+              {billsTotal > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>− Bills due this week</span>
+                  <span className="text-destructive">−{formatCurrency(billsTotal)}</span>
+                </div>
+              )}
+              {arrearsTotal > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>− Arrears / rent-plan commitments</span>
+                  <span className="text-destructive">−{formatCurrency(arrearsTotal)}</span>
+                </div>
+              )}
+              {essentialBudget > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>− Essential planned spending</span>
+                  <span className="text-destructive">−{formatCurrency(essentialBudget)}</span>
+                </div>
+              )}
+              {bufferBudget > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>− Buffer</span>
+                  <span className="text-destructive">−{formatCurrency(bufferBudget)}</span>
+                </div>
+              )}
+              <div className={`flex justify-between font-bold text-base pt-1 border-t mt-1 ${safeToSpend >= 0 ? "text-emerald-700" : "text-destructive"}`}>
+                <span>Safe to spend</span>
+                <span>{safeToSpend >= 0 ? "" : "−"}{formatCurrency(Math.abs(safeToSpend))}</span>
+              </div>
+            </div>
+
+            {/* Status badge */}
+            <div className={`flex flex-col items-center justify-center gap-2 rounded-xl px-6 py-4 ${cfg.bg} ${cfg.border} border min-w-[140px]`}>
+              <StatusIcon className={`h-8 w-8 ${cfg.color}`} />
+              <div className={`text-base font-bold ${cfg.color}`}>{cfg.label}</div>
+              <div className="text-xs text-muted-foreground text-center">Household status</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 type BudgetCategory = {
   id: number;
@@ -42,6 +241,8 @@ const defaultForm = {
   notes: "",
   color: "",
 };
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function FamilyBudget() {
   const { data: categories = [], isLoading, refetch } = useListBudgetCategories();
@@ -136,14 +337,20 @@ export default function FamilyBudget() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <PieChart className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold">Family Budget</h1>
+          <div>
+            <h1 className="text-2xl font-bold">Family Budget</h1>
+            <p className="text-sm text-muted-foreground">Weekly spending plan and household health.</p>
+          </div>
         </div>
         <Button onClick={openCreate} size="sm">
           <Plus className="h-4 w-4 mr-1" /> Add Category
         </Button>
       </div>
 
-      {/* Summary */}
+      {/* Household health + safe-to-spend */}
+      {!isLoading && <BudgetHealthSection categories={categories} />}
+
+      {/* Category totals summary */}
       <div className="grid grid-cols-3 gap-3">
         <Card>
           <CardContent className="pt-4 pb-3">
