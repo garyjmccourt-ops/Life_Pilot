@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useListGigEntries, useCreateGigEntry, useUpdateGigEntry, useDeleteGigEntry } from "@workspace/api-client-react";
-import { useLookup } from "@/hooks/use-lookup";
+import { useLookup, getDefaultValue } from "@/hooks/use-lookup";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
@@ -488,7 +488,8 @@ export default function GigWork() {
   // ── CRUD ──────────────────────────────────────────────────────────────────
 
   function openCreate() {
-    setForm(makeDefault());
+    const def = getDefaultValue(platformLookup);
+    setForm({ ...makeDefault(), ...(def ? { platform: def } : {}) });
     setEditingId(null);
     setDialogOpen(true);
   }

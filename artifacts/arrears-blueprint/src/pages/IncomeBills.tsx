@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
   useListIncome, getListIncomeQueryKey,
@@ -9,7 +9,7 @@ import {
   useCreateIncomeEntry, useDeleteIncomeEntry,
   useListArrears,
 } from "@workspace/api-client-react";
-import { useLookup } from "@/hooks/use-lookup";
+import { useLookup, getDefaultValue } from "@/hooks/use-lookup";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -491,6 +491,14 @@ function BillForm({ onSuccess, initial }: { onSuccess: () => void; initial?: any
   const isEdit = !!initial;
   const { data: billCategories = [] } = useLookup("bill_category");
   const [categoryValue, setCategoryValue] = useState<string>(initial?.category ?? "");
+
+  // Apply lookup default for new bills once categories load
+  useEffect(() => {
+    if (!isEdit && !categoryValue && billCategories.length > 0) {
+      const def = getDefaultValue(billCategories);
+      if (def) setCategoryValue(def);
+    }
+  }, [billCategories, isEdit, categoryValue]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

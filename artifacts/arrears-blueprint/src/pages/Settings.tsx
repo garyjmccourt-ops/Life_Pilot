@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Settings2, Lock, Plus, Pencil, Trash2, Check, X, ToggleLeft, ToggleRight, History } from "lucide-react";
+import { Settings2, Lock, Plus, Pencil, Trash2, Check, X, ToggleLeft, ToggleRight, History, Star } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -20,6 +20,7 @@ type LookupValue = {
   description: string | null;
   isSystem: boolean;
   isActive: boolean;
+  isDefault: boolean;
   sortOrder: number;
   metadata: string | null;
   createdAt: string;
@@ -54,6 +55,7 @@ async function createLookup(body: {
   label: string;
   description?: string;
   sortOrder?: number;
+  isDefault?: boolean;
 }): Promise<LookupValue> {
   const res = await fetch(`${BASE}api/settings/lookup`, {
     method: "POST",
@@ -69,7 +71,7 @@ async function createLookup(body: {
 
 async function updateLookup(
   id: number,
-  body: Partial<{ label: string; description: string | null; isActive: boolean; sortOrder: number }>,
+  body: Partial<{ label: string; description: string | null; isActive: boolean; isDefault: boolean; sortOrder: number }>,
 ): Promise<LookupValue> {
   const res = await fetch(`${BASE}api/settings/lookup/${id}`, {
     method: "PATCH",
@@ -83,12 +85,16 @@ async function updateLookup(
   return res.json();
 }
 
-async function deleteLookup(id: number): Promise<void> {
+/** Returns { action: "deleted" | "deactivated", usageCount?: number } */
+async function deleteLookup(id: number): Promise<{ action: "deleted" | "deactivated"; usageCount?: number }> {
   const res = await fetch(`${BASE}api/settings/lookup/${id}`, { method: "DELETE" });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as any).error ?? "Failed to delete");
+  if (res.status === 204) return { action: "deleted" };
+  if (res.status === 200) {
+    const body = await res.json().catch(() => ({}));
+    return { action: "deactivated", usageCount: body.usageCount };
   }
+  const err = await res.json().catch(() => ({}));
+  throw new Error((err as any).error ?? "Failed to delete");
 }
 
 async function fetchAuditLog(limit = 50): Promise<AuditEntry[]> {
@@ -163,6 +169,17 @@ function LookupSection({
     }
   }
 
+  async function handleSetDefault(row: LookupValue) {
+    try {
+      // Toggle off if already default; set on if not
+      await updateLookup(row.id, { isDefault: !row.isDefault });
+      queryClient.invalidateQueries({ queryKey: qk });
+      toast({ title: row.isDefault ? "Default cleared" : `"${row.label}" set as default` });
+    } catch (err) {
+      toast({ title: (err as Error).message, variant: "destructive" });
+    }
+  }
+
   async function handleSaveEdit(id: number) {
     try {
       await updateLookup(id, { label: editLabel, description: editDesc || null });
@@ -175,11 +192,18 @@ function LookupSection({
   }
 
   async function handleDelete(row: LookupValue) {
-    if (!confirm(`Delete "${row.label}"?`)) return;
+    if (!confirm(`Remove "${row.label}"?\n\nIf this value is in use by existing records it will be deactivated instead of deleted.`)) return;
     try {
-      await deleteLookup(row.id);
+      const result = await deleteLookup(row.id);
       queryClient.invalidateQueries({ queryKey: qk });
-      toast({ title: "Deleted" });
+      if (result.action === "deactivated") {
+        toast({
+          title: `"${row.label}" deactivated`,
+          description: `In use by ${result.usageCount} record(s) — kept but hidden from new forms.`,
+        });
+      } else {
+        toast({ title: "Deleted" });
+      }
     } catch (err) {
       toast({ title: (err as Error).message, variant: "destructive" });
     }
@@ -241,6 +265,7 @@ function LookupSection({
                   <th className="px-3 py-1.5 text-left font-medium">Label</th>
                   <th className="px-3 py-1.5 text-left font-medium hidden md:table-cell">Code</th>
                   <th className="px-3 py-1.5 text-left font-medium hidden lg:table-cell">Description</th>
+                  <th className="px-3 py-1.5 text-center font-medium" title="Set as default for new forms">Default</th>
                   <th className="px-3 py-1.5 text-center font-medium">Active</th>
                   <th className="px-3 py-1.5 text-right font-medium w-20"></th>
                 </tr>
@@ -289,6 +314,17 @@ function LookupSection({
                     <td className="px-3 py-1.5 text-center">
                       <button
                         type="button"
+                        onClick={() => handleSetDefault(row)}
+                        className={`transition-colors ${row.isDefault ? "text-amber-500 hover:text-amber-600" : "text-muted-foreground/40 hover:text-amber-400"}`}
+                        title={row.isDefault ? "Default for new forms — click to clear" : "Set as default for new forms"}
+                        disabled={!row.isActive}
+                      >
+                        <Star className={`h-4 w-4 ${row.isDefault ? "fill-amber-500" : ""}`} />
+                      </button>
+                    </td>
+                    <td className="px-3 py-1.5 text-center">
+                      <button
+                        type="button"
                         onClick={() => handleToggleActive(row)}
                         className="text-muted-foreground hover:text-foreground transition-colors"
                         title={row.isActive ? "Deactivate" : "Activate"}
@@ -321,7 +357,7 @@ function LookupSection({
                             size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive"
                             onClick={() => handleDelete(row)}
                             disabled={row.isSystem}
-                            title={row.isSystem ? "System values cannot be deleted" : "Delete"}
+                            title={row.isSystem ? "System values cannot be deleted" : "Remove (deactivates if in use)"}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -345,6 +381,7 @@ const ACTION_COLORS: Record<string, string> = {
   create: "bg-green-100 text-green-700",
   update: "bg-blue-100 text-blue-700",
   delete: "bg-red-100 text-red-700",
+  deactivate: "bg-orange-100 text-orange-700",
   import: "bg-purple-100 text-purple-700",
   export: "bg-orange-100 text-orange-700",
 };

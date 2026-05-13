@@ -7,7 +7,7 @@ import {
   useListTasks, useCreateTask, useUpdateTask, getListTasksQueryKey,
   useListComms
 } from "@workspace/api-client-react";
-import { useLookup } from "@/hooks/use-lookup";
+import { useLookup, getDefaultValue } from "@/hooks/use-lookup";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -361,7 +361,7 @@ export default function ArrearsDetail() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label>Bucket</Label>
-                    <Select name="bucket" defaultValue={taskBuckets[0]?.value ?? "today"}>
+                    <Select name="bucket" defaultValue={getDefaultValue(bucketLookup) ?? taskBuckets[0]?.value ?? "today"}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {taskBuckets.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}

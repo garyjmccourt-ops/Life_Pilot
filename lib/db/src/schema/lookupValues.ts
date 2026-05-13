@@ -18,6 +18,7 @@ export const lookupValuesTable = pgTable(
     description: text("description"),
     isSystem: boolean("is_system").notNull().default(false),
     isActive: boolean("is_active").notNull().default(true),
+    isDefault: boolean("is_default").notNull().default(false),
     sortOrder: integer("sort_order").notNull().default(0),
     metadata: text("metadata"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

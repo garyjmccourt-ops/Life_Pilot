@@ -8,6 +8,7 @@ export type LookupValue = {
   description: string | null;
   isSystem: boolean;
   isActive: boolean;
+  isDefault: boolean;
   sortOrder: number;
 };
 
@@ -26,4 +27,10 @@ export function useLookup(namespace: string) {
     queryFn: () => fetchLookup(namespace),
     staleTime: 60_000,
   });
+}
+
+/** Returns the default value for a lookup namespace, falling back to the first active entry. */
+export function getDefaultValue(items: LookupValue[]): string | undefined {
+  const def = items.find(i => i.isDefault);
+  return def?.value ?? items[0]?.value;
 }

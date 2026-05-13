@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, ne, sql } from "drizzle-orm";
 import { db, lookupValuesTable, auditLogTable } from "@workspace/db";
 import { z } from "zod";
 
@@ -121,7 +121,7 @@ async function seedIfNeeded() {
     );
     if (toInsert.length > 0) {
       await db.insert(lookupValuesTable).values(
-        toInsert.map((s) => ({ ...s, isSystem: true, isActive: true })),
+        toInsert.map((s) => ({ ...s, isSystem: true, isActive: true, isDefault: false })),
       );
     }
   } catch (err) {
@@ -158,6 +158,68 @@ async function audit(
   }
 }
 
+// ── Usage check: is a lookup value referenced in any data table? ──────────────
+
+/**
+ * Maps each namespace to the raw SQL needed to count records using that value.
+ * Returns the count of referencing records.
+ */
+async function countUsages(namespace: string, value: string): Promise<number> {
+  const queries: Array<{ table: string; column: string }> = [];
+
+  switch (namespace) {
+    case "task_bucket":
+      queries.push({ table: "tasks", column: "bucket" });
+      break;
+    case "task_status":
+      queries.push({ table: "tasks", column: "status" });
+      break;
+    case "task_priority":
+      queries.push({ table: "tasks", column: "priority" });
+      break;
+    case "bill_category":
+      queries.push({ table: "bills", column: "category" });
+      break;
+    case "arrears_category":
+      queries.push({ table: "arrears_items", column: "category" });
+      break;
+    case "arrears_status":
+      queries.push({ table: "arrears_items", column: "status" });
+      break;
+    case "arrears_risk_level":
+      queries.push({ table: "arrears_items", column: "risk_level" });
+      break;
+    case "gig_platform":
+      queries.push({ table: "gig_entries", column: "platform" });
+      break;
+    case "gig_payment_status":
+      queries.push({ table: "gig_entries", column: "payment_status" });
+      break;
+    case "budget_category_group":
+      queries.push({ table: "budget_categories", column: "group" });
+      break;
+    case "household_people":
+      queries.push({ table: "tasks", column: "assigned_person" });
+      break;
+    default:
+      return 0;
+  }
+
+  let total = 0;
+  for (const { table, column } of queries) {
+    try {
+      const result = await db.execute(
+        sql.raw(`SELECT COUNT(*)::int AS cnt FROM "${table}" WHERE "${column}" = '${value.replace(/'/g, "''")}'`)
+      );
+      const cnt = (result.rows?.[0] as any)?.cnt ?? 0;
+      total += Number(cnt);
+    } catch {
+      // Table might not exist yet — treat as 0
+    }
+  }
+  return total;
+}
+
 // ── Zod schemas ───────────────────────────────────────────────────────────────
 
 const CreateLookupBody = z.object({
@@ -167,12 +229,14 @@ const CreateLookupBody = z.object({
   description: z.string().nullable().optional(),
   sortOrder: z.number().int().optional().default(0),
   metadata: z.string().nullable().optional(),
+  isDefault: z.boolean().optional().default(false),
 });
 
 const UpdateLookupBody = z.object({
   label: z.string().min(1).optional(),
   description: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
   metadata: z.string().nullable().optional(),
 });
@@ -190,6 +254,7 @@ function shapeLookup(row: typeof lookupValuesTable.$inferSelect) {
     description: row.description,
     isSystem: row.isSystem,
     isActive: row.isActive,
+    isDefault: row.isDefault,
     sortOrder: row.sortOrder,
     metadata: row.metadata,
     createdAt: row.createdAt.toISOString(),
@@ -221,6 +286,18 @@ router.post("/settings/lookup", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+
+  // If setting as default, clear any existing default in namespace first
+  if (parsed.data.isDefault) {
+    await db
+      .update(lookupValuesTable)
+      .set({ isDefault: false, updatedAt: new Date() })
+      .where(and(
+        eq(lookupValuesTable.namespace, parsed.data.namespace),
+        eq(lookupValuesTable.isDefault, true),
+      ));
+  }
+
   const [row] = await db
     .insert(lookupValuesTable)
     .values({ ...parsed.data, isSystem: false, isActive: true })
@@ -241,6 +318,19 @@ router.patch("/settings/lookup/:id", async (req, res): Promise<void> => {
     .where(eq(lookupValuesTable.id, params.data.id));
   if (!existing[0]) { res.status(404).json({ error: "Not found" }); return; }
   const before = shapeLookup(existing[0]);
+
+  // If setting as default, clear any existing default in this namespace first
+  if (parsed.data.isDefault === true) {
+    await db
+      .update(lookupValuesTable)
+      .set({ isDefault: false, updatedAt: new Date() })
+      .where(and(
+        eq(lookupValuesTable.namespace, existing[0].namespace),
+        eq(lookupValuesTable.isDefault, true),
+        ne(lookupValuesTable.id, params.data.id),
+      ));
+  }
+
   const [row] = await db
     .update(lookupValuesTable)
     .set({ ...parsed.data, updatedAt: new Date() })
@@ -251,6 +341,7 @@ router.patch("/settings/lookup/:id", async (req, res): Promise<void> => {
 });
 
 // DELETE /settings/lookup/:id
+// Business rule: if value is referenced in data records, deactivate instead of delete.
 router.delete("/settings/lookup/:id", async (req, res): Promise<void> => {
   const params = IdParam.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
@@ -259,10 +350,29 @@ router.delete("/settings/lookup/:id", async (req, res): Promise<void> => {
     .from(lookupValuesTable)
     .where(eq(lookupValuesTable.id, params.data.id));
   if (!existing) { res.status(404).json({ error: "Not found" }); return; }
+
   if (existing.isSystem) {
     res.status(403).json({ error: "System values cannot be deleted. Deactivate them instead." });
     return;
   }
+
+  // Check if this value is referenced by any data records
+  const usageCount = await countUsages(existing.namespace, existing.value);
+  if (usageCount > 0) {
+    // Deactivate instead of delete
+    const before = shapeLookup(existing);
+    const [row] = await db
+      .update(lookupValuesTable)
+      .set({ isActive: false, isDefault: false, updatedAt: new Date() })
+      .where(eq(lookupValuesTable.id, params.data.id))
+      .returning();
+    await audit("lookup_value", String(row.id), "deactivate", before, shapeLookup(row),
+      `Value in use by ${usageCount} record(s) — deactivated instead of deleted`);
+    res.status(200).json({ action: "deactivated", usageCount, item: shapeLookup(row) });
+    return;
+  }
+
+  // No references — safe to delete
   await db.delete(lookupValuesTable).where(eq(lookupValuesTable.id, params.data.id));
   await audit("lookup_value", String(params.data.id), "delete", shapeLookup(existing), null);
   res.sendStatus(204);

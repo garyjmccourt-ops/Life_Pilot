@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { PlusCircle, CheckCircle2, Circle, AlertCircle, Clock, Trash2, CalendarDays } from "lucide-react";
 import { formatDate } from "@/lib/formatters";
 import { useToast } from "@/hooks/use-toast";
-import { useLookup } from "@/hooks/use-lookup";
+import { useLookup, getDefaultValue } from "@/hooks/use-lookup";
 
 const BUCKETS_FALLBACK = ["pay", "contact", "file", "review", "negotiate", "watch"];
 
@@ -186,7 +186,7 @@ function TaskForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Category / Bucket</Label>
-          <Select name="bucket" defaultValue={taskBuckets[0]?.value ?? ""}>
+          <Select name="bucket" defaultValue={getDefaultValue(bucketLookup) ?? taskBuckets[0]?.value ?? ""}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               {taskBuckets.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
