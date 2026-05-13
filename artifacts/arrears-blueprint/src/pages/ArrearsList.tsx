@@ -106,7 +106,7 @@ export default function ArrearsList() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   if (isLoading) return (
-    <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
+    <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-8">
       <Skeleton className="h-10 w-48" />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map(i => <Skeleton key={i} className="h-48" />)}
@@ -118,7 +118,7 @@ export default function ArrearsList() {
   const activeCount = arrears?.filter(a => a.status === 'active').length || 0;
 
   return (
-    <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
+    <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">Arrears</h1>

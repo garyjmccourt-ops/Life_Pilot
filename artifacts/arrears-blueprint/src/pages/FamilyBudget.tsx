@@ -131,7 +131,7 @@ function BudgetHealthSection({ categories }: { categories: BudgetCategory[] }) {
   return (
     <div className="space-y-4">
       {/* Income vs forecast row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <Card>
           <CardContent className="pt-4 pb-3">
             <div className="text-xs text-muted-foreground mb-1">Budget Total (Planned)</div>
@@ -351,7 +351,7 @@ export default function FamilyBudget() {
       {!isLoading && <BudgetHealthSection categories={categories} />}
 
       {/* Category totals summary */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <Card>
           <CardContent className="pt-4 pb-3">
             <div className="text-xs text-muted-foreground mb-1">Weekly Planned</div>

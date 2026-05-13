@@ -864,17 +864,17 @@ function ActualReceivedSection() {
 
 export default function IncomeBills() {
   return (
-    <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
+    <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">Income & Bills</h1>
         <p className="text-muted-foreground mt-2 text-lg">Forecast sources, recurring bills, and actual income received.</p>
       </div>
 
       <Tabs defaultValue="actual" className="w-full">
-        <TabsList className="mb-6 w-full max-w-[500px] grid grid-cols-3">
-          <TabsTrigger value="actual">Actual Received</TabsTrigger>
-          <TabsTrigger value="income">Sources (Forecast)</TabsTrigger>
-          <TabsTrigger value="bills">Bills</TabsTrigger>
+        <TabsList className="mb-6 w-full grid grid-cols-3">
+          <TabsTrigger value="actual" className="text-xs sm:text-sm">Received</TabsTrigger>
+          <TabsTrigger value="income" className="text-xs sm:text-sm">Sources</TabsTrigger>
+          <TabsTrigger value="bills" className="text-xs sm:text-sm">Bills</TabsTrigger>
         </TabsList>
         <TabsContent value="actual" className="mt-0">
           <ActualReceivedSection />
