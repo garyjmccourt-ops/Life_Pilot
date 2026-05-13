@@ -4,9 +4,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   useGetArrears, getGetArrearsQueryKey,
   useUpdateArrears, useDeleteArrears,
-  useListTasks,
+  useListTasks, useCreateTask, useUpdateTask, getListTasksQueryKey,
   useListComms
 } from "@workspace/api-client-react";
+import { useLookup } from "@/hooks/use-lookup";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Copy, Check, Trash2, Save, CalendarDays, MessageSquare, AlertCircle, Circle, CheckCircle2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ArrowLeft, Copy, Check, Trash2, Save, CalendarDays, MessageSquare, AlertCircle, Circle, CheckCircle2, PlusCircle } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { useToast } from "@/hooks/use-toast";
 
@@ -38,6 +40,49 @@ export default function ArrearsDetail() {
   const deleteMutation = useDeleteArrears();
 
   const [isEditingHeader, setIsEditingHeader] = useState(false);
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
+
+  const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
+  const { data: bucketLookup = [] } = useLookup("task_bucket");
+  const BUCKET_FALLBACK = ["pay","contact","file","review","negotiate","watch"];
+  const taskBuckets = bucketLookup.length > 0
+    ? bucketLookup.map(b => ({ value: b.value, label: b.label }))
+    : BUCKET_FALLBACK.map(b => ({ value: b, label: b }));
+
+  function handleAddTask(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    createTaskMutation.mutate({
+      data: {
+        title: String(fd.get("title")),
+        bucket: String(fd.get("bucket")) as any,
+        priority: String(fd.get("priority")) as any,
+        status: "open",
+        dueDate: String(fd.get("dueDate")) || null,
+        creditorTag: arrears?.creditor ?? null,
+        arrearsItemId: id,
+        notes: null,
+        recurring: false,
+      }
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListTasksQueryKey() });
+        toast({ title: "Task added" });
+        setAddTaskOpen(false);
+        (e.target as HTMLFormElement).reset();
+      }
+    });
+  }
+
+  function toggleTaskDone(task: { id: number; status: string }) {
+    updateTaskMutation.mutate({
+      id: task.id,
+      data: { status: task.status === "done" ? "open" : "done" } as any
+    }, {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListTasksQueryKey() })
+    });
+  }
 
   if (isLoading || !arrears) return <div className="p-8 max-w-5xl mx-auto space-y-6"><Skeleton className="h-32" /></div>;
 
@@ -260,28 +305,38 @@ export default function ArrearsDetail() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-serif flex justify-between items-center">
-                <span>Related Tasks</span>
-                <Badge variant="secondary">{relatedTasks.filter(t => t.status !== 'done').length} open</Badge>
+                <span className="flex items-center gap-2">
+                  Related Tasks
+                  <Badge variant="secondary">{relatedTasks.filter(t => t.status !== 'done').length} open</Badge>
+                </span>
+                <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setAddTaskOpen(true)}>
+                  <PlusCircle className="h-3.5 w-3.5" /> Add Task
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {!relatedTasks.length ? (
-                <p className="text-sm text-muted-foreground italic">No tasks for this creditor.</p>
+                <p className="text-sm text-muted-foreground italic">No tasks yet — add one above.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {relatedTasks.map(task => (
-                    <div key={task.id} className="flex gap-2 items-start">
-                      {task.status === 'done' ? (
-                        <CheckCircle2 className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <Circle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                      )}
-                      <div>
+                    <div key={task.id} className="flex gap-2 items-start group">
+                      <button
+                        onClick={() => toggleTaskDone(task)}
+                        className="mt-0.5 flex-shrink-0 text-muted-foreground hover:text-primary transition-colors"
+                        title={task.status === 'done' ? 'Mark open' : 'Mark done'}
+                      >
+                        {task.status === 'done'
+                          ? <CheckCircle2 className="h-4 w-4 text-primary" />
+                          : <Circle className="h-4 w-4" />}
+                      </button>
+                      <div className="flex-1 min-w-0">
                         <div className={`text-sm ${task.status === 'done' ? 'text-muted-foreground line-through' : 'font-medium'}`}>
                           {task.title}
                         </div>
                         <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                           <span className="capitalize">{task.bucket}</span>
+                          {task.priority === 'p1' && <span className="text-destructive font-medium">High</span>}
                           {task.dueDate && <span>• {formatDate(task.dueDate)}</span>}
                         </div>
                       </div>
@@ -291,6 +346,50 @@ export default function ArrearsDetail() {
               )}
             </CardContent>
           </Card>
+
+          <Dialog open={addTaskOpen} onOpenChange={setAddTaskOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Task — {arrears.creditor}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleAddTask} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>What needs doing?</Label>
+                  <Input name="title" required placeholder="e.g. Call to confirm arrangement" autoFocus />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Bucket</Label>
+                    <Select name="bucket" defaultValue={taskBuckets[0]?.value ?? "today"}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {taskBuckets.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Priority</Label>
+                    <Select name="priority" defaultValue="p2">
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="p1">High</SelectItem>
+                        <SelectItem value="p2">Medium</SelectItem>
+                        <SelectItem value="p3">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Due Date <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                  <Input name="dueDate" type="date" />
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setAddTaskOpen(false)}>Cancel</Button>
+                  <Button type="submit" disabled={createTaskMutation.isPending}>Add Task</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
 
           <Card>
             <CardHeader className="pb-3">

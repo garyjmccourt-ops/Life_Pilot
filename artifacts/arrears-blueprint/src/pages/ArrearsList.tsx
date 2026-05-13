@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   useListArrears, getListArrearsQueryKey,
   useCreateArrears, useUpdateArrears,
+  useCreateTask, getListTasksQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,78 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { AlertTriangle, PlusCircle, ArrowRight, Banknote } from "lucide-react";
+import { AlertTriangle, PlusCircle, ArrowRight, Banknote, ClipboardList } from "lucide-react";
 import { formatCurrency, formatFrequency } from "@/lib/formatters";
 import { useToast } from "@/hooks/use-toast";
+
+function QuickAddTaskButton({ item }: { item: any }) {
+  const queryClient = useQueryClient();
+  const createTask = useCreateTask();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    createTask.mutate({
+      data: {
+        title: String(fd.get("title")),
+        bucket: String(fd.get("bucket")) as any,
+        priority: "p2" as any,
+        status: "open",
+        dueDate: null,
+        creditorTag: item.creditor,
+        arrearsItemId: item.id,
+        notes: null,
+        recurring: false,
+      }
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListTasksQueryKey() });
+        toast({ title: "Task added", description: item.creditor });
+        setOpen(false);
+        (e.target as HTMLFormElement).reset();
+      }
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 text-muted-foreground hover:text-foreground">
+          <ClipboardList className="h-3.5 w-3.5" /> Task
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Quick Task — {item.creditor}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label>What needs doing?</Label>
+            <Input name="title" required placeholder="e.g. Call to confirm arrangement" autoFocus />
+          </div>
+          <div className="space-y-2">
+            <Label>Bucket</Label>
+            <Select name="bucket" defaultValue="today">
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="this-week">This Week</SelectItem>
+                <SelectItem value="backlog">Backlog</SelectItem>
+                <SelectItem value="waiting">Waiting</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={createTask.isPending}>Add Task</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function RecordPaymentDialog({ item }: { item: any }) {
   const queryClient = useQueryClient();
@@ -187,6 +257,7 @@ export default function ArrearsList() {
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-border gap-2">
                   <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>{item.status}</Badge>
                   <div className="flex items-center gap-2">
+                    <QuickAddTaskButton item={item} />
                     <RecordPaymentDialog item={item} />
                     <Link href={`/arrears/${item.id}`}>
                       <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 text-primary">
