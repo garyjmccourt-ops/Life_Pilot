@@ -46,9 +46,10 @@ export default function ArrearsDetail() {
   const updateTaskMutation = useUpdateTask();
   const { data: bucketLookup = [] } = useLookup("task_bucket");
   const BUCKET_FALLBACK = ["pay","contact","file","review","negotiate","watch"];
-  const taskBuckets = bucketLookup.length > 0
+  const taskBuckets = (bucketLookup.length > 0
     ? bucketLookup.map(b => ({ value: b.value, label: b.label }))
-    : BUCKET_FALLBACK.map(b => ({ value: b, label: b }));
+    : BUCKET_FALLBACK.map(b => ({ value: b, label: b }))
+  ).filter(b => b.value !== "" && b.value != null);
 
   function handleAddTask(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
