@@ -13,45 +13,86 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, CheckCircle2, Clock, Wallet, TrendingUp, TrendingDown, ArrowRight, Circle, CheckCircle, Download } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Wallet, TrendingUp, TrendingDown, ArrowRight, Circle, CheckCircle, Download, ChevronDown, FileJson, FileSpreadsheet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImportDialog } from "@/components/ImportDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-function ExportButton() {
-  const { toast } = useToast();
-  async function handleExport() {
-    try {
-      const res = await fetch(`${import.meta.env.BASE_URL}api/export`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const disposition = res.headers.get("content-disposition") ?? "";
-      const match = disposition.match(/filename="?([^"]+)"?/);
-      const filename = match?.[1] ?? `arrears-budget-export-${new Date().toISOString().slice(0,10)}.json`;
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      toast({
-        title: "Export ready",
-        description: "Open the file and paste it into ChatGPT — the schema and field rules are bundled in.",
-      });
-    } catch (err) {
-      toast({
-        title: "Export failed",
-        description: err instanceof Error ? err.message : "Unknown error",
-        variant: "destructive",
-      });
-    }
+const BASE = import.meta.env.BASE_URL;
+
+async function triggerDownload(path: string, fallbackName: string, toast: ReturnType<typeof useToast>["toast"]) {
+  try {
+    const res = await fetch(`${BASE}${path}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const disposition = res.headers.get("content-disposition") ?? "";
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    const filename = match?.[1] ?? fallbackName;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast({ title: "Download ready", description: filename });
+  } catch (err) {
+    toast({ title: "Download failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
   }
+}
+
+const CSV_EXPORTS = [
+  { label: "Gig Work Sessions",  path: "api/export/csv/gig",      file: "gig-entries.csv" },
+  { label: "Income Received",    path: "api/export/csv/income",   file: "income-entries.csv" },
+  { label: "Bills",              path: "api/export/csv/bills",    file: "bills.csv" },
+  { label: "Arrears",            path: "api/export/csv/arrears",  file: "arrears.csv" },
+  { label: "Tasks",              path: "api/export/csv/tasks",    file: "tasks.csv" },
+  { label: "Communications",     path: "api/export/csv/comms",    file: "comms.csv" },
+  { label: "Shopping Items",     path: "api/export/csv/shopping", file: "shopping.csv" },
+];
+
+function ExportDropdown() {
+  const { toast } = useToast();
   return (
-    <Button onClick={handleExport} variant="outline" size="sm" className="gap-2">
-      <Download className="h-4 w-4" />
-      Export for ChatGPT
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <Download className="h-4 w-4" />
+          Downloads
+          <ChevronDown className="h-3 w-3 opacity-60" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>Full Export</DropdownMenuLabel>
+        <DropdownMenuItem
+          className="gap-2 cursor-pointer"
+          onClick={() => triggerDownload(
+            "api/export",
+            `myoh-export-${new Date().toISOString().slice(0,10)}.json`,
+            toast
+          )}
+        >
+          <FileJson className="h-4 w-4 text-primary" />
+          <div>
+            <div className="font-medium">All Data (JSON)</div>
+            <div className="text-xs text-muted-foreground">For ChatGPT / Claude</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Spreadsheet Downloads</DropdownMenuLabel>
+        {CSV_EXPORTS.map(({ label, path, file }) => (
+          <DropdownMenuItem
+            key={path}
+            className="gap-2 cursor-pointer"
+            onClick={() => triggerDownload(path, file, toast)}
+          >
+            <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+            {label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -264,7 +305,7 @@ export default function Home() {
         </div>
         <div className="flex gap-2">
           <ImportDialog />
-          <ExportButton />
+          <ExportDropdown />
         </div>
       </div>
 
