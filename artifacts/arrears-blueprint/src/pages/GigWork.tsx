@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { useListGigEntries, useCreateGigEntry, useUpdateGigEntry, useDeleteGigEntry } from "@workspace/api-client-react";
+import { useListGigEntries, useCreateGigEntry, useUpdateGigEntry, useDeleteGigEntry, getListIncomeEntriesQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLookup, getDefaultValue } from "@/hooks/use-lookup";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatDate } from "@/lib/formatters";
@@ -398,6 +399,7 @@ export default function GigWork() {
   const updateMutation = useUpdateGigEntry();
   const deleteMutation = useDeleteGigEntry();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -556,13 +558,20 @@ export default function GigWork() {
     try {
       if (editingId != null) {
         await updateMutation.mutateAsync({ id: editingId, data: payload });
-        toast({ title: "Entry updated" });
+        toast({
+          title: "Shift updated",
+          description: "Weekly income record updated automatically.",
+        });
       } else {
         await createMutation.mutateAsync({ data: payload });
-        toast({ title: "Entry added" });
+        toast({
+          title: "Shift added",
+          description: "Weekly income record created/updated automatically.",
+        });
       }
       setDialogOpen(false);
       refetch();
+      queryClient.invalidateQueries({ queryKey: getListIncomeEntriesQueryKey() });
     } catch {
       toast({ title: "Error saving entry", variant: "destructive" });
     }
@@ -572,8 +581,12 @@ export default function GigWork() {
     if (!confirm("Delete this entry?")) return;
     try {
       await deleteMutation.mutateAsync({ id });
-      toast({ title: "Entry deleted" });
+      toast({
+        title: "Shift deleted",
+        description: "Weekly income record totals updated automatically.",
+      });
       refetch();
+      queryClient.invalidateQueries({ queryKey: getListIncomeEntriesQueryKey() });
     } catch {
       toast({ title: "Error deleting entry", variant: "destructive" });
     }

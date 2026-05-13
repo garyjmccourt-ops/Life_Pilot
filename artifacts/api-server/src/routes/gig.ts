@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
-import { db, gigEntriesTable, incomeEntriesTable } from "@workspace/db";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { db, gigEntriesTable, incomeEntriesTable, incomeSourcesTable } from "@workspace/db";
 import {
   CreateGigEntryBody,
   UpdateGigEntryBody,
@@ -19,6 +19,139 @@ const PLATFORM_LABELS: Record<string, string> = {
 };
 
 const router: IRouter = Router();
+
+// ── Week helpers ───────────────────────────────────────────────────────────────
+
+/** Given any date string (YYYY-MM-DD), return the Monday and Sunday of that Mon–Sun week. */
+function getWeekBounds(dateStr: string): { monday: string; sunday: string } {
+  const date = new Date(dateStr + "T00:00:00Z");
+  const day = date.getUTCDay(); // 0=Sun, 1=Mon … 6=Sat
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(date);
+  monday.setUTCDate(date.getUTCDate() + diffToMonday);
+  const sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+  return {
+    monday: monday.toISOString().slice(0, 10),
+    sunday: sunday.toISOString().slice(0, 10),
+  };
+}
+
+/** Format a YYYY-MM-DD date as "19 Jan 2025" (en-AU, UTC). */
+function fmtDate(dateStr: string): string {
+  return new Date(dateStr + "T00:00:00Z").toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+// ── Weekly income sync ────────────────────────────────────────────────────────
+
+/**
+ * Find-or-create a "Gig Work" income source, then find-or-create the weekly
+ * income entry for the week containing `dateStr`. Recalculates amounts from
+ * all gig entries in that Mon–Sun window and links them to the weekly entry.
+ *
+ * Returns the income entry id.
+ */
+async function syncGigWeekIncome(dateStr: string): Promise<{ incomeEntryId: number; weekEnding: string; isNew: boolean }> {
+  const { monday, sunday } = getWeekBounds(dateStr);
+  const tag = `gig_week:${sunday}`;
+
+  // 1. Find or create the "Gig Work" income source
+  let [gigSource] = await db
+    .select()
+    .from(incomeSourcesTable)
+    .where(eq(incomeSourcesTable.name, "Gig Work"));
+
+  if (!gigSource) {
+    [gigSource] = await db
+      .insert(incomeSourcesTable)
+      .values({
+        name: "Gig Work",
+        amount: "0",
+        frequency: "weekly",
+        notes: "Auto-created — aggregates weekly gig shift income",
+      })
+      .returning();
+  }
+
+  // 2. Sum all gig entries in this Mon–Sun window
+  const weekEntries = await db
+    .select()
+    .from(gigEntriesTable)
+    .where(and(
+      gte(gigEntriesTable.entryDate, monday),
+      lte(gigEntriesTable.entryDate, sunday),
+    ));
+
+  const totalGross = weekEntries.reduce((s, e) => s + n(e.grossEarnings) + n(e.tips), 0);
+  const totalNet = weekEntries.reduce((s, e) => s + n(e.netIncome), 0);
+  const shiftIds = weekEntries.map(e => e.id);
+  const noteText = shiftIds.length > 0
+    ? `${shiftIds.length} shift${shiftIds.length !== 1 ? "s" : ""} (${monday} – ${sunday}) — IDs: ${shiftIds.join(", ")}`
+    : `No shifts recorded for week ${monday} – ${sunday}`;
+  const sourceName = `Gig Work Week Ending ${fmtDate(sunday)}`;
+
+  // 3. Find or create the weekly income entry (keyed by tag)
+  const [existing] = await db
+    .select()
+    .from(incomeEntriesTable)
+    .where(eq(incomeEntriesTable.tags, tag));
+
+  let weekIncomeId: number;
+  let isNew = false;
+
+  if (existing) {
+    const [updated] = await db
+      .update(incomeEntriesTable)
+      .set({
+        sourceName,
+        incomeSourceId: gigSource.id,
+        grossAmount: String(totalGross.toFixed(2)),
+        netAmount: String(totalNet.toFixed(2)),
+        notes: noteText,
+        dateReceived: sunday,
+      })
+      .where(eq(incomeEntriesTable.id, existing.id))
+      .returning();
+    weekIncomeId = updated.id;
+  } else {
+    const [created] = await db
+      .insert(incomeEntriesTable)
+      .values({
+        dateReceived: sunday,
+        incomeSourceId: gigSource.id,
+        sourceName,
+        grossAmount: String(totalGross.toFixed(2)),
+        netAmount: String(totalNet.toFixed(2)),
+        tags: tag,
+        notes: noteText,
+        allocated: false,
+        gigEntryId: null,
+      })
+      .returning();
+    weekIncomeId = created.id;
+    isNew = true;
+  }
+
+  // 4. Link all gig entries in this week to the weekly income entry
+  if (weekEntries.length > 0) {
+    await db
+      .update(gigEntriesTable)
+      .set({ incomeEntryId: weekIncomeId })
+      .where(and(
+        gte(gigEntriesTable.entryDate, monday),
+        lte(gigEntriesTable.entryDate, sunday),
+      ));
+  }
+
+  return { incomeEntryId: weekIncomeId, weekEnding: sunday, isNew };
+}
+
+// ── Shape ─────────────────────────────────────────────────────────────────────
 
 function shape(row: typeof gigEntriesTable.$inferSelect) {
   return {
@@ -54,6 +187,8 @@ function numStr(v: number | undefined | null): string | undefined {
   return String(v);
 }
 
+// ── Routes ─────────────────────────────────────────────────────────────────────
+
 router.get("/gig", async (_req, res): Promise<void> => {
   const rows = await db
     .select()
@@ -76,11 +211,14 @@ router.post("/gig", async (req, res): Promise<void> => {
   } = parsed.data;
   const toDate = (v: Date | string | null | undefined) =>
     v == null ? v : typeof v === "string" ? v.slice(0, 10) : v.toISOString().slice(0, 10);
+
+  const dateStr = toDate(entryDate) as string;
+
   const [row] = await db
     .insert(gigEntriesTable)
     .values({
       ...rest,
-      entryDate: toDate(entryDate) as string,
+      entryDate: dateStr,
       grossEarnings: String(grossEarnings),
       tips: String(tips),
       fastPayAmount: String(fastPayAmount),
@@ -97,7 +235,21 @@ router.post("/gig", async (req, res): Promise<void> => {
       routeChain: routeChain ?? null,
     })
     .returning();
-  res.status(201).json(shape(row));
+
+  // Auto-sync weekly income entry
+  const sync = await syncGigWeekIncome(dateStr);
+
+  // Re-fetch the row to get the updated incomeEntryId
+  const [updated] = await db.select().from(gigEntriesTable).where(eq(gigEntriesTable.id, row.id));
+
+  res.status(201).json({
+    gigEntry: shape(updated ?? row),
+    weeklyIncome: {
+      incomeEntryId: sync.incomeEntryId,
+      weekEnding: sync.weekEnding,
+      isNew: sync.isNew,
+    },
+  });
 });
 
 router.patch("/gig/:id", async (req, res): Promise<void> => {
@@ -111,6 +263,15 @@ router.patch("/gig/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+
+  // Fetch existing to get old date (needed if date changes week)
+  const [existing] = await db.select().from(gigEntriesTable).where(eq(gigEntriesTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  const oldDate = existing.entryDate;
+
   const {
     grossEarnings, tips, fastPayAmount, weeklyDepositAmount, fees,
     fuelEstimate, otherExpenses, netIncome, hoursWorked, entryDate,
@@ -119,6 +280,7 @@ router.patch("/gig/:id", async (req, res): Promise<void> => {
   } = parsed.data;
   const toDate = (v: Date | string | null | undefined) =>
     v == null ? v : typeof v === "string" ? v.slice(0, 10) : v.toISOString().slice(0, 10);
+
   const [row] = await db
     .update(gigEntriesTable)
     .set({
@@ -141,11 +303,33 @@ router.patch("/gig/:id", async (req, res): Promise<void> => {
     })
     .where(eq(gigEntriesTable.id, params.data.id))
     .returning();
+
   if (!row) {
     res.status(404).json({ error: "Not found" });
     return;
   }
-  res.json(shape(row));
+
+  const newDate = row.entryDate;
+
+  // Sync the new week; if date moved to a different week, also re-sync the old week
+  const sync = await syncGigWeekIncome(newDate);
+  const oldWeek = getWeekBounds(oldDate);
+  const newWeek = getWeekBounds(newDate);
+  if (oldWeek.sunday !== newWeek.sunday) {
+    await syncGigWeekIncome(oldDate);
+  }
+
+  // Re-fetch to get updated incomeEntryId
+  const [refreshed] = await db.select().from(gigEntriesTable).where(eq(gigEntriesTable.id, row.id));
+
+  res.json({
+    gigEntry: shape(refreshed ?? row),
+    weeklyIncome: {
+      incomeEntryId: sync.incomeEntryId,
+      weekEnding: sync.weekEnding,
+      isNew: sync.isNew,
+    },
+  });
 });
 
 router.delete("/gig/:id", async (req, res): Promise<void> => {
@@ -154,10 +338,22 @@ router.delete("/gig/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
+
+  // Capture the entry date before deleting so we can re-sync the week
+  const [existing] = await db.select().from(gigEntriesTable).where(eq(gigEntriesTable.id, params.data.id));
+  const entryDate = existing?.entryDate;
+
   await db.delete(gigEntriesTable).where(eq(gigEntriesTable.id, params.data.id));
+
+  // Re-sync the week's income entry (updates totals after removal)
+  if (entryDate) {
+    await syncGigWeekIncome(entryDate);
+  }
+
   res.sendStatus(204);
 });
 
+// Legacy per-entry link (kept for backwards compatibility)
 router.post("/gig/:id/link-income", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) {
@@ -175,42 +371,10 @@ router.post("/gig/:id/link-income", async (req, res): Promise<void> => {
     return;
   }
 
-  if (gig.incomeEntryId != null) {
-    res.status(409).json({ error: "already_linked", incomeEntryId: gig.incomeEntryId });
-    return;
-  }
-
-  const platformLabel = PLATFORM_LABELS[gig.platform] ?? gig.platform;
-  const paymentMethod =
-    gig.paymentStatus === "fast-paid" ? "FastPay" :
-    gig.paymentStatus === "deposited" ? "Weekly Deposit" : "Cash";
-
-  const grossAmount = n(gig.grossEarnings) + n(gig.tips);
-  const netAmount = n(gig.netIncome);
-  const noteText = `Gig shift #${gig.id} (${platformLabel})${gig.notes ? " — " + gig.notes : ""}`;
-
-  const [incomeRow] = await db
-    .insert(incomeEntriesTable)
-    .values({
-      dateReceived: gig.entryDate,
-      sourceName: platformLabel,
-      person: gig.person ?? null,
-      grossAmount: String(grossAmount),
-      netAmount: String(netAmount),
-      paymentMethod,
-      notes: noteText,
-      gigEntryId: gig.id,
-      allocated: false,
-    })
-    .returning();
-
-  const [updatedGig] = await db
-    .update(gigEntriesTable)
-    .set({ incomeEntryId: incomeRow.id })
-    .where(eq(gigEntriesTable.id, id))
-    .returning();
-
-  res.status(201).json({ gigEntry: shape(updatedGig), incomeEntryId: incomeRow.id });
+  // Redirect to weekly sync
+  const sync = await syncGigWeekIncome(gig.entryDate);
+  const [updated] = await db.select().from(gigEntriesTable).where(eq(gigEntriesTable.id, id));
+  res.status(201).json({ gigEntry: shape(updated ?? gig), incomeEntryId: sync.incomeEntryId });
 });
 
 export default router;
