@@ -16,6 +16,7 @@ import {
   PieChart,
   GitBranch,
   Settings2,
+  BookOpen,
   Menu,
   X,
 } from "lucide-react";
@@ -33,6 +34,7 @@ const NAV_ITEMS = [
   { href: "/weekly", label: "Weekly Tracker", icon: CalendarDays },
   { href: "/scenarios", label: "Scenarios", icon: GitBranch },
   { href: "/settings", label: "Settings", icon: Settings2 },
+  { href: "/docs", label: "Docs / Help", icon: BookOpen },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
