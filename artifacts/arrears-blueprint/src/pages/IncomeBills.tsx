@@ -9,6 +9,7 @@ import {
   useCreateIncomeEntry, useDeleteIncomeEntry,
   useListArrears,
 } from "@workspace/api-client-react";
+import { useLookup } from "@/hooks/use-lookup";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -488,6 +489,8 @@ function BillForm({ onSuccess, initial }: { onSuccess: () => void; initial?: any
   const updateMutation = useUpdateBill();
   const { toast } = useToast();
   const isEdit = !!initial;
+  const { data: billCategories = [] } = useLookup("bill_category");
+  const [categoryValue, setCategoryValue] = useState<string>(initial?.category ?? "");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -499,7 +502,7 @@ function BillForm({ onSuccess, initial }: { onSuccess: () => void; initial?: any
 
     const data = {
       provider: String(formData.get("provider")),
-      category: String(formData.get("category")),
+      category: categoryValue || String(formData.get("category")),
       amount,
       frequency: String(formData.get("frequency")) as any,
       dueDay: dueDayStr ? Number(dueDayStr) : null,
@@ -538,7 +541,19 @@ function BillForm({ onSuccess, initial }: { onSuccess: () => void; initial?: any
         </div>
         <div className="space-y-2">
           <Label htmlFor="category">Category</Label>
-          <Input id="category" name="category" required placeholder="e.g. Utilities" defaultValue={initial?.category ?? ""} />
+          {billCategories.length > 0 ? (
+            <>
+              <Select value={categoryValue} onValueChange={setCategoryValue} required>
+                <SelectTrigger><SelectValue placeholder="Select category…" /></SelectTrigger>
+                <SelectContent>
+                  {billCategories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <input type="hidden" name="category" value={categoryValue} />
+            </>
+          ) : (
+            <Input id="category" name="category" required placeholder="e.g. Utilities" value={categoryValue} onChange={e => setCategoryValue(e.target.value)} />
+          )}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -645,6 +660,7 @@ function ActualReceivedSection() {
   const [form, setForm] = useState<QuickForm>(makeBlank);
   const [saving, setSaving] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const { data: peopleLookup = [] } = useLookup("household_people");
 
   const sf = (key: keyof QuickForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(prev => ({ ...prev, [key]: e.target.value }));
@@ -721,7 +737,17 @@ function ActualReceivedSection() {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Person</Label>
-                <Input placeholder="e.g. Sam" value={form.person} onChange={sf("person")} className="h-8 text-sm" />
+                {peopleLookup.length > 0 ? (
+                  <Select value={form.person} onValueChange={v => setForm(prev => ({ ...prev, person: v }))}>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select…" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">— Not set —</SelectItem>
+                      {peopleLookup.map(p => <SelectItem key={p.value} value={p.label}>{p.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input placeholder="e.g. Sam" value={form.person} onChange={sf("person")} className="h-8 text-sm" />
+                )}
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Gross Amount ($)</Label>

@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useListGigEntries, useCreateGigEntry, useUpdateGigEntry, useDeleteGigEntry } from "@workspace/api-client-react";
+import { useLookup } from "@/hooks/use-lookup";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
@@ -411,6 +412,13 @@ export default function GigWork() {
   const [fuelSettings, setFuelSettings] = useState<FuelSettings>(loadFuelSettings);
   const [fuelDialogOpen, setFuelDialogOpen] = useState(false);
   const [fuelForm, setFuelForm] = useState({ pricePerL: "", l100km: "" });
+
+  const { data: platformLookup = [] } = useLookup("gig_platform");
+  const { data: peopleLookup = [] } = useLookup("household_people");
+
+  const platformOptions = platformLookup.length > 0
+    ? platformLookup.map(p => ({ value: p.value, label: p.label }))
+    : Object.entries(PLATFORM_LABELS).map(([k, v]) => ({ value: k, label: v }));
 
   // ── Auto-calc: fuel from km ───────────────────────────────────────────────
   useEffect(() => {
@@ -1040,15 +1048,25 @@ export default function GigWork() {
                   <Select value={form.platform} onValueChange={(v) => setForm((p) => ({ ...p, platform: v }))}>
                     <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {Object.entries(PLATFORM_LABELS).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v}</SelectItem>
+                      {platformOptions.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label>Person</Label>
-                  <Input className="h-11" placeholder="e.g. Jess" value={form.person} onChange={sf("person")} />
+                  {peopleLookup.length > 0 ? (
+                    <Select value={form.person} onValueChange={v => setForm(p => ({ ...p, person: v }))}>
+                      <SelectTrigger className="h-11"><SelectValue placeholder="Select…" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">— Not set —</SelectItem>
+                        {peopleLookup.map(p => <SelectItem key={p.value} value={p.label}>{p.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input className="h-11" placeholder="e.g. Jess" value={form.person} onChange={sf("person")} />
+                  )}
                 </div>
                 <div>
                   <Label>Payment Status</Label>

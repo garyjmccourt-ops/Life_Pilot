@@ -16,14 +16,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { PlusCircle, CheckCircle2, Circle, AlertCircle, Clock, Trash2, CalendarDays } from "lucide-react";
 import { formatDate } from "@/lib/formatters";
 import { useToast } from "@/hooks/use-toast";
+import { useLookup } from "@/hooks/use-lookup";
 
-const BUCKETS = ["pay", "contact", "file", "review", "negotiate", "watch"];
-const PRIORITIES = { p1: "High", p2: "Medium", p3: "Low" };
+const BUCKETS_FALLBACK = ["pay", "contact", "file", "review", "negotiate", "watch"];
 
 export default function Tasks() {
   const { data: tasks, isLoading } = useListTasks();
+  const { data: bucketLookup = [] } = useLookup("task_bucket");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [filterBucket, setFilterBucket] = useState<string>("all");
+
+  const buckets = bucketLookup.length > 0
+    ? bucketLookup.map(b => ({ value: b.value, label: b.label }))
+    : BUCKETS_FALLBACK.map(b => ({ value: b, label: b }));
   
   if (isLoading) return <div className="p-8"><Skeleton className="h-64" /></div>;
 
@@ -55,9 +60,9 @@ export default function Tasks() {
 
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         <Button variant={filterBucket === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterBucket("all")} className="rounded-full">All</Button>
-        {BUCKETS.map(bucket => (
-          <Button key={bucket} variant={filterBucket === bucket ? "default" : "outline"} size="sm" onClick={() => setFilterBucket(bucket)} className="rounded-full capitalize">
-            {bucket}
+        {buckets.map(bucket => (
+          <Button key={bucket.value} variant={filterBucket === bucket.value ? "default" : "outline"} size="sm" onClick={() => setFilterBucket(bucket.value)} className="rounded-full capitalize">
+            {bucket.label}
           </Button>
         ))}
       </div>
@@ -140,6 +145,10 @@ function TaskForm({ onSuccess }: { onSuccess: () => void }) {
   const createMutation = useCreateTask();
   const { data: arrears } = useListArrears();
   const { toast } = useToast();
+  const { data: bucketLookup = [] } = useLookup("task_bucket");
+  const taskBuckets = bucketLookup.length > 0
+    ? bucketLookup.map(b => ({ value: b.value, label: b.label }))
+    : BUCKETS_FALLBACK.map(b => ({ value: b, label: b }));
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -177,10 +186,10 @@ function TaskForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Category / Bucket</Label>
-          <Select name="bucket" defaultValue="contact">
+          <Select name="bucket" defaultValue={taskBuckets[0]?.value ?? ""}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {BUCKETS.map(b => <SelectItem key={b} value={b} className="capitalize">{b}</SelectItem>)}
+              {taskBuckets.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
