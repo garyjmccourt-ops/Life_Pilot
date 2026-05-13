@@ -1,9 +1,11 @@
 import { Router, type IRouter } from "express";
+import { and, gte, lte } from "drizzle-orm";
 import {
   db,
   arrearsItemsTable,
   billsTable,
   incomeSourcesTable,
+  incomeEntriesTable,
   tasksTable,
   gigEntriesTable,
 } from "@workspace/db";
@@ -12,12 +14,26 @@ import { n, toWeekly } from "../lib/calc";
 const router: IRouter = Router();
 
 router.get("/dashboard/summary", async (_req, res): Promise<void> => {
-  const [income, bills, arrears, tasks, gigEntries] = await Promise.all([
+  // Current week: Monday to Sunday
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + daysToMonday);
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const weekStart = monday.toISOString().slice(0, 10);
+  const weekEnd = sunday.toISOString().slice(0, 10);
+
+  const [income, bills, arrears, tasks, gigEntries, weekIncomeEntries] = await Promise.all([
     db.select().from(incomeSourcesTable),
     db.select().from(billsTable),
     db.select().from(arrearsItemsTable),
     db.select().from(tasksTable),
     db.select().from(gigEntriesTable),
+    db.select().from(incomeEntriesTable)
+      .where(and(gte(incomeEntriesTable.dateReceived, weekStart), lte(incomeEntriesTable.dateReceived, weekEnd))),
   ]);
 
   const weeklyIncome =
@@ -72,8 +88,14 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
       .reduce((s, g) => s + n(g.fastPayAmount) + n(g.weeklyDepositAmount), 0) * 100,
   ) / 100;
 
+  // Actual income received this week (from income_entries, not forecast)
+  const actualIncomeThisWeek = Math.round(
+    weekIncomeEntries.reduce((s: number, e) => s + n(e.grossAmount), 0) * 100,
+  ) / 100;
+
   res.json({
     weeklyIncome,
+    actualIncomeThisWeek,
     weeklyBills,
     weeklyArrears,
     weeklyOut,

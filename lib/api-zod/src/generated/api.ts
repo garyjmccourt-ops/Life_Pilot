@@ -168,7 +168,7 @@ export const ListBillsResponseItem = zod.object({
     "one-off",
   ]),
   dueDay: zod.number().nullish(),
-  dueDate: zod.string().nullish(),
+  dueDate: zod.coerce.date().nullish(),
   accountRef: zod.string().nullish(),
   autopay: zod.boolean(),
   weeklyEquivalent: zod.number(),
@@ -189,7 +189,7 @@ export const CreateBillBody = zod.object({
     "one-off",
   ]),
   dueDay: zod.number().nullish(),
-  dueDate: zod.string().nullish(),
+  dueDate: zod.coerce.date().nullish(),
   accountRef: zod.string().nullish(),
   autopay: zod.boolean(),
   notes: zod.string().nullish(),
@@ -212,7 +212,7 @@ export const UpdateBillBody = zod.object({
     "one-off",
   ]),
   dueDay: zod.number().nullish(),
-  dueDate: zod.string().nullish(),
+  dueDate: zod.coerce.date().nullish(),
   accountRef: zod.string().nullish(),
   autopay: zod.boolean(),
   notes: zod.string().nullish(),
@@ -232,6 +232,7 @@ export const UpdateBillResponse = zod.object({
     "one-off",
   ]),
   dueDay: zod.number().nullish(),
+  dueDate: zod.coerce.date().nullish(),
   accountRef: zod.string().nullish(),
   autopay: zod.boolean(),
   weeklyEquivalent: zod.number(),
@@ -669,6 +670,7 @@ export const UpsertWeekResponse = zod.object({
 
 export const GetDashboardSummaryResponse = zod.object({
   weeklyIncome: zod.number(),
+  actualIncomeThisWeek: zod.number(),
   weeklyBills: zod.number(),
   weeklyArrears: zod.number(),
   weeklyOut: zod.number(),
@@ -759,11 +761,6 @@ export const CreateGigEntryBody = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
-  estimatedKm: zod.number().nullish(),
-  activeMinutes: zod.number().int().nullish(),
-  deliveriesCount: zod.number().int().nullish(),
-  offersCount: zod.number().int().nullish(),
-  routeChain: zod.string().nullish(),
 });
 
 export const UpdateGigEntryParams = zod.object({
@@ -788,11 +785,6 @@ export const UpdateGigEntryBody = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
-  estimatedKm: zod.number().nullish(),
-  activeMinutes: zod.number().int().nullish(),
-  deliveriesCount: zod.number().int().nullish(),
-  offersCount: zod.number().int().nullish(),
-  routeChain: zod.string().nullish(),
 });
 
 export const UpdateGigEntryResponse = zod.object({
@@ -814,11 +806,6 @@ export const UpdateGigEntryResponse = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
-  estimatedKm: zod.number().nullish(),
-  activeMinutes: zod.number().int().nullish(),
-  deliveriesCount: zod.number().int().nullish(),
-  offersCount: zod.number().int().nullish(),
-  routeChain: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 

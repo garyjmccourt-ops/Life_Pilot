@@ -72,11 +72,14 @@ function SummaryCards() {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Weekly Income</CardTitle>
+          <CardTitle className="text-sm font-medium">Received This Week</CardTitle>
           <TrendingUp className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(summary.weeklyIncome)}</div>
+          <div className="text-2xl font-bold">{formatCurrency(summary.actualIncomeThisWeek)}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Forecast: {formatCurrency(summary.weeklyIncome)}/wk
+          </p>
         </CardContent>
       </Card>
       

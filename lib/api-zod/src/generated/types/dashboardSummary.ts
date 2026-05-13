@@ -8,6 +8,7 @@
 
 export interface DashboardSummary {
   weeklyIncome: number;
+  actualIncomeThisWeek: number;
   weeklyBills: number;
   weeklyArrears: number;
   weeklyOut: number;

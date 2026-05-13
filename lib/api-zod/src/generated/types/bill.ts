@@ -16,7 +16,7 @@ export interface Bill {
   /** @nullable */
   dueDay?: number | null;
   /** @nullable */
-  dueDate?: string | null;
+  dueDate?: Date | null;
   /** @nullable */
   accountRef?: string | null;
   autopay: boolean;

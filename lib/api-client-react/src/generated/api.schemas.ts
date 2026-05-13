@@ -441,16 +441,6 @@ export interface GigEntry {
   incomeEntryId?: number | null;
   /** @nullable */
   notes?: string | null;
-  /** @nullable */
-  estimatedKm?: number | null;
-  /** @nullable */
-  activeMinutes?: number | null;
-  /** @nullable */
-  deliveriesCount?: number | null;
-  /** @nullable */
-  offersCount?: number | null;
-  /** @nullable */
-  routeChain?: string | null;
   createdAt: string;
 }
 
@@ -476,16 +466,6 @@ export interface GigEntryInput {
   paymentStatus: GigPaymentStatus;
   /** @nullable */
   incomeEntryId?: number | null;
-  /** @nullable */
-  estimatedKm?: number | null;
-  /** @nullable */
-  activeMinutes?: number | null;
-  /** @nullable */
-  deliveriesCount?: number | null;
-  /** @nullable */
-  offersCount?: number | null;
-  /** @nullable */
-  routeChain?: string | null;
   /** @nullable */
   notes?: string | null;
 }
@@ -685,6 +665,7 @@ export interface ShoppingListItemInput {
 
 export interface DashboardSummary {
   weeklyIncome: number;
+  actualIncomeThisWeek: number;
   weeklyBills: number;
   weeklyArrears: number;
   weeklyOut: number;
