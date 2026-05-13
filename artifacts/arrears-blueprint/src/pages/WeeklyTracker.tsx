@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDate, formatCurrency } from "@/lib/formatters";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Edit2, ChevronLeft, ChevronRight, Plus, Trash2, DollarSign } from "lucide-react";
+import { Check, Edit2, ChevronLeft, ChevronRight, Plus, Trash2, DollarSign, Bike } from "lucide-react";
 
 // ── Week helpers ──────────────────────────────────────────────────────────────
 
@@ -466,10 +466,20 @@ function ActualIncomeSection({
                     ? entry.dateReceived
                     : (entry.dateReceived as Date).toISOString()
                   ).slice(0, 10);
+                  const fromGig = entry.gigEntryId != null;
                   return (
-                    <tr key={entry.id} className="border-b last:border-0 hover:bg-muted/20">
+                    <tr key={entry.id} className={`border-b last:border-0 hover:bg-muted/20 ${fromGig ? "bg-blue-50/40" : ""}`}>
                       <td className="px-3 py-2">{formatDate(d)}</td>
-                      <td className="px-3 py-2 font-medium">{entry.sourceName}</td>
+                      <td className="px-3 py-2 font-medium">
+                        <span className="flex items-center gap-1.5">
+                          {entry.sourceName}
+                          {fromGig && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-full shrink-0">
+                              <Bike className="h-2.5 w-2.5" /> Gig
+                            </span>
+                          )}
+                        </span>
+                      </td>
                       <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">{entry.person ?? "—"}</td>
                       <td className="px-3 py-2 text-right font-semibold text-primary">{formatCurrency(entry.grossAmount)}</td>
                       <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">{entry.paymentMethod ?? "—"}</td>
@@ -486,6 +496,7 @@ function ActualIncomeSection({
                       <td className="px-3 py-2 text-right">
                         <Button
                           variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          title={fromGig ? "Remove income entry — gig shift will be unlinkable again" : "Remove entry"}
                           onClick={() => handleDelete(entry.id)}
                         >
                           <Trash2 className="h-3 w-3" />

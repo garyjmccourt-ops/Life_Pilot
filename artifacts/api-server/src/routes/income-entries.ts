@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
-import { db, incomeEntriesTable } from "@workspace/db";
+import { db, incomeEntriesTable, gigEntriesTable } from "@workspace/db";
 import {
   CreateIncomeEntryBody,
   UpdateIncomeEntryBody,
@@ -94,6 +94,16 @@ router.delete("/income-entries/:id", async (req, res): Promise<void> => {
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
+  }
+  const [entry] = await db
+    .select()
+    .from(incomeEntriesTable)
+    .where(eq(incomeEntriesTable.id, params.data.id));
+  if (entry?.gigEntryId != null) {
+    await db
+      .update(gigEntriesTable)
+      .set({ incomeEntryId: null })
+      .where(eq(gigEntriesTable.id, entry.gigEntryId));
   }
   await db.delete(incomeEntriesTable).where(eq(incomeEntriesTable.id, params.data.id));
   res.sendStatus(204);
