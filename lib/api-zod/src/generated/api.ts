@@ -173,6 +173,7 @@ export const ListBillsResponseItem = zod.object({
   autopay: zod.boolean(),
   weeklyEquivalent: zod.number(),
   notes: zod.string().nullish(),
+  paidStatus: zod.string(),
 });
 export const ListBillsResponse = zod.array(ListBillsResponseItem);
 
@@ -193,6 +194,7 @@ export const CreateBillBody = zod.object({
   accountRef: zod.string().nullish(),
   autopay: zod.boolean(),
   notes: zod.string().nullish(),
+  paidStatus: zod.string().optional(),
 });
 
 export const UpdateBillParams = zod.object({
@@ -216,6 +218,7 @@ export const UpdateBillBody = zod.object({
   accountRef: zod.string().nullish(),
   autopay: zod.boolean(),
   notes: zod.string().nullish(),
+  paidStatus: zod.string().optional(),
 });
 
 export const UpdateBillResponse = zod.object({
@@ -237,6 +240,7 @@ export const UpdateBillResponse = zod.object({
   autopay: zod.boolean(),
   weeklyEquivalent: zod.number(),
   notes: zod.string().nullish(),
+  paidStatus: zod.string(),
 });
 
 export const DeleteBillParams = zod.object({

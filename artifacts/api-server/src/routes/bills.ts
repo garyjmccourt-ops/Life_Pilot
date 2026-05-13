@@ -24,6 +24,7 @@ function shape(row: typeof billsTable.$inferSelect) {
     accountRef: row.accountRef,
     autopay: row.autopay,
     notes: row.notes,
+    paidStatus: row.paidStatus ?? "unpaid",
     weeklyEquivalent: toWeekly(amount, row.frequency),
   };
 }

@@ -220,6 +220,7 @@ export interface Bill {
   weeklyEquivalent: number;
   /** @nullable */
   notes?: string | null;
+  paidStatus: string;
 }
 
 export interface BillInput {
@@ -236,6 +237,7 @@ export interface BillInput {
   autopay: boolean;
   /** @nullable */
   notes?: string | null;
+  paidStatus?: string;
 }
 
 export interface ArrearsItem {

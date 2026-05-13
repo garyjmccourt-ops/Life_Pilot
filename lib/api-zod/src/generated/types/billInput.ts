@@ -21,4 +21,5 @@ export interface BillInput {
   autopay: boolean;
   /** @nullable */
   notes?: string | null;
+  paidStatus?: string;
 }

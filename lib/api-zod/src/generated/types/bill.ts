@@ -23,4 +23,5 @@ export interface Bill {
   weeklyEquivalent: number;
   /** @nullable */
   notes?: string | null;
+  paidStatus: string;
 }

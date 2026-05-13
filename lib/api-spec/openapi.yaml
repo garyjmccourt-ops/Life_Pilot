@@ -912,7 +912,8 @@ components:
         autopay: { type: boolean }
         weeklyEquivalent: { type: number }
         notes: { type: ["string", "null"] }
-      required: [id, provider, category, amount, frequency, autopay, weeklyEquivalent]
+        paidStatus: { type: string }
+      required: [id, provider, category, amount, frequency, autopay, weeklyEquivalent, paidStatus]
     BillInput:
       type: object
       properties:
@@ -925,6 +926,7 @@ components:
         accountRef: { type: ["string", "null"] }
         autopay: { type: boolean }
         notes: { type: ["string", "null"] }
+        paidStatus: { type: string }
       required: [provider, category, amount, frequency, autopay]
 
     ArrearsItem:

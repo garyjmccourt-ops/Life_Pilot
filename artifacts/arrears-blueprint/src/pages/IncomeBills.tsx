@@ -4,9 +4,10 @@ import {
   useListIncome, getListIncomeQueryKey,
   useListBills, getListBillsQueryKey,
   useCreateIncome, useDeleteIncome,
-  useCreateBill, useDeleteBill,
+  useCreateBill, useUpdateBill, useDeleteBill,
   useListIncomeEntries, getListIncomeEntriesQueryKey,
   useCreateIncomeEntry, useDeleteIncomeEntry,
+  useListArrears,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Trash2, Wallet, Receipt, RefreshCw, Building, DollarSign, Check, Bike } from "lucide-react";
+import { PlusCircle, Trash2, Wallet, Receipt, RefreshCw, Building, DollarSign, Check, Bike, Pencil, CalendarClock, TrendingDown } from "lucide-react";
 import { formatCurrency, formatFrequency, formatDate } from "@/lib/formatters";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -192,37 +193,172 @@ function IncomeForm({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
+// ── Bills helpers ─────────────────────────────────────────────────────────────
+
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function addDaysStr(base: string, days: number): string {
+  const d = new Date(base + "T00:00:00");
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function billsDueInWindow(bills: any[], from: string, to: string): any[] {
+  const start = new Date(from + "T00:00:00");
+  const end = new Date(to + "T23:59:59");
+  return bills.filter(b => {
+    if (b.dueDate) {
+      const d = new Date((typeof b.dueDate === "string" ? b.dueDate : b.dueDate.toISOString().slice(0,10)) + "T00:00:00");
+      if (d >= start && d <= end) return true;
+    }
+    if (b.frequency === "weekly" || b.frequency === "fortnightly") return true;
+    if (b.dueDay) {
+      for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
+        if (cur.getDate() === b.dueDay) return true;
+      }
+    }
+    return false;
+  });
+}
+
+const PAID_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  unpaid:    { label: "Unpaid",    color: "text-muted-foreground", bg: "bg-muted/60" },
+  paid:      { label: "Paid",      color: "text-emerald-700",      bg: "bg-emerald-50" },
+  "part-paid": { label: "Part-paid", color: "text-amber-700",      bg: "bg-amber-50" },
+  overdue:   { label: "Overdue",   color: "text-destructive",      bg: "bg-red-50" },
+};
+
 // ── Bills ─────────────────────────────────────────────────────────────────────
 
 function BillsList() {
-  const { data: bills, isLoading } = useListBills();
+  const queryClient = useQueryClient();
+  const { data: bills = [], isLoading } = useListBills();
+  const { data: allEntries = [] } = useListIncomeEntries();
+  const { data: arrears = [] } = useListArrears();
+  const updateMutation = useUpdateBill();
+  const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingBill, setEditingBill] = useState<any | null>(null);
+
+  const today = todayStr();
+  const in7 = addDaysStr(today, 7);
+  const in30 = addDaysStr(today, 30);
+
+  // Current week Mon-Sun
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(now); monday.setDate(now.getDate() + mondayOffset); monday.setHours(0,0,0,0);
+  const mondayStr = monday.toISOString().slice(0,10);
+  const sundayStr = addDaysStr(mondayStr, 6);
+
+  const thisWeekBills = billsDueInWindow(bills, mondayStr, sundayStr);
+  const next7Bills   = billsDueInWindow(bills, today, in7);
+  const next30Bills  = billsDueInWindow(bills, today, in30);
+
+  const thisWeekTotal = thisWeekBills.reduce((s: number, b: any) => s + (b.weeklyEquivalent ?? b.amount), 0);
+  const next7Total    = next7Bills.reduce((s: number, b: any) => s + (b.weeklyEquivalent ?? b.amount), 0);
+  const next30Total   = next30Bills.reduce((s: number, b: any) => s + (b.amount ?? 0), 0);
+
+  const arrearsWeekly = (arrears as any[]).filter((a: any) => a.status === "active")
+    .reduce((s: number, a: any) => s + (a.weeklyOngoing ?? 0) + (a.weeklyArrears ?? 0), 0);
+
+  // Actual income this week
+  const weekEntries = allEntries.filter(e => {
+    const d = (typeof e.dateReceived === "string" ? e.dateReceived : (e.dateReceived as Date).toISOString()).slice(0,10);
+    return d >= mondayStr && d <= sundayStr;
+  });
+  const actualIncome = weekEntries.reduce((s, e) => s + e.grossAmount, 0);
+  const totalCommitments = thisWeekTotal + arrearsWeekly;
+  const surplus = actualIncome - totalCommitments;
+
+  const totalWeekly = bills.reduce((sum, item) => sum + item.weeklyEquivalent, 0);
+
+  async function quickStatus(bill: any, status: string) {
+    await updateMutation.mutateAsync({
+      id: bill.id,
+      data: { ...bill, paidStatus: status },
+    });
+    queryClient.invalidateQueries({ queryKey: getListBillsQueryKey() });
+    toast({ title: `Marked as ${status}` });
+  }
 
   if (isLoading) return <Skeleton className="h-[300px]" />;
 
-  const totalWeekly = bills?.reduce((sum, item) => sum + item.weeklyEquivalent, 0) || 0;
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-xl font-serif font-bold">Recurring Bills</h2>
-          <p className="text-sm text-muted-foreground">{bills?.length || 0} bills • {formatCurrency(totalWeekly)}/wk total</p>
+          <p className="text-sm text-muted-foreground">{bills.length} bills • {formatCurrency(totalWeekly)}/wk total</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button><PlusCircle className="h-4 w-4 mr-2" /> Add Bill</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Bill</DialogTitle>
-            </DialogHeader>
-            <BillForm onSuccess={() => setIsCreateOpen(false)} />
+            <DialogHeader><DialogTitle>Add Bill</DialogTitle></DialogHeader>
+            <BillForm onSuccess={() => { setIsCreateOpen(false); queryClient.invalidateQueries({ queryKey: getListBillsQueryKey() }); }} />
           </DialogContent>
         </Dialog>
       </div>
 
-      {!bills?.length ? (
+      {/* Rent-first model note */}
+      <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <TrendingDown className="h-4 w-4 mt-0.5 shrink-0" />
+        <span><strong>Rent-first model:</strong> Sam's wages cover rent/arrears first. Gary's DoorDash/work covers bills, fuel, food and incidentals.</span>
+      </div>
+
+      {/* Cashflow windows */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {[
+          { label: "This Week", count: thisWeekBills.length, total: thisWeekTotal, sub: `${mondayStr} – ${sundayStr}`, icon: "📅" },
+          { label: "Next 7 Days", count: next7Bills.length, total: next7Total, sub: "Rolling 7-day window", icon: "📆" },
+          { label: "Next 30 Days", count: next30Bills.length, total: next30Total, sub: "Full bill amounts", icon: "🗓️" },
+        ].map(w => (
+          <Card key={w.label}>
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{w.label}</span>
+              </div>
+              <div className="text-xl font-bold text-amber-700">{formatCurrency(w.total)}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{w.count} bills due · {w.sub}</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Shortfall/surplus this week */}
+      <Card className={`border ${surplus >= 0 ? "border-emerald-200 bg-emerald-50/40" : "border-red-200 bg-red-50/40"}`}>
+        <CardContent className="pt-4 pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
+            <div className="space-y-0.5">
+              <div className="font-semibold text-foreground">This Week Cashflow</div>
+              <div className="text-xs text-muted-foreground">Actual income received vs bills + arrears commitments</div>
+            </div>
+            <div className="flex items-center gap-6 text-sm">
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground">Received</div>
+                <div className="font-semibold text-primary">{formatCurrency(actualIncome)}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground">Commitments</div>
+                <div className="font-semibold text-amber-700">{formatCurrency(totalCommitments)}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground">{surplus >= 0 ? "Surplus" : "Shortfall"}</div>
+                <div className={`text-base font-bold ${surplus >= 0 ? "text-emerald-700" : "text-destructive"}`}>
+                  {surplus >= 0 ? "+" : "−"}{formatCurrency(Math.abs(surplus))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bills list */}
+      {bills.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-12 text-center border-dashed">
           <Receipt className="h-12 w-12 text-primary/20 mb-4" />
           <h3 className="font-serif text-lg font-medium">No recurring bills</h3>
@@ -230,107 +366,167 @@ function BillsList() {
           <Button onClick={() => setIsCreateOpen(true)} variant="outline"><PlusCircle className="h-4 w-4 mr-2" /> Add Bill</Button>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {bills.map((item) => (
-            <Card key={item.id} className="relative group">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <CardTitle className="text-base">{item.provider}</CardTitle>
-                    <div className="flex items-center text-xs text-muted-foreground gap-2">
-                      <span className="flex items-center"><Building className="h-3 w-3 mr-1" />{item.category}</span>
-                      <span className="flex items-center"><RefreshCw className="h-3 w-3 mr-1" />{formatFrequency(item.frequency)}</span>
-                    </div>
-                  </div>
-                  <BillActions id={item.id} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline gap-2">
-                  <div className="text-2xl font-bold">{formatCurrency(item.amount)}</div>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <div className="text-sm text-muted-foreground">
-                    equiv. {formatCurrency(item.weeklyEquivalent)} / wk
-                  </div>
-                  {item.dueDate ? (
-                    <div className="text-xs bg-secondary px-2 py-1 rounded">
-                      Due: {item.dueDate}
-                    </div>
-                  ) : item.dueDay ? (
-                    <div className="text-xs bg-secondary px-2 py-1 rounded">
-                      Due: {item.dueDay}{[1,21,31].includes(item.dueDay)?'st':[2,22].includes(item.dueDay)?'nd':[3,23].includes(item.dueDay)?'rd':'th'}
-                    </div>
-                  ) : null}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="border rounded-lg overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/50 border-b text-xs text-muted-foreground">
+                <th className="px-3 py-2 text-left font-medium">Provider</th>
+                <th className="px-3 py-2 text-left font-medium hidden md:table-cell">Category</th>
+                <th className="px-3 py-2 text-left font-medium hidden sm:table-cell">Frequency</th>
+                <th className="px-3 py-2 text-right font-medium">Amount</th>
+                <th className="px-3 py-2 text-left font-medium hidden lg:table-cell">Due</th>
+                <th className="px-3 py-2 text-center font-medium">Status</th>
+                <th className="px-3 py-2 text-right font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bills.map((bill: any) => {
+                const cfg = PAID_STATUS_CONFIG[bill.paidStatus] ?? PAID_STATUS_CONFIG.unpaid;
+                return (
+                  <tr key={bill.id} className="border-b last:border-0 hover:bg-muted/20">
+                    <td className="px-3 py-2.5">
+                      <div className="font-medium">{bill.provider}</div>
+                      {bill.autopay && <span className="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">Autopay</span>}
+                    </td>
+                    <td className="px-3 py-2.5 text-muted-foreground hidden md:table-cell">{bill.category}</td>
+                    <td className="px-3 py-2.5 text-muted-foreground hidden sm:table-cell">{formatFrequency(bill.frequency)}</td>
+                    <td className="px-3 py-2.5 text-right font-semibold">
+                      <div>{formatCurrency(bill.amount)}</div>
+                      {bill.frequency !== "weekly" && (
+                        <div className="text-[10px] text-muted-foreground">{formatCurrency(bill.weeklyEquivalent)}/wk</div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 text-muted-foreground hidden lg:table-cell">
+                      {bill.dueDate ? bill.dueDate : bill.dueDay ? `${bill.dueDay}${["","st","nd","rd"][bill.dueDay] ?? "th"} of month` : "—"}
+                    </td>
+                    <td className="px-3 py-2.5 text-center">
+                      <span className={`inline-block text-[11px] font-medium px-2 py-0.5 rounded-full ${cfg.color} ${cfg.bg}`}>
+                        {cfg.label}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center justify-end gap-1">
+                        {bill.paidStatus !== "paid" && (
+                          <Button variant="ghost" size="sm" className="h-7 text-[11px] text-emerald-700 hover:bg-emerald-50 px-2" onClick={() => quickStatus(bill, "paid")}>✓ Paid</Button>
+                        )}
+                        {bill.paidStatus !== "part-paid" && (
+                          <Button variant="ghost" size="sm" className="h-7 text-[11px] text-amber-700 hover:bg-amber-50 px-2 hidden sm:inline-flex" onClick={() => quickStatus(bill, "part-paid")}>½ Part</Button>
+                        )}
+                        {bill.paidStatus !== "overdue" && (
+                          <Button variant="ghost" size="sm" className="h-7 text-[11px] text-destructive hover:bg-red-50 px-2 hidden sm:inline-flex" onClick={() => quickStatus(bill, "overdue")}>! OD</Button>
+                        )}
+                        {bill.paidStatus !== "unpaid" && (
+                          <Button variant="ghost" size="sm" className="h-7 text-[11px] text-muted-foreground px-2 hidden sm:inline-flex" onClick={() => quickStatus(bill, "unpaid")}>↩ Reset</Button>
+                        )}
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => setEditingBill(bill)}>
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <BillDeleteButton id={bill.id} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="bg-muted/30 border-t">
+                <td colSpan={3} className="px-3 py-2 text-xs text-muted-foreground">{bills.length} bills</td>
+                <td className="px-3 py-2 text-right font-bold text-sm">{formatCurrency(totalWeekly)}<span className="text-xs font-normal text-muted-foreground">/wk</span></td>
+                <td colSpan={3} />
+              </tr>
+            </tfoot>
+          </table>
         </div>
+      )}
+
+      {/* Edit dialog */}
+      {editingBill && (
+        <Dialog open={!!editingBill} onOpenChange={() => setEditingBill(null)}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Edit Bill — {editingBill.provider}</DialogTitle></DialogHeader>
+            <BillForm
+              initial={editingBill}
+              onSuccess={() => {
+                setEditingBill(null);
+                queryClient.invalidateQueries({ queryKey: getListBillsQueryKey() });
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
 }
 
-function BillActions({ id }: { id: number }) {
+function BillDeleteButton({ id }: { id: number }) {
   const queryClient = useQueryClient();
   const deleteMutation = useDeleteBill();
   const { toast } = useToast();
-
-  const handleDelete = () => {
-    if (confirm("Delete this bill?")) {
-      deleteMutation.mutate({ id }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListBillsQueryKey() });
-          toast({ title: "Bill deleted" });
-        }
-      });
-    }
-  };
-
   return (
-    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" onClick={handleDelete} disabled={deleteMutation.isPending}>
-      <Trash2 className="h-4 w-4" />
+    <Button
+      variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive"
+      onClick={() => {
+        if (confirm("Delete this bill?")) {
+          deleteMutation.mutate({ id }, {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: getListBillsQueryKey() });
+              toast({ title: "Bill deleted" });
+            }
+          });
+        }
+      }}
+      disabled={deleteMutation.isPending}
+    >
+      <Trash2 className="h-3 w-3" />
     </Button>
   );
 }
 
-function BillForm({ onSuccess }: { onSuccess: () => void }) {
+function BillForm({ onSuccess, initial }: { onSuccess: () => void; initial?: any }) {
   const queryClient = useQueryClient();
   const createMutation = useCreateBill();
+  const updateMutation = useUpdateBill();
   const { toast } = useToast();
-  
+  const isEdit = !!initial;
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const amount = Number(formData.get("amount"));
     const dueDayStr = formData.get("dueDay");
     const dueDateStr = formData.get("dueDate");
-    
-    if (amount < 0) {
-      toast({ title: "Invalid amount", variant: "destructive" });
-      return;
-    }
+    if (amount < 0) { toast({ title: "Invalid amount", variant: "destructive" }); return; }
 
-    createMutation.mutate({
-      data: {
-        provider: String(formData.get("provider")),
-        category: String(formData.get("category")),
-        amount,
-        frequency: String(formData.get("frequency")) as any,
-        dueDay: dueDayStr ? Number(dueDayStr) : null,
-        dueDate: dueDateStr ? String(dueDateStr) : null,
-        accountRef: String(formData.get("accountRef")) || null,
-        autopay: formData.get("autopay") === "true",
-        notes: String(formData.get("notes")) || null,
-      }
-    }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListBillsQueryKey() });
-        toast({ title: "Bill added" });
-        onSuccess();
-      }
-    });
+    const data = {
+      provider: String(formData.get("provider")),
+      category: String(formData.get("category")),
+      amount,
+      frequency: String(formData.get("frequency")) as any,
+      dueDay: dueDayStr ? Number(dueDayStr) : null,
+      dueDate: dueDateStr ? String(dueDateStr) : null,
+      accountRef: String(formData.get("accountRef")) || null,
+      autopay: formData.get("autopay") === "true",
+      notes: String(formData.get("notes")) || null,
+      paidStatus: String(formData.get("paidStatus") || "unpaid"),
+    };
+
+    if (isEdit) {
+      updateMutation.mutate({ id: initial.id, data }, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListBillsQueryKey() });
+          toast({ title: "Bill updated" });
+          onSuccess();
+        }
+      });
+    } else {
+      createMutation.mutate({ data }, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListBillsQueryKey() });
+          toast({ title: "Bill added" });
+          onSuccess();
+        }
+      });
+    }
   };
 
   return (
@@ -338,25 +534,22 @@ function BillForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="provider">Provider</Label>
-          <Input id="provider" name="provider" required placeholder="e.g. Energy Co" />
+          <Input id="provider" name="provider" required placeholder="e.g. Energy Co" defaultValue={initial?.provider ?? ""} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="category">Category</Label>
-          <Input id="category" name="category" required placeholder="e.g. Utilities" />
+          <Input id="category" name="category" required placeholder="e.g. Utilities" defaultValue={initial?.category ?? ""} />
         </div>
       </div>
-      
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="amount">Amount</Label>
-          <Input id="amount" name="amount" type="number" step="0.01" min="0" required placeholder="0.00" inputMode="decimal" />
+          <Input id="amount" name="amount" type="number" step="0.01" min="0" required placeholder="0.00" inputMode="decimal" defaultValue={initial?.amount ?? ""} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="frequency">Frequency</Label>
-          <Select name="frequency" defaultValue="monthly">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
+          <Select name="frequency" defaultValue={initial?.frequency ?? "monthly"}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="weekly">Weekly</SelectItem>
               <SelectItem value="fortnightly">Fortnightly</SelectItem>
@@ -368,33 +561,48 @@ function BillForm({ onSuccess }: { onSuccess: () => void }) {
           </Select>
         </div>
       </div>
-      
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="dueDate">Exact Due Date</Label>
-          <Input id="dueDate" name="dueDate" type="date" placeholder="Optional" />
+          <Input id="dueDate" name="dueDate" type="date" defaultValue={initial?.dueDate ? String(initial.dueDate).slice(0,10) : ""} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="dueDay">Recurring Due Day (1-31)</Label>
-          <Input id="dueDay" name="dueDay" type="number" min="1" max="31" placeholder="Optional" inputMode="numeric" />
+          <Input id="dueDay" name="dueDay" type="number" min="1" max="31" placeholder="Optional" inputMode="numeric" defaultValue={initial?.dueDay ?? ""} />
         </div>
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="autopay">Auto-pay</Label>
-        <Select name="autopay" defaultValue="false">
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="true">Yes</SelectItem>
-            <SelectItem value="false">No</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="autopay">Auto-pay</Label>
+          <Select name="autopay" defaultValue={initial?.autopay ? "true" : "false"}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="true">Yes</SelectItem>
+              <SelectItem value="false">No</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="paidStatus">Payment Status</Label>
+          <Select name="paidStatus" defaultValue={initial?.paidStatus ?? "unpaid"}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="unpaid">Unpaid</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="part-paid">Part-paid</SelectItem>
+              <SelectItem value="overdue">Overdue</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-      
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes</Label>
+        <Input id="notes" name="notes" placeholder="Optional" defaultValue={initial?.notes ?? ""} />
+      </div>
       <DialogFooter>
-        <Button type="submit" disabled={createMutation.isPending}>Save Bill</Button>
+        <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+          {isEdit ? "Save Changes" : "Save Bill"}
+        </Button>
       </DialogFooter>
     </form>
   );

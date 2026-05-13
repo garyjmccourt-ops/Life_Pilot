@@ -19,6 +19,7 @@ export const billsTable = pgTable("bills", {
   accountRef: text("account_ref"),
   autopay: boolean("autopay").notNull().default(false),
   notes: text("notes"),
+  paidStatus: text("paid_status").notNull().default("unpaid"),
 });
 
 export type BillRow = typeof billsTable.$inferSelect;
