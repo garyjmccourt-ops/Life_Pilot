@@ -750,7 +750,7 @@ function ActualReceivedSection() {
                     <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select…" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">— Not set —</SelectItem>
-                      {peopleLookup.filter(p => p.value !== "").map(p => <SelectItem key={p.value} value={p.label}>{p.label}</SelectItem>)}
+                      {peopleLookup.filter(p => p.value !== "" && p.label !== "").map(p => <SelectItem key={p.value} value={p.label}>{p.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 ) : (

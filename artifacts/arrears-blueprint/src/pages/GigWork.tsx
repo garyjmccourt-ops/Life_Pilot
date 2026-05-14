@@ -1071,11 +1071,11 @@ export default function GigWork() {
                 <div>
                   <Label>Person</Label>
                   {peopleLookup.length > 0 ? (
-                    <Select value={form.person} onValueChange={v => setForm(p => ({ ...p, person: v }))}>
+                    <Select value={form.person || "__none__"} onValueChange={v => setForm(p => ({ ...p, person: v === "__none__" ? "" : v }))}>
                       <SelectTrigger className="h-11"><SelectValue placeholder="Select…" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">— Not set —</SelectItem>
-                        {peopleLookup.map(p => <SelectItem key={p.value} value={p.label}>{p.label}</SelectItem>)}
+                        <SelectItem value="__none__">— Not set —</SelectItem>
+                        {peopleLookup.filter(p => p.value !== "" && p.label !== "").map(p => <SelectItem key={p.value} value={p.label}>{p.label}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   ) : (
