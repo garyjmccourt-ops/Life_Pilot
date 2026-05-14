@@ -554,7 +554,7 @@ function BillForm({ onSuccess, initial }: { onSuccess: () => void; initial?: any
               <Select value={categoryValue} onValueChange={setCategoryValue} required>
                 <SelectTrigger><SelectValue placeholder="Select category…" /></SelectTrigger>
                 <SelectContent>
-                  {billCategories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                  {billCategories.filter(c => c.value !== "").map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                 </SelectContent>
               </Select>
               <input type="hidden" name="category" value={categoryValue} />
@@ -746,11 +746,11 @@ function ActualReceivedSection() {
               <div className="space-y-1">
                 <Label className="text-xs">Person</Label>
                 {peopleLookup.length > 0 ? (
-                  <Select value={form.person} onValueChange={v => setForm(prev => ({ ...prev, person: v }))}>
+                  <Select value={form.person || "__none__"} onValueChange={v => setForm(prev => ({ ...prev, person: v === "__none__" ? "" : v }))}>
                     <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select…" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">— Not set —</SelectItem>
-                      {peopleLookup.map(p => <SelectItem key={p.value} value={p.label}>{p.label}</SelectItem>)}
+                      <SelectItem value="__none__">— Not set —</SelectItem>
+                      {peopleLookup.filter(p => p.value !== "").map(p => <SelectItem key={p.value} value={p.label}>{p.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 ) : (
