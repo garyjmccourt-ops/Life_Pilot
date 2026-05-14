@@ -163,7 +163,7 @@ function OverviewTab() {
     { icon: MessageSquare, label: "Comms Log",        href: "/comms",        desc: "Record calls, emails, and letters to/from creditors and services.",                        order: 7 },
     { icon: CalendarDays,  label: "Weekly Tracker",   href: "/weekly",       desc: "Enter actual weekly income and spending to compare against budget.",                        order: 8 },
     { icon: ShoppingCart,  label: "Shopping",         href: "/shopping",     desc: "Manage recurring shopping items and build weekly lists.",                                   order: 9 },
-    { icon: GitBranch,     label: "Scenarios",        href: "/scenarios",    desc: "Model what-if financial scenarios based on current data.",                                  order: 10 },
+    { icon: GitBranch,     label: "Scenarios",        href: "/scenarios",    desc: "Guided what-if builder — model lower DoorDash, deferred bills, extra arrears payments, repair credits, and pressure weeks against live household data.",  order: 10 },
     { icon: LayoutDashboard,label:"Dashboard",        href: "/dashboard",    desc: "Single-screen overview of cashflow, arrears, upcoming bills, and open tasks.",             order: 11 },
   ];
 
@@ -609,31 +609,45 @@ export default function Docs() {
           <DocSection
             icon={GitBranch}
             title="Scenarios"
-            tagline="Model 'what if' financial situations before they happen."
+            tagline="Guided what-if builder — run rule-based calculations against live household data before committing to anything."
             what={
               <span>
-                Scenarios let you create alternative financial projections based on changes to income, bills,
-                or arrears payments. For example: "What if rent increases by $50/week?" or "What if I get
-                an extra Centrelink payment?". Each scenario can be compared against the current baseline.
+                The Scenarios page has two parts: a <strong>Quick What-If Builder</strong> and a{" "}
+                <strong>Saved Scenarios</strong> library.
                 <br /><br />
-                Scenarios are modelling tools only — they do not affect any real data.
+                The <strong>builder</strong> offers six guided prompts that calculate real impacts against your
+                current income, bills, and arrears data: lower DoorDash week, defer a bill, cut
+                grocery/incidental spend, pay extra toward a debt, accept a repair credit, and model a
+                pressure week where multiple bills fall at once. Each prompt shows a baseline-vs-scenario
+                comparison table, a plain-English summary, and suggested next steps.
+                <br /><br />
+                The <strong>saved scenarios library</strong> lets you name and store any scenario as a record
+                (draft, active, or archived) with its assumptions pre-filled from the builder.
+                Scenarios are read-only projections — no live data is changed.
               </span>
             }
             relations={[
               { label: "Income & Bills", href: "/income-bills" },
               { label: "Arrears", href: "/arrears" },
               { label: "Dashboard", href: "/dashboard" },
+              { label: "Tasks", href: "/tasks" },
             ]}
             rules={[
-              "Scenarios are read-only projections. Saving a scenario does not change any income, bill, or arrears record.",
-              "Scenarios use the current live data as their baseline. If income or bills change, re-run the scenario to see updated projections.",
-              "Scenarios are for planning and conversation — use them when negotiating payment arrangements or applying for financial assistance.",
+              "No live data is modified by running or saving a scenario — the builder is entirely read-only. A clear notice is shown at every calculation step.",
+              "Scenarios use your current Dashboard summary figures as the baseline (weekly income, bills, arrears, surplus). Ensure those figures are up to date before running a what-if.",
+              "Six scenario types are available: Lower DoorDash / gig week, Delay a bill, Cut groceries / incidentals, Extra arrears payment, Credit or rebate accepted, Pressure week.",
+              "The result panel shows: income, bills, arrears, and surplus before and after — with green (improvement) and red (worse) indicators — plus a plain-English summary and suggested next steps.",
+              "Each scenario result can be saved as a named scenario record (label: custom, status: draft by default). Saved scenarios can be promoted to Active or Archived via the edit button.",
+              "Saved scenarios store the assumption text (income, bills, arrears, spending, notes) but do not re-calculate automatically when live data changes. Re-run the builder if the situation changes.",
+              "Use the Pressure Week scenario as your first check on any week where rent and multiple bills overlap — it shows whether you have a shortfall before committing to payments.",
             ]}
             setup={[
-              "Ensure your current income, bills, and arrears are accurately entered first — scenarios are only as good as the baseline data.",
-              "Create a scenario by describing the change (e.g. income increase, new bill, reduced arrears payment).",
-              "Review the projected cashflow difference versus the current baseline.",
-              "Use scenarios to test payment arrangement proposals before agreeing to them with creditors.",
+              "Ensure income sources, bills, and arrears are all entered accurately — the builder uses the Dashboard summary as its baseline.",
+              "Click any of the six Quick What-If cards or the 'Run What-If' button to open the builder wizard.",
+              "Pick a scenario type, fill in the numbers (the builder pre-fills sensible defaults from your live data), then click Calculate.",
+              "Review the output table and suggested actions. If it's a useful reference, click 'Save this scenario' to keep a record.",
+              "For pressure weeks (rent + multiple bills in one week), use the Pressure Week scenario at the start of the week to plan ahead.",
+              "Use 'Extra Arrears Payment' to test whether a larger payment to a creditor is sustainable before committing.",
             ]}
           />
         </TabsContent>
