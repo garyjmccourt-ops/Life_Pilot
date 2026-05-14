@@ -512,7 +512,7 @@ export const ListTasksResponseItem = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   category: zod.string().nullish(),
-  bucket: zod.enum(["pay", "contact", "file", "review", "negotiate", "watch"]),
+  bucket: zod.string(),
   status: zod.enum([
     "open",
     "in-progress",
@@ -538,7 +538,7 @@ export const CreateTaskBody = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   category: zod.string().nullish(),
-  bucket: zod.enum(["pay", "contact", "file", "review", "negotiate", "watch"]),
+  bucket: zod.string(),
   status: zod.enum([
     "open",
     "in-progress",
@@ -566,7 +566,7 @@ export const UpdateTaskBody = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   category: zod.string().nullish(),
-  bucket: zod.enum(["pay", "contact", "file", "review", "negotiate", "watch"]),
+  bucket: zod.string(),
   status: zod.enum([
     "open",
     "in-progress",
@@ -591,7 +591,7 @@ export const UpdateTaskResponse = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   category: zod.string().nullish(),
-  bucket: zod.enum(["pay", "contact", "file", "review", "negotiate", "watch"]),
+  bucket: zod.string(),
   status: zod.enum([
     "open",
     "in-progress",
