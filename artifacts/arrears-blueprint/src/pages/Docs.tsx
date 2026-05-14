@@ -159,7 +159,7 @@ function OverviewTab() {
     { icon: PieChart,      label: "Family Budget",    href: "/family-budget",desc: "Set weekly spending targets per category group.",                                            order: 3 },
     { icon: Bike,          label: "Gig Work",         href: "/gig-work",     desc: "Track casual/gig income shifts per platform with automatic net calculation.",               order: 4 },
     { icon: AlertTriangle, label: "Arrears",          href: "/arrears",      desc: "Manage outstanding debts and payment arrangements with full strategy tracking.",            order: 5 },
-    { icon: CheckSquare,   label: "Tasks",            href: "/tasks",        desc: "Action tasks organised by bucket (Today / This Week / Backlog / Waiting).",                order: 6 },
+    { icon: CheckSquare,   label: "Tasks",            href: "/tasks",        desc: "Action tasks with full status tracking (Not Started → In Progress → Waiting → Done), priority levels, person assignment, and filter views.",                order: 6 },
     { icon: MessageSquare, label: "Comms Log",        href: "/comms",        desc: "Record calls, emails, and letters to/from creditors and services.",                        order: 7 },
     { icon: CalendarDays,  label: "Weekly Tracker",   href: "/weekly",       desc: "Enter actual weekly income and spending to compare against budget.",                        order: 8 },
     { icon: ShoppingCart,  label: "Shopping",         href: "/shopping",     desc: "Manage recurring shopping items and build weekly lists.",                                   order: 9 },
@@ -191,7 +191,7 @@ function OverviewTab() {
             "Family Budget — create category groups and set weekly spending targets.",
             "Gig Work — configure platforms and start recording shifts as they happen.",
             "Arrears — add any outstanding debts, set status and risk level, link tasks.",
-            "Tasks — add any immediate action items. Use buckets to organise by urgency.",
+            "Tasks — add immediate action items with status, priority, due date, and assigned person. Use the Today / Overdue filters during your weekly review.",
             "Comms Log — start recording communications as they occur.",
             "Weekly Tracker — each week, enter actual income and spending figures.",
             "Dashboard — use daily as your financial snapshot.",
@@ -305,7 +305,7 @@ export default function Docs() {
             setup={[
               "Open Settings > Household. Add the names of people in your household. These names appear in task assignment and gig shift dropdowns.",
               "Open Finance tab. Review bill categories and payment methods. Add any custom categories you need (e.g. a specific bank account as a payment method).",
-              "Open Tasks tab. Review task buckets. The default buckets (Today, This Week, Backlog, Waiting) cover most workflows — customise if needed. Star the bucket you use most as your default.",
+              "Open Tasks tab. Review task buckets. The default buckets (Today, This Week, Backlog, Waiting) cover most workflows — customise if needed. Star the bucket you use most as your default so new tasks pre-select it.",
               "Open Gig Work tab. Add any platforms not already listed. Star the platform you use most.",
               "Open Arrears tab. Review statuses and risk levels — the defaults cover all standard scenarios.",
               "Open Audit Log anytime to review what changes have been made and by whom.",
@@ -465,16 +465,18 @@ export default function Docs() {
           <DocSection
             icon={CheckSquare}
             title="Tasks"
-            tagline="Action tracking for every financial to-do — organised by urgency, not just by date."
+            tagline="Full household action tracking — status, priority, person, due date, and organised filter views."
             what={
               <span>
-                Tasks are the action layer of MYOH. Each task has a <strong>bucket</strong> (Today, This Week,
-                Backlog, Waiting), a <strong>priority</strong> (High / Medium / Low), and an optional due date.
-                Tasks can be linked to a specific arrears creditor and/or arrears item, making it easy to see
-                all outstanding actions for each debt.
+                Tasks are the action layer of MYOH. Each task has a <strong>status</strong> (Not Started,
+                In Progress, Waiting, Done, Deferred, Cancelled), a <strong>priority</strong> (Critical /
+                High / Medium / Low), an optional <strong>due date</strong>, an <strong>assigned person</strong>,
+                and a <strong>bucket</strong> driven by your Settings lookup (e.g. Today, This Week, Backlog,
+                Waiting). Tasks can be linked to a creditor tag and/or an arrears item.
                 <br /><br />
-                Tasks can be created from the Tasks page directly, or from any Arrears item's detail page
-                (pre-filled with the creditor). The Arrears list also has a quick-add button per card.
+                The task list sorts automatically: Critical first, then High, then overdue items, then by
+                due date. Completed, deferred, and cancelled tasks collapse into a separate section at the
+                bottom so active tasks stay front and centre.
               </span>
             }
             relations={[
@@ -483,18 +485,24 @@ export default function Docs() {
               { label: "Settings (task_bucket)", href: "/settings" },
             ]}
             rules={[
-              "Task buckets (Today, This Week, Backlog, Waiting) are controlled by Settings > Tasks > Task Buckets. Customise the bucket names to match your workflow. The bucket is your primary organisational tool — use it to represent urgency and timeframe, not just category.",
-              "Task priority is stored as p1 (High), p2 (Medium), p3 (Low). This is intentionally separate from the Settings task_priority namespace to prevent data corruption from label changes.",
-              "Marking a task 'done' from any screen (Tasks page, Arrears detail, Dashboard) instantly updates the count across all views.",
-              "Tasks linked to an arrears item appear in the Related Tasks panel on that arrears item's detail page. The badge shows how many are still open.",
-              "Tasks are not auto-created by the app — all tasks must be added manually.",
+              "Six statuses are available: Not Started (open), In Progress, Waiting, Done, Deferred, Cancelled. Click the status icon on any task to step through the active cycle (Not Started → In Progress → Waiting → Done). Use the edit modal to set Deferred or Cancelled.",
+              "Four priorities: Critical (rose border), High (orange border), Medium, Low. Critical and High show a badge label. Medium and Low are indicated only by the left border colour to keep rows clean.",
+              "Task buckets are Settings-driven (Settings > Tasks > Task Buckets). Customise names and star your most-used bucket as the default. Any value added in Settings appears immediately in the bucket pills and create/edit form.",
+              "Priority is stored as p1 (High), p2 (Medium), p3 (Low), or 'critical'. These storage values are fixed and will not be affected by any label changes in Settings.",
+              "The Done / Deferred / Cancelled section at the bottom is collapsed by default. Expand it to review completed history. Tasks are never deleted by marking done — they are preserved.",
+              "Four quick-filter tabs show live counts: All Active, Today (due today), This Week (due Mon–Sun), Overdue (past due and still active). Use Overdue as your first check in any weekly review.",
+              "Assigned person pulls from the household_people Settings lookup. Add Gary, Sam, or any other household member there once, and they appear in all task dropdowns.",
+              "Tasks linked to an arrears item (via the Arrears link field) appear in the Related Tasks panel on that arrears item's detail page.",
+              "Tasks are not auto-created — all tasks must be added manually.",
             ]}
             setup={[
-              "Go to Settings > Tasks. Review the default buckets. Star your most-used bucket as the default so new tasks land there.",
-              "Create tasks for any immediate financial actions — calling creditors, submitting documents, reviewing statements.",
-              "For arrears-related tasks, create them from the Arrears item detail page so they are automatically linked.",
-              "Work through Today tasks daily. Move items between buckets as urgency changes.",
-              "Archive completed tasks by marking them done — they move out of the active view but are preserved.",
+              "Go to Settings > Tasks. Review the default task buckets (Today, This Week, Backlog, Waiting). Star the bucket you use most so new tasks pre-select it.",
+              "Go to Settings > Household. Confirm Gary and Sam are listed as household people — they appear in the Assigned To dropdown on every task.",
+              "Create tasks for immediate financial actions: calling creditors, submitting documents, reviewing statements, confirming income received.",
+              "Use the quick-filter tabs daily: check Today and Overdue first. Move items to the next bucket as urgency changes by editing the task.",
+              "For arrears-linked tasks, link them via the Arrears field in the edit modal so they appear in the Related Tasks panel on the arrears detail page.",
+              "When a task is done, click the status icon to cycle it to Done. It will move to the collapsed section at the bottom automatically.",
+              "Use Deferred for tasks that are on hold (waiting on a third party). Use Cancelled only when the task is no longer needed.",
             ]}
           />
         </TabsContent>
