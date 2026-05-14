@@ -240,6 +240,168 @@ function OverviewTab() {
   );
 }
 
+// ── AdminTab ──────────────────────────────────────────────────────────────────
+
+function AdminTab() {
+  return (
+    <div className="space-y-6">
+      {/* Quick-reference card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Zap className="h-4 w-4 text-amber-500" /> Quick Reference — MYOH Data Model
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-muted-foreground">
+            MYOH has 14 core data tables. Each module owns its own table. Arrears is the central entity —
+            tasks, comms, scenarios, and the weekly tracker all reference arrears items.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[
+              { label: "income_sources", desc: "Recurring income sources (Sam wages, Gary DoorDash)" },
+              { label: "income_entries", desc: "Actual payments received, linked to a source" },
+              { label: "bills", desc: "Regular recurring bills and utilities" },
+              { label: "arrears_items", desc: "Debts, arrears, payment arrangements — central entity" },
+              { label: "tasks", desc: "Action items, linked to arrears or household" },
+              { label: "comms_entries", desc: "Communication log — calls, letters, outcomes" },
+              { label: "weekly_entries", desc: "Week-by-week cashflow records and notes" },
+              { label: "gig_entries", desc: "DoorDash / gig work shifts and earnings" },
+              { label: "budget_categories", desc: "Household budget lines with planned/actual weekly amounts" },
+              { label: "scenarios", desc: "What-if cashflow scenarios for planning" },
+              { label: "shopping_items", desc: "Master shopping item list grouped by store" },
+              { label: "shopping_lists", desc: "Weekly shopping run lists" },
+              { label: "bnpl_items", desc: "Afterpay / BNPL repayment plans" },
+              { label: "stored_value_items", desc: "Gift cards and stored-value balances" },
+            ].map(({ label, desc }) => (
+              <div key={label} className="flex gap-2 p-2 rounded-md bg-muted/40 border text-xs">
+                <code className="font-mono text-primary font-medium flex-shrink-0">{label}</code>
+                <span className="text-muted-foreground">{desc}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Common issues */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-destructive" /> Common Issues & Fixes
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          {[
+            {
+              issue: "Dashboard shows $0 for income or bills",
+              fix: "Go to Income & Bills → Income Sources and ensure sources have a frequency and amount set. Bills need a frequency and amount. The Dashboard uses weekly equivalents — if these are blank, the total will be $0.",
+            },
+            {
+              issue: "Weekly Tracker rent-first section shows nothing",
+              fix: "Ensure income entries are recorded with the 'Person' field set to 'Sam' or 'Gary'. Also ensure at least one arrears item has category 'rent' and status 'active'.",
+            },
+            {
+              issue: "Family Budget safe-to-spend is wildly wrong",
+              fix: "Check that income sources have weeklyEquivalent values set (set amount and frequency — the API auto-calculates weekly equivalent). Check budget categories have a valid 'group' field. Essential living categories should use group 'living'.",
+            },
+            {
+              issue: "Tasks are not showing in the Dashboard open tasks count",
+              fix: "Tasks appear in the Dashboard only if their status is 'open' or 'in-progress' and bucket is 'pay', 'contact', or other active buckets. Check task status.",
+            },
+            {
+              issue: "Gig entries not showing in income",
+              fix: "Gig entries are separate from income entries. A gig entry only creates an income record when you use 'Record Payment' or add an income entry manually and link the gigEntryId.",
+            },
+            {
+              issue: "Shopping checklist resets unexpectedly",
+              fix: "The weekly checklist is stored locally per week (Monday start). It resets each new week automatically. If items are missing, check you are on the correct week tab.",
+            },
+            {
+              issue: "BNPL repayments not showing in budget",
+              fix: "BNPL plans are tracked separately and not automatically included in bills or budget categories. Include BNPL weekly repayment amounts in your budget manually under a 'repayments' category.",
+            },
+          ].map(({ issue, fix }) => (
+            <div key={issue} className="rounded-md border p-3 space-y-1">
+              <div className="font-medium text-foreground flex items-start gap-2">
+                <AlertCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" /> {issue}
+              </div>
+              <div className="text-muted-foreground pl-5">{fix}</div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Export / backup */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Star className="h-4 w-4 text-primary" /> Backup & Export Guide
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            MYOH data lives in a PostgreSQL database. There is no automatic cloud backup — use the export function regularly.
+          </p>
+          <StepList steps={[
+            "Go to Settings → Data tab.",
+            "Click 'Download Full Export (JSON)' to save a complete backup of all modules.",
+            "Store the backup somewhere safe (Google Drive, email to yourself, etc.).",
+            "Do this before any major data entry session or before sharing with a financial counsellor.",
+            "To restore: use Settings → Data → Import — but only into a fresh install. Import adds records; it does not replace existing ones.",
+          ]} />
+        </CardContent>
+      </Card>
+
+      {/* Rent-first model explained */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Shield className="h-4 w-4 text-emerald-600" /> The Rent-First Model
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            MYOH is built around a <strong>rent-first allocation principle</strong>. This means Sam's wage income is
+            mentally ringfenced for rent and rent arrears first. Gary's DoorDash and other income covers bills,
+            fuel, food, and incidentals.
+          </p>
+          <p>
+            This is not enforced technically — it's a planning discipline. The Weekly Tracker's "Rent-First Allocation"
+            section shows how income recorded with person = Sam vs Gary maps against those commitments.
+          </p>
+          <RuleBlock>
+            Always record income entries with the correct <strong>Person</strong> field set (Sam / Gary) for the rent-first section to work correctly in the Weekly Tracker.
+          </RuleBlock>
+          <p>
+            Rent arrears should be tracked in the Arrears module with category = <code className="font-mono text-xs bg-muted px-1 rounded">rent</code> and status = <code className="font-mono text-xs bg-muted px-1 rounded">active</code>.
+            The ongoing + arrears weekly amounts from this record are used as the rent commitment figure.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Module summary table */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <ListOrdered className="h-4 w-4 text-muted-foreground" /> Daily Workflow Sequence
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StepList steps={[
+            "Dashboard — check cashflow status and open tasks at a glance.",
+            "Weekly Tracker — record any income received today. Check rent-first allocation.",
+            "Tasks — process the highest priority open tasks (pay, contact).",
+            "Arrears — update any arrears status or notes after communications.",
+            "Comms Log — log any calls or letters received today.",
+            "Gig Work (Gary) — record any completed DoorDash shifts.",
+            "End of week: Shopping → This Week checklist, Family Budget review.",
+          ]} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function Docs() {
@@ -271,6 +433,7 @@ export default function Docs() {
           <TabsTrigger value="shopping">Shopping</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="admin">Admin / Help</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview"><OverviewTab /></TabsContent>
@@ -690,6 +853,11 @@ export default function Docs() {
               "Use the export function before meetings with financial counsellors or Centrelink.",
             ]}
           />
+        </TabsContent>
+
+        {/* Admin / Help tab */}
+        <TabsContent value="admin" className="space-y-6">
+          <AdminTab />
         </TabsContent>
       </Tabs>
     </div>

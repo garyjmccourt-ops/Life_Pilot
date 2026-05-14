@@ -19,6 +19,7 @@ import {
   BookOpen,
   Menu,
   X,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -33,6 +34,7 @@ const NAV_ITEMS = [
   { href: "/comms", label: "Comms Log", icon: MessageSquare },
   { href: "/weekly", label: "Weekly Tracker", icon: CalendarDays },
   { href: "/scenarios", label: "Scenarios", icon: GitBranch },
+  { href: "/bnpl", label: "BNPL & Cards", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings2 },
   { href: "/docs", label: "Docs / Help", icon: BookOpen },
 ];

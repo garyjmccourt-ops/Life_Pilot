@@ -17,6 +17,7 @@ import budgetRouter from "./budget";
 import scenariosRouter from "./scenarios";
 import shoppingRouter from "./shopping";
 import settingsRouter from "./settings";
+import bnplRouter from "./bnpl";
 
 const router: IRouter = Router();
 
@@ -38,5 +39,6 @@ router.use(budgetRouter);
 router.use(scenariosRouter);
 router.use(shoppingRouter);
 router.use(settingsRouter);
+router.use(bnplRouter);
 
 export default router;

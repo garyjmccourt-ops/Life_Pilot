@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Settings2, Lock, Plus, Pencil, Trash2, Check, X, ToggleLeft, ToggleRight, History, Star } from "lucide-react";
+import { Settings2, Lock, Plus, Pencil, Trash2, Check, X, ToggleLeft, ToggleRight, History, Star, Download, Upload, Info } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -457,6 +457,217 @@ function AuditLogSection() {
   );
 }
 
+// ── DataManagementSection ─────────────────────────────────────────────────────
+
+function DataManagementSection() {
+  const { toast } = useToast();
+  const [importing, setImporting] = useState(false);
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      const res = await fetch(`${BASE}api/import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(json),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? "Import failed");
+      }
+      const result = await res.json();
+      toast({ title: "Import complete", description: `Imported ${result.imported ?? "?"} records.` });
+    } catch (err: any) {
+      toast({ title: "Import failed", description: err.message, variant: "destructive" });
+    } finally {
+      setImporting(false);
+      e.target.value = "";
+    }
+  }
+
+  const csvExports = [
+    { label: "Income Entries", href: `${BASE}api/export/csv/income` },
+    { label: "Bills", href: `${BASE}api/export/csv/bills` },
+    { label: "Arrears", href: `${BASE}api/export/csv/arrears` },
+    { label: "Tasks", href: `${BASE}api/export/csv/tasks` },
+    { label: "Comms Log", href: `${BASE}api/export/csv/comms` },
+    { label: "Gig Work", href: `${BASE}api/export/csv/gig` },
+    { label: "Shopping Items", href: `${BASE}api/export/csv/shopping` },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <Download className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base">Full Export — JSON</CardTitle>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Downloads all modules as a single JSON file. Use this for backups, sharing with financial counsellors, or migrating data.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <a href={`${BASE}api/export`} download>
+            <Button variant="default" className="gap-2">
+              <Download className="h-4 w-4" /> Download Full Export (JSON)
+            </Button>
+          </a>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <Download className="h-5 w-5 text-amber-600" />
+            <CardTitle className="text-base">Per-Table CSV Downloads</CardTitle>
+          </div>
+          <p className="text-xs text-muted-foreground">Download individual modules as CSV for use in spreadsheets.</p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {csvExports.map(({ label, href }) => (
+              <a key={href} href={href} download>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <Download className="h-3.5 w-3.5" /> {label}
+                </Button>
+              </a>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <Upload className="h-5 w-5 text-emerald-600" />
+            <CardTitle className="text-base">Import Data — JSON</CardTitle>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Import a previously exported MYOH JSON file. This will add the records — it does not delete or overwrite existing data.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-md px-3 py-2 text-xs text-amber-700">
+            <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+            <span>Import adds new records. It will not delete existing data or handle duplicate detection — only import into a fresh install or after clearing data manually.</span>
+          </div>
+          <label className="cursor-pointer">
+            <input type="file" accept=".json" className="sr-only" onChange={handleImport} disabled={importing} />
+            <Button variant="outline" className="gap-2 pointer-events-none" disabled={importing} asChild={false}>
+              <Upload className="h-4 w-4" /> {importing ? "Importing…" : "Choose JSON File to Import"}
+            </Button>
+          </label>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ── BudgetDefaultsSection ─────────────────────────────────────────────────────
+
+const DEFAULTS_KEY = "myoh_budget_defaults";
+
+const DEFAULT_VALUES = {
+  weekStartDay: "Monday",
+  rentWeekly: "0",
+  grocerySurvival: "150",
+  groceryNormal: "220",
+  fuelWeekly: "50",
+  emergencyBuffer: "100",
+  planningHorizonWeeks: "8",
+};
+
+function BudgetDefaultsSection() {
+  const { toast } = useToast();
+
+  const [defaults, setDefaults] = useState<typeof DEFAULT_VALUES>(() => {
+    try {
+      const saved = localStorage.getItem(DEFAULTS_KEY);
+      return saved ? { ...DEFAULT_VALUES, ...JSON.parse(saved) } : { ...DEFAULT_VALUES };
+    } catch { return { ...DEFAULT_VALUES }; }
+  });
+
+  function handleChange(key: keyof typeof DEFAULT_VALUES) {
+    return (e: React.ChangeEvent<HTMLInputElement>) =>
+      setDefaults(prev => ({ ...prev, [key]: e.target.value }));
+  }
+
+  function handleSave() {
+    try {
+      localStorage.setItem(DEFAULTS_KEY, JSON.stringify(defaults));
+      toast({ title: "Defaults saved locally" });
+    } catch {
+      toast({ title: "Could not save defaults", variant: "destructive" });
+    }
+  }
+
+  function handleReset() {
+    setDefaults({ ...DEFAULT_VALUES });
+    localStorage.removeItem(DEFAULTS_KEY);
+    toast({ title: "Defaults reset" });
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-start gap-2 text-xs text-muted-foreground bg-blue-50 border border-blue-100 rounded-md px-3 py-2">
+        <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-blue-600" />
+        <span>
+          These reference values are stored on this device only. They are used as planning aids in the Weekly Tracker and Scenarios pages.
+          They do not affect bills, arrears, or income records.
+        </span>
+      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Budget Assumptions</CardTitle>
+          <p className="text-xs text-muted-foreground">Default figures Gary and Sam use as weekly planning references.</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label>Week Start Day</Label>
+              <Input value={defaults.weekStartDay} onChange={handleChange("weekStartDay")} placeholder="Monday" />
+            </div>
+            <div>
+              <Label>Planning Horizon (weeks)</Label>
+              <Input type="number" value={defaults.planningHorizonWeeks} onChange={handleChange("planningHorizonWeeks")} />
+            </div>
+            <div>
+              <Label>Rent Commitment (weekly, $)</Label>
+              <Input type="number" step="0.01" value={defaults.rentWeekly} onChange={handleChange("rentWeekly")} />
+              <p className="text-xs text-muted-foreground mt-1">Reference only — actual is tracked in Arrears.</p>
+            </div>
+            <div>
+              <Label>Emergency Buffer (weekly, $)</Label>
+              <Input type="number" step="0.01" value={defaults.emergencyBuffer} onChange={handleChange("emergencyBuffer")} />
+            </div>
+            <div>
+              <Label>Grocery Budget — Normal ($)</Label>
+              <Input type="number" step="0.01" value={defaults.groceryNormal} onChange={handleChange("groceryNormal")} />
+            </div>
+            <div>
+              <Label>Grocery Budget — Survival Mode ($)</Label>
+              <Input type="number" step="0.01" value={defaults.grocerySurvival} onChange={handleChange("grocerySurvival")} />
+            </div>
+            <div>
+              <Label>Fuel Allowance (weekly, $)</Label>
+              <Input type="number" step="0.01" value={defaults.fuelWeekly} onChange={handleChange("fuelWeekly")} />
+            </div>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button onClick={handleSave}>Save Defaults</Button>
+            <Button variant="outline" onClick={handleReset}>Reset to Defaults</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function Settings() {
@@ -481,6 +692,8 @@ export default function Settings() {
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="gig">Gig Work</TabsTrigger>
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
+          <TabsTrigger value="data">Data</TabsTrigger>
+          <TabsTrigger value="defaults">Defaults</TabsTrigger>
         </TabsList>
 
         {/* Household */}
@@ -577,6 +790,16 @@ export default function Settings() {
         {/* Audit Log */}
         <TabsContent value="audit">
           <AuditLogSection />
+        </TabsContent>
+
+        {/* Data import/export */}
+        <TabsContent value="data" className="space-y-6">
+          <DataManagementSection />
+        </TabsContent>
+
+        {/* Budget defaults */}
+        <TabsContent value="defaults" className="space-y-6">
+          <BudgetDefaultsSection />
         </TabsContent>
       </Tabs>
     </div>

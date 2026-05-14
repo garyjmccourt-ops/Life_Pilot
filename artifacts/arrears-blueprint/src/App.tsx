@@ -22,6 +22,7 @@ import Shopping from "@/pages/Shopping";
 import Scenarios from "@/pages/Scenarios";
 import Settings from "@/pages/Settings";
 import Docs from "@/pages/Docs";
+import Bnpl from "@/pages/Bnpl";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -53,6 +54,7 @@ function AppRouter() {
         <Route path="/scenarios" component={Scenarios} />
         <Route path="/settings" component={Settings} />
         <Route path="/docs" component={Docs} />
+        <Route path="/bnpl" component={Bnpl} />
         <Route component={NotFound} />
       </Switch>
     </Shell>

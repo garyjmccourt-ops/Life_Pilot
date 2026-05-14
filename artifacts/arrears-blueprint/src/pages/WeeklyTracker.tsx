@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Check, Edit2, ChevronLeft, ChevronRight, Plus, Trash2,
   DollarSign, Bike, TrendingUp, Receipt, AlertCircle,
-  ClipboardList, ChevronDown, ChevronUp,
+  ClipboardList, ChevronDown, ChevronUp, Home,
 } from "lucide-react";
 
 // ── Week helpers ──────────────────────────────────────────────────────────────
@@ -145,6 +145,9 @@ export default function WeeklyTracker() {
 
       {/* Section 3: Commitments This Week */}
       <CommitmentsSection selectedWeek={selectedWeek} />
+
+      {/* Section 3b: Rent-first allocation breakdown */}
+      <RentFirstSection selectedWeek={selectedWeek} />
 
       {/* Section 4: Notes & Review Checklist */}
       <WeeklyNotesSection selectedWeek={selectedWeek} />
@@ -435,6 +438,111 @@ function CommitmentsSection({ selectedWeek }: { selectedWeek: string }) {
             </div>
           )}
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── RentFirstSection ─────────────────────────────────────────────────────────
+
+function RentFirstSection({ selectedWeek }: { selectedWeek: string }) {
+  const weekEnd = addDays(selectedWeek, 6);
+  const { data: allEntries = [] } = useListIncomeEntries();
+  const { data: arrears = [] } = useListArrears();
+  const { data: bills = [] } = useListBills();
+
+  const weekEntries = allEntries.filter(e => {
+    const d = (typeof e.dateReceived === "string" ? e.dateReceived : (e.dateReceived as Date).toISOString()).slice(0, 10);
+    return d >= selectedWeek && d <= weekEnd;
+  });
+
+  const samEntries = weekEntries.filter(e => (e.person ?? "").toLowerCase().includes("sam"));
+  const garyEntries = weekEntries.filter(e => (e.person ?? "").toLowerCase().includes("gary"));
+  const other = weekEntries.filter(e => !(e.person ?? "").toLowerCase().includes("sam") && !(e.person ?? "").toLowerCase().includes("gary"));
+
+  const samTotal = samEntries.reduce((s, e) => s + e.grossAmount, 0);
+  const garyTotal = garyEntries.reduce((s, e) => s + e.grossAmount, 0);
+  const otherTotal = other.reduce((s, e) => s + e.grossAmount, 0);
+  const totalReceived = samTotal + garyTotal + otherTotal;
+
+  const rentArrears = (arrears as any[]).filter((a: any) => a.status === "active" && a.category === "rent");
+  const weeklyRent = rentArrears.reduce((s: number, a: any) => s + (a.weeklyOngoing ?? 0) + (a.weeklyArrears ?? 0), 0);
+
+  const nonRentArrears = (arrears as any[]).filter((a: any) => a.status === "active" && a.category !== "rent");
+  const weeklyNonRentArrears = nonRentArrears.reduce((s: number, a: any) => s + (a.weeklyOngoing ?? 0) + (a.weeklyArrears ?? 0), 0);
+
+  const dueBills = billsDueInWeek(bills as any[], selectedWeek, weekEnd);
+  const billsThisWeek = dueBills.reduce((s: number, b: any) => s + (b.weeklyEquivalent ?? b.amount ?? 0), 0);
+
+  const totalCommitments = weeklyRent + billsThisWeek + weeklyNonRentArrears;
+  const netPosition = totalReceived - totalCommitments;
+
+  const samCoveredRent = samTotal >= weeklyRent;
+  const garyTarget = billsThisWeek + weeklyNonRentArrears;
+  const garyCovered = garyTotal >= garyTarget;
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <Home className="h-5 w-5 text-primary" />
+          <CardTitle className="text-base font-serif">Rent-First Allocation</CardTitle>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Sam's wages protect rent first. Gary's DoorDash/work covers bills, fuel, food.
+          Week of {selectedWeek} – {weekEnd}.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="divide-y rounded-md border overflow-hidden text-sm">
+          {/* Sam row */}
+          <div className="flex items-start gap-3 px-3 py-2.5">
+            <div className="flex-1">
+              <div className="font-medium">Sam</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Wages → rent / arrears first</div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <div className="font-semibold">{formatCurrency(samTotal)} received</div>
+              <div className={`text-xs mt-0.5 ${samCoveredRent ? "text-emerald-600" : "text-destructive"}`}>
+                Rent commitment: {formatCurrency(weeklyRent)}
+                {weeklyRent === 0 ? " — no rent arrears recorded" : samCoveredRent ? " ✓ covered" : ` — shortfall ${formatCurrency(weeklyRent - samTotal)}`}
+              </div>
+            </div>
+          </div>
+          {/* Gary row */}
+          <div className="flex items-start gap-3 px-3 py-2.5">
+            <div className="flex-1">
+              <div className="font-medium">Gary</div>
+              <div className="text-xs text-muted-foreground mt-0.5">DoorDash / work → bills, fuel, food</div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <div className="font-semibold">{formatCurrency(garyTotal)} received</div>
+              <div className={`text-xs mt-0.5 ${garyCovered ? "text-emerald-600" : "text-amber-600"}`}>
+                Bills + arrears: {formatCurrency(garyTarget)}
+                {garyTarget === 0 ? " — no bills/arrears this week" : garyCovered ? " ✓ covered" : " — tight"}
+              </div>
+            </div>
+          </div>
+          {/* Other/unassigned */}
+          {otherTotal > 0 && (
+            <div className="flex items-center gap-3 px-3 py-2.5 text-muted-foreground">
+              <span className="flex-1 text-xs">Unassigned income</span>
+              <span className="font-medium">{formatCurrency(otherTotal)}</span>
+            </div>
+          )}
+          {/* Combined */}
+          <div className={`flex items-center gap-3 px-3 py-2.5 font-semibold text-sm ${netPosition >= 0 ? "bg-emerald-50 dark:bg-emerald-950/20" : "bg-rose-50 dark:bg-rose-950/20"}`}>
+            <span className="flex-1">Combined position this week</span>
+            <span className={netPosition >= 0 ? "text-emerald-700" : "text-destructive"}>
+              {netPosition >= 0 ? "+" : "−"}{formatCurrency(Math.abs(netPosition))} {netPosition >= 0 ? "surplus" : "shortfall"}
+            </span>
+          </div>
+        </div>
+        {totalReceived === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-1">
+            No income recorded for this week yet — add actual income entries above to see the allocation.
+          </p>
+        )}
       </CardContent>
     </Card>
   );
