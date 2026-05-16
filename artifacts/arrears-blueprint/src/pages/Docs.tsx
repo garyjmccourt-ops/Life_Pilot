@@ -519,13 +519,15 @@ export default function Docs() {
             tagline="Track every shift — gross earnings, platform fees, fuel costs, and net income — in one place."
             what={
               <span>
-                Gig Work records individual work shifts for platforms like DoorDash, Uber Eats, Airtasker, or
-                cash work. Each entry captures: start/end time, gross earnings, tips, platform fees, fuel cost
-                (auto-calculated from kilometres), and net income. The tab shows period summaries (today, this
-                week, this fortnight, this month) and an effective hourly rate.
+                Gig Work records household-level gig shift summaries for platforms like DoorDash, Uber Eats,
+                Airtasker, or cash work. Each entry captures: start/end time, gross earnings, tips, platform
+                fees, fuel cost (auto-calculated from kilometres), and net income. The tab shows period
+                summaries (this week, month, quarter, FY) and an effective hourly rate.
                 <br /><br />
-                A <strong>receipt scanner</strong> (camera/upload) can pre-fill shift data via OCR — useful
-                for quickly entering DoorDash or Uber Eats payment summaries.
+                <strong>Shift capture and OCR scanning have moved to the Gig Economy Hub</strong> — a
+                separate companion app for operational gig-work decisions. Record shifts in the Hub, then
+                export them to MYOH using Hub → Export → Send to MYOH. MYOH remains the household financial
+                source of truth.
               </span>
             }
             relations={[
@@ -534,17 +536,20 @@ export default function Docs() {
               { label: "Settings (gig_platform)", href: "/settings" },
             ]}
             rules={[
-              "Platform options are controlled by Settings > Gig Work > Gig Platforms. To add a new platform (e.g. a new delivery app), add it in Settings first.",
+              "MYOH receives household-level gig summaries only. Detailed shift capture, OCR scanning, route-km calculation, and zone/hotspot decisions belong in the Gig Economy Hub companion app.",
+              "Platform options are controlled by Settings > Gig Work > Gig Platforms. To add a new platform, add it in Settings first.",
               "Payment statuses (Pending, Fast-Paid, Deposited, Received) are controlled by Settings > Gig Work > Gig Payment Statuses.",
-              "Fuel cost is auto-estimated from the kilometres entered, using the fuel rate set in Gig Work settings (litres per 100km × price per litre). Adjust these in the Settings panel within Gig Work.",
+              "Fuel cost is auto-estimated from the kilometres entered, using the fuel rate set in Gig Work (litres per 100km × price per litre).",
               "Net income = Gross + Tips − Fees − Fuel − Other Expenses. This is calculated automatically.",
               "Fast-Pay amounts are tracked separately from regular weekly deposits. The Dashboard shows total fast-pay balance outstanding.",
+              "The Hub sends shift summaries to MYOH via POST /api/gig/import-summary. Entries imported from the Hub appear here alongside any manually added shifts.",
             ]}
             setup={[
-              "Go to Settings > Gig Work. Confirm your platforms are listed. Add any missing ones. Star your main platform as default.",
-              "In Gig Work, open the Settings panel (gear icon) and set your vehicle's fuel consumption (L/100km) and current fuel price.",
-              "Add your first shift manually or use the receipt scanner to import from a screenshot.",
+              "Go to Settings > Gig Work. Confirm your platforms are listed. Add any missing ones.",
+              "In Gig Work, open the fuel settings (fuel icon) and set your vehicle's fuel consumption (L/100km) and current fuel price.",
+              "To record a new shift: use the Gig Economy Hub companion app to scan or enter the shift, then export it to MYOH. Or add manually here using Add Shift.",
               "Set the payment status as money moves from Pending → Fast-Paid → Deposited → Received.",
+              "Install and configure the Gig Economy Hub when it is available — paste your MYOH API URL into the Hub's Settings so the export bridge works automatically.",
             ]}
           />
         </TabsContent>

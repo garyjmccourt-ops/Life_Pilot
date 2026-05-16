@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useListGigEntries, useCreateGigEntry, useUpdateGigEntry, useDeleteGigEntry, getListIncomeEntriesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLookup, getDefaultValue } from "@/hooks/use-lookup";
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import {
   Bike, Plus, Pencil, Trash2, TrendingUp, Clock, DollarSign, Zap,
-  ScanLine, Loader2, Settings, Fuel, MapPin, Package,
+  Settings, Fuel, Package,
   AlertTriangle, ChevronDown, ChevronUp, ChevronRight,
   Link2, ArrowRightCircle,
 } from "lucide-react";
@@ -181,216 +181,6 @@ type FormState = {
   routeChain: string;
 };
 
-// ── OCR Review Dialog ─────────────────────────────────────────────────────────
-
-function OcrReviewDialog({
-  open,
-  onOpenChange,
-  data,
-  onConfirm,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  data: Record<string, unknown>;
-  onConfirm: (corrected: Record<string, unknown>) => void;
-}) {
-  const [date, setDate] = useState("");
-  const [grossEarnings, setGrossEarnings] = useState("");
-  const [fastPayAmount, setFastPayAmount] = useState("");
-  const [weeklyDepositAmount, setWeeklyDepositAmount] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState("");
-  const [showMore, setShowMore] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    setDate((data.entryDate as string) ?? "");
-    setGrossEarnings(data.grossEarnings != null ? String(data.grossEarnings) : "");
-    setFastPayAmount(data.fastPayAmount != null ? String(data.fastPayAmount) : "");
-    setWeeklyDepositAmount(data.weeklyDepositAmount != null ? String(data.weeklyDepositAmount) : "");
-    setPaymentStatus((data.paymentStatus as string) ?? "");
-    setShowMore(false);
-  }, [data, open]);
-
-  const missingCritical = [
-    !date && "date",
-    !grossEarnings && "gross earnings",
-    !paymentStatus && "payout type",
-  ].filter(Boolean) as string[];
-
-  function handleConfirm() {
-    onConfirm({
-      ...data,
-      entryDate: date || null,
-      grossEarnings: grossEarnings ? parseFloat(grossEarnings) : null,
-      fastPayAmount: fastPayAmount ? parseFloat(fastPayAmount) : null,
-      weeklyDepositAmount: weeklyDepositAmount ? parseFloat(weeklyDepositAmount) : null,
-      paymentStatus: paymentStatus || null,
-    });
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-lg flex flex-col max-h-[90dvh] p-0 gap-0">
-        <DialogHeader className="px-4 pt-4 pb-3 border-b flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2">
-            <ScanLine className="h-4 w-4" />
-            Review Scanned Entry
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-          {missingCritical.length > 0 && (
-            <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-500" />
-              <div>
-                <span className="font-medium">Check before confirming: </span>
-                {missingCritical.join(", ")} could not be read from the screenshot — fill in manually.
-              </div>
-            </div>
-          )}
-
-          <div className="rounded-lg border p-3 space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Critical Fields — Verify These
-            </p>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="flex items-center gap-1.5 mb-1">
-                  Date
-                  {!date && <AlertTriangle className="h-3 w-3 text-amber-500" />}
-                </Label>
-                <Input
-                  type="date"
-                  value={date}
-                  onChange={e => setDate(e.target.value)}
-                  className={`h-11 ${!date ? "border-amber-300 bg-amber-50" : ""}`}
-                />
-              </div>
-              <div>
-                <Label className="flex items-center gap-1.5 mb-1">
-                  Payout Type
-                  {!paymentStatus && <AlertTriangle className="h-3 w-3 text-amber-500" />}
-                </Label>
-                <Select value={paymentStatus} onValueChange={setPaymentStatus}>
-                  <SelectTrigger className={`h-11 ${!paymentStatus ? "border-amber-300 bg-amber-50" : ""}`}>
-                    <SelectValue placeholder="Select…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="fast-paid">Fast-Paid</SelectItem>
-                    <SelectItem value="deposited">Deposited</SelectItem>
-                    <SelectItem value="received">Received</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <Label className="flex items-center gap-1.5 mb-1 text-xs">
-                  Gross Earnings ($)
-                  {!grossEarnings && <AlertTriangle className="h-3 w-3 text-amber-500" />}
-                </Label>
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={grossEarnings}
-                  onChange={e => setGrossEarnings(e.target.value)}
-                  className={`h-11 text-right ${!grossEarnings ? "border-amber-300 bg-amber-50" : ""}`}
-                />
-              </div>
-              <div>
-                <Label className="flex items-center gap-1.5 mb-1 text-xs">
-                  FastPay ($)
-                  {!fastPayAmount && data.paymentStatus === "fast-paid" && <AlertTriangle className="h-3 w-3 text-amber-500" />}
-                </Label>
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={fastPayAmount}
-                  onChange={e => setFastPayAmount(e.target.value)}
-                  className="h-11 text-right"
-                />
-              </div>
-              <div>
-                <Label className="flex items-center gap-1.5 mb-1 text-xs">
-                  Weekly Deposit ($)
-                  {!weeklyDepositAmount && data.paymentStatus === "deposited" && <AlertTriangle className="h-3 w-3 text-amber-500" />}
-                </Label>
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={weeklyDepositAmount}
-                  onChange={e => setWeeklyDepositAmount(e.target.value)}
-                  className="h-11 text-right"
-                />
-              </div>
-            </div>
-          </div>
-
-          {(data.notes as string | null) && (
-            <div className="text-xs text-muted-foreground italic border-l-2 border-muted pl-3">
-              AI summary: {data.notes as string}
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setShowMore(v => !v)}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {showMore ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            {showMore ? "Hide" : "Show"} all extracted fields
-          </button>
-
-          {showMore && (
-            <div className="rounded-md border bg-muted/20 p-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
-              {([
-                ["Platform", data.platform],
-                ["Person", data.person],
-                ["Start Time", data.startTime],
-                ["End Time", data.endTime],
-                ["Active Mins", data.activeMinutes],
-                ["Deliveries", data.deliveriesCount],
-                ["Offers", data.offersCount],
-                ["KM", data.estimatedKm],
-                ["Tips ($)", data.tips != null ? `$${data.tips}` : null],
-                ["Fees ($)", data.fees != null ? `$${data.fees}` : null],
-              ] as [string, unknown][]).map(([label, val]) => (
-                <div key={label} className="flex items-baseline gap-1.5">
-                  <span className="text-muted-foreground text-xs min-w-[80px]">{label}:</span>
-                  <span className={val == null ? "text-muted-foreground italic text-xs" : "font-medium text-xs"}>
-                    {val == null ? "not found" : String(val)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <DialogFooter className="px-4 py-3 border-t flex-shrink-0 gap-2">
-          <Button variant="ghost" className="h-11" onClick={() => onOpenChange(false)}>
-            Discard Scan
-          </Button>
-          <Button className="h-11 flex-1 sm:flex-none" onClick={handleConfirm}>
-            Confirm & Edit Entry <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function GigWork() {
@@ -404,12 +194,7 @@ export default function GigWork() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(makeDefault());
-  const [ocrLoading, setOcrLoading] = useState(false);
-  const [ocrRawData, setOcrRawData] = useState<Record<string, unknown> | null>(null);
-  const [ocrReviewOpen, setOcrReviewOpen] = useState(false);
-  const [routeKmLoading, setRouteKmLoading] = useState(false);
   const [linkingId, setLinkingId] = useState<number | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fuelSettings, setFuelSettings] = useState<FuelSettings>(loadFuelSettings);
   const [fuelDialogOpen, setFuelDialogOpen] = useState(false);
@@ -634,105 +419,6 @@ export default function GigWork() {
     }
   }
 
-  // ── OCR ───────────────────────────────────────────────────────────────────
-
-  async function handleScreenshotUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    setOcrLoading(true);
-    try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      const commaIdx = dataUrl.indexOf(",");
-      const imageBase64 = dataUrl.slice(commaIdx + 1);
-      const mimeType = file.type || "image/png";
-      const res = await fetch(`${import.meta.env.BASE_URL}api/gig/ocr`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64, mimeType }),
-      });
-      if (!res.ok) {
-        const body = await res.json() as { error?: string };
-        throw new Error(body.error ?? `HTTP ${res.status}`);
-      }
-      const { data } = await res.json() as { data: Record<string, unknown> };
-      setOcrRawData(data);
-      setOcrReviewOpen(true);
-    } catch (err) {
-      toast({
-        title: "Scan failed",
-        description: err instanceof Error ? err.message : "Could not read screenshot.",
-        variant: "destructive",
-      });
-    } finally {
-      setOcrLoading(false);
-    }
-  }
-
-  // ── Apply OCR data to form ─────────────────────────────────────────────────
-
-  function applyOcrData(data: Record<string, unknown>) {
-    setForm((prev) => ({
-      ...prev,
-      entryDate: (data.entryDate as string) || prev.entryDate,
-      platform: (data.platform as string) || prev.platform,
-      person: (data.person as string) || prev.person,
-      startTime: (data.startTime as string) || prev.startTime,
-      endTime: (data.endTime as string) || prev.endTime,
-      activeMinutes: data.activeMinutes != null ? String(data.activeMinutes) : prev.activeMinutes,
-      grossEarnings: data.grossEarnings != null ? String(data.grossEarnings) : prev.grossEarnings,
-      tips: data.tips != null ? String(data.tips) : prev.tips,
-      fastPayAmount: data.fastPayAmount != null ? String(data.fastPayAmount) : prev.fastPayAmount,
-      weeklyDepositAmount: data.weeklyDepositAmount != null ? String(data.weeklyDepositAmount) : prev.weeklyDepositAmount,
-      fees: data.fees != null ? String(data.fees) : prev.fees,
-      fuelEstimate: data.fuelEstimate != null ? String(data.fuelEstimate) : prev.fuelEstimate,
-      otherExpenses: data.otherExpenses != null ? String(data.otherExpenses) : prev.otherExpenses,
-      netIncome: data.netIncome != null ? String(data.netIncome) : prev.netIncome,
-      estimatedKm: data.estimatedKm != null ? String(data.estimatedKm) : prev.estimatedKm,
-      deliveriesCount: data.deliveriesCount != null ? String(data.deliveriesCount) : prev.deliveriesCount,
-      offersCount: data.offersCount != null ? String(data.offersCount) : prev.offersCount,
-      paymentStatus: (data.paymentStatus as string) || prev.paymentStatus,
-      notes: (data.notes as string) || prev.notes,
-    }));
-    setEditingId(null);
-    setDialogOpen(true);
-  }
-
-  // ── Route KM ──────────────────────────────────────────────────────────────
-
-  async function handleCalculateRouteKm() {
-    if (!form.routeChain.trim()) return;
-    setRouteKmLoading(true);
-    try {
-      const res = await fetch(`${import.meta.env.BASE_URL}api/gig/route-km`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ routeChain: form.routeChain }),
-      });
-      const body = await res.json() as { km?: number; minutes?: number; stops?: number; notes?: string; error?: string };
-      if (!res.ok) {
-        toast({ title: "Route KM failed", description: body.error, variant: "destructive" });
-        return;
-      }
-      const km = body.km ?? 0;
-      setForm((prev) => ({ ...prev, estimatedKm: String(km) }));
-      toast({ title: `Route: ${km.toFixed(2)} km`, description: body.notes });
-    } catch (err) {
-      toast({
-        title: "Route KM error",
-        description: err instanceof Error ? err.message : "Unknown error",
-        variant: "destructive",
-      });
-    } finally {
-      setRouteKmLoading(false);
-    }
-  }
-
   // ── Fuel settings ─────────────────────────────────────────────────────────
 
   function openFuelDialog() {
@@ -778,15 +464,22 @@ export default function GigWork() {
           <Button variant="ghost" size="icon" className="h-10 w-10" onClick={openFuelDialog} title="Fuel settings">
             <Fuel className="h-4 w-4" />
           </Button>
-          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScreenshotUpload} />
-          <Button variant="outline" size="sm" className="h-10 px-3" onClick={() => fileInputRef.current?.click()} disabled={ocrLoading}>
-            {ocrLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
-            <span className="hidden sm:inline ml-1.5">{ocrLoading ? "Scanning…" : "Scan"}</span>
-          </Button>
           <Button onClick={openCreate} size="sm" className="h-10 px-3">
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline ml-1.5">Add Shift</span>
           </Button>
+        </div>
+      </div>
+
+      {/* Gig Economy Hub notice */}
+      <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 p-3 text-sm">
+        <ArrowRightCircle className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+        <div className="min-w-0">
+          <p className="font-medium text-blue-900 dark:text-blue-100">Shift capture has moved to the Gig Economy Hub</p>
+          <p className="text-blue-700 dark:text-blue-300 text-xs mt-0.5">
+            Record shifts and scan screenshots in the Hub companion app, then use Hub → Export → Send to MYOH to import earnings here.
+            You can still add shifts manually below using Add Shift.
+          </p>
         </div>
       </div>
 
@@ -875,7 +568,7 @@ export default function GigWork() {
             <p className="text-muted-foreground text-sm py-4 text-center">Loading…</p>
           ) : entries.length === 0 ? (
             <p className="text-muted-foreground text-sm py-8 text-center">
-              No gig entries yet — add your first shift or scan a screenshot.
+              No gig entries yet — add a shift manually or import from the Gig Economy Hub.
             </p>
           ) : (
             <>
@@ -1207,27 +900,14 @@ export default function GigWork() {
                   <Input className="h-11" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={form.fuelEstimate} onChange={sf("fuelEstimate")} />
                 </div>
                 <div className="col-span-2">
-                  <Label>Route Chain <span className="text-muted-foreground font-normal text-xs">(Stop A → Stop B → Stop C)</span></Label>
-                  <div className="flex gap-2">
-                    <Textarea
-                      placeholder="e.g. Home -> KFC Elizabeth -> Woolworths Salisbury"
-                      value={form.routeChain}
-                      onChange={sf("routeChain")}
-                      rows={2}
-                      className="text-sm"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="shrink-0 self-center h-11 w-11"
-                      disabled={!form.routeChain.trim() || routeKmLoading}
-                      onClick={handleCalculateRouteKm}
-                      title="Calculate KM from route using Mapbox"
-                    >
-                      {routeKmLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
-                    </Button>
-                  </div>
+                  <Label>Route Chain <span className="text-muted-foreground font-normal text-xs">(Stop A → Stop B → Stop C — KM auto-calc in Hub)</span></Label>
+                  <Textarea
+                    placeholder="e.g. Home -> KFC Elizabeth -> Woolworths Salisbury"
+                    value={form.routeChain}
+                    onChange={sf("routeChain")}
+                    rows={2}
+                    className="text-sm"
+                  />
                 </div>
               </div>
             </div>
@@ -1287,18 +967,6 @@ export default function GigWork() {
         </DialogContent>
       </Dialog>
 
-      {/* OCR Review Dialog */}
-      {ocrRawData && (
-        <OcrReviewDialog
-          open={ocrReviewOpen}
-          onOpenChange={setOcrReviewOpen}
-          data={ocrRawData}
-          onConfirm={(corrected) => {
-            setOcrReviewOpen(false);
-            applyOcrData(corrected);
-          }}
-        />
-      )}
     </div>
   );
 }

@@ -353,6 +353,67 @@ router.delete("/gig/:id", async (req, res): Promise<void> => {
   res.sendStatus(204);
 });
 
+// ── Hub import bridge ─────────────────────────────────────────────────────────
+// Accepts an array of shift summaries exported by the Gig Economy Hub companion
+// app and bulk-inserts them as gig_entries records.
+
+import { z as zBridge } from "zod/v4";
+
+const ImportSummaryItem = zBridge.object({
+  entryDate: zBridge.string().min(1),
+  platform: zBridge.string().default("other"),
+  person: zBridge.string().nullable().optional(),
+  grossEarnings: zBridge.number().default(0),
+  tips: zBridge.number().default(0),
+  fastPayAmount: zBridge.number().default(0),
+  weeklyDepositAmount: zBridge.number().default(0),
+  fees: zBridge.number().default(0),
+  fuelEstimate: zBridge.number().default(0),
+  otherExpenses: zBridge.number().default(0),
+  netIncome: zBridge.number().default(0),
+  paymentStatus: zBridge.string().default("pending"),
+  estimatedKm: zBridge.number().nullable().optional(),
+  activeMinutes: zBridge.number().int().nullable().optional(),
+  deliveriesCount: zBridge.number().int().nullable().optional(),
+  offersCount: zBridge.number().int().nullable().optional(),
+  routeChain: zBridge.string().nullable().optional(),
+  notes: zBridge.string().nullable().optional(),
+});
+
+router.post("/gig/import-summary", async (req, res): Promise<void> => {
+  const parsed = zBridge.array(ImportSummaryItem).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Expected an array of shift summary objects", details: parsed.error.issues });
+    return;
+  }
+  if (parsed.data.length === 0) {
+    res.json({ imported: 0 });
+    return;
+  }
+  const rows = parsed.data.map((s) => ({
+    entryDate: s.entryDate,
+    platform: s.platform,
+    person: s.person ?? null,
+    grossEarnings: String(s.grossEarnings),
+    tips: String(s.tips),
+    fastPayAmount: String(s.fastPayAmount),
+    weeklyDepositAmount: String(s.weeklyDepositAmount),
+    fees: String(s.fees),
+    fuelEstimate: String(s.fuelEstimate),
+    otherExpenses: String(s.otherExpenses),
+    netIncome: String(s.netIncome),
+    paymentStatus: s.paymentStatus,
+    estimatedKm: s.estimatedKm != null ? String(s.estimatedKm) : null,
+    activeMinutes: s.activeMinutes ?? null,
+    deliveriesCount: s.deliveriesCount ?? null,
+    offersCount: s.offersCount ?? null,
+    routeChain: s.routeChain ?? null,
+    notes: s.notes ?? null,
+  }));
+  await db.insert(gigEntriesTable).values(rows);
+  res.json({ imported: rows.length });
+});
+
 // Legacy per-entry link (kept for backwards compatibility)
 router.post("/gig/:id/link-income", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
