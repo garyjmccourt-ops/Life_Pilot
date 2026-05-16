@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import {
   Bike, Plus, Pencil, Trash2, TrendingUp, Clock, DollarSign, Zap,
-  Settings, Fuel, Package,
+  Settings, Fuel, Package, ExternalLink,
   AlertTriangle, ChevronDown, ChevronUp, ChevronRight,
   Link2, ArrowRightCircle,
 } from "lucide-react";
@@ -180,6 +180,125 @@ type FormState = {
   offersCount: string;
   routeChain: string;
 };
+
+// ── Provider Summary Card ────────────────────────────────────────────────────
+
+type GigProvider = {
+  id: number;
+  providerName: string;
+  providerType: string;
+  status: string;
+  expectedWeeklyIncome: number | null;
+  taxSetAsidePct: number;
+  feedsMyohBudget: boolean;
+};
+
+function ProviderSummaryCard({ entries }: { entries: GigEntry[] }) {
+  const BASE = import.meta.env.BASE_URL;
+  const [providers, setProviders] = useState<GigProvider[]>([]);
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    const isEnabled = localStorage.getItem("myoh_gig_economy_enabled") !== "false"
+      && localStorage.getItem("myoh_gig_economy_enabled") !== null;
+    setEnabled(isEnabled);
+    if (isEnabled) {
+      fetch(`${BASE}api/gig-providers`)
+        .then(r => r.json())
+        .then(setProviders)
+        .catch(() => {});
+    }
+  }, []);
+
+  if (!enabled || providers.length === 0) return null;
+
+  const active = providers.filter(p => p.status === "Active" && p.feedsMyohBudget);
+
+  const expectedWeekly = active.reduce((s, p) => s + (p.expectedWeeklyIncome ?? 0), 0);
+
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const weekStr = weekStart.toISOString().slice(0, 10);
+  const confirmedWeekly = entries
+    .filter(e => e.entryDate >= weekStr)
+    .reduce((s, e) => s + e.netIncome, 0);
+
+  const confirmedFuel = entries
+    .filter(e => e.entryDate >= weekStr)
+    .reduce((s, e) => s + e.fuelEstimate, 0);
+
+  const taxSetAside = active.reduce((s, p) => {
+    const income = p.expectedWeeklyIncome ?? 0;
+    return s + (income * p.taxSetAsidePct) / 100;
+  }, 0);
+
+  const netContribution = expectedWeekly - confirmedFuel - taxSetAside;
+
+  return (
+    <Card className="border-primary/20 bg-primary/[0.03]">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Zap className="h-4 w-4 text-amber-500" />
+          Gig Economy — Household Contribution
+          <span className="text-xs font-normal text-muted-foreground ml-auto">{active.length} active provider{active.length !== 1 ? "s" : ""}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+          <div>
+            <div className="text-xs text-muted-foreground">Expected weekly</div>
+            <div className="font-semibold text-primary">${expectedWeekly.toFixed(2)}</div>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">Confirmed this week</div>
+            <div className={`font-semibold ${confirmedWeekly >= expectedWeekly * 0.8 ? "text-emerald-700" : "text-amber-600"}`}>
+              ${confirmedWeekly.toFixed(2)}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">Est. fuel / vehicle</div>
+            <div className="font-semibold">${confirmedFuel.toFixed(2)}</div>
+          </div>
+          {taxSetAside > 0 && (
+            <div>
+              <div className="text-xs text-muted-foreground">Tax set-aside (est.)</div>
+              <div className="font-semibold text-amber-700">${taxSetAside.toFixed(2)}</div>
+            </div>
+          )}
+          <div>
+            <div className="text-xs text-muted-foreground">Est. net contribution</div>
+            <div className={`font-semibold ${netContribution >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+              ${netContribution.toFixed(2)}
+            </div>
+          </div>
+          <div className="flex items-end">
+            <button
+              disabled
+              title="Open Gig Economy Hub — coming soon"
+              className="text-xs flex items-center gap-1 text-muted-foreground border border-dashed border-muted-foreground/40 rounded px-2 py-1 cursor-not-allowed opacity-60"
+            >
+              <ExternalLink className="h-3 w-3" /> Open Hub
+            </button>
+          </div>
+        </div>
+        <div className="mt-3 pt-2 border-t">
+          <div className="flex flex-wrap gap-1.5">
+            {providers.map(p => (
+              <span key={p.id} className={`text-xs px-2 py-0.5 rounded-full border ${
+                p.status === "Active" ? "bg-emerald-50 border-emerald-200 text-emerald-800" :
+                p.status === "Applying" ? "bg-blue-50 border-blue-200 text-blue-800" :
+                "bg-muted border-muted-foreground/20 text-muted-foreground"
+              }`}>
+                {p.providerName} · {p.status}
+              </span>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -470,6 +589,9 @@ export default function GigWork() {
           </Button>
         </div>
       </div>
+
+      {/* Provider summary card — only shown if Gig Economy enabled + providers exist */}
+      <ProviderSummaryCard entries={entries} />
 
       {/* Gig Economy Hub notice */}
       <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 p-3 text-sm">

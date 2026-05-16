@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Settings2, Lock, Plus, Pencil, Trash2, Check, X, ToggleLeft, ToggleRight, History, Star, Download, Upload, Info } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Settings2, Lock, Plus, Pencil, Trash2, Check, X, ToggleLeft, ToggleRight, History, Star, Download, Upload, Info, Zap, ExternalLink } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -668,6 +671,343 @@ function BudgetDefaultsSection() {
   );
 }
 
+// ── Gig Economy Section ───────────────────────────────────────────────────────
+
+type GigProvider = {
+  id: number;
+  providerName: string;
+  providerType: string;
+  status: string;
+  paymentFrequency: string | null;
+  expectedPaymentDay: string | null;
+  expectedWeeklyIncome: number | null;
+  taxSetAsidePct: number;
+  vehicleCostMethod: string;
+  usesLocationTracking: boolean;
+  usesShiftTracking: boolean;
+  usesJourneyTracking: boolean;
+  feedsMyohBudget: boolean;
+  notes: string | null;
+};
+
+const PROVIDER_TYPES = ["delivery", "rideshare", "parcel", "tasking", "freelance", "other"];
+const PROVIDER_STATUSES = ["Interested", "Applying", "Active", "Paused", "Retired"];
+const PAYMENT_FREQUENCIES = ["weekly", "fortnightly", "monthly", "per-shift", "other"];
+const PRESET_PROVIDERS = ["DoorDash", "Uber Eats", "Menulog", "Amazon Flex", "Airtasker", "Freelancer / service work", "Other"];
+
+const GIG_ECONOMY_KEY = "myoh_gig_economy_enabled";
+
+function makeBlankProvider(): Omit<GigProvider, "id"> {
+  return {
+    providerName: "",
+    providerType: "delivery",
+    status: "Interested",
+    paymentFrequency: null,
+    expectedPaymentDay: null,
+    expectedWeeklyIncome: null,
+    taxSetAsidePct: 0,
+    vehicleCostMethod: "fuel_estimate",
+    usesLocationTracking: false,
+    usesShiftTracking: false,
+    usesJourneyTracking: false,
+    feedsMyohBudget: true,
+    notes: null,
+  };
+}
+
+function GigEconomySection() {
+  const BASE = import.meta.env.BASE_URL;
+  const { toast } = useToast();
+  const [enabled, setEnabled] = useState(() => localStorage.getItem(GIG_ECONOMY_KEY) !== "false");
+  const [providers, setProviders] = useState<GigProvider[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<number | "new" | null>(null);
+  const [form, setForm] = useState<Omit<GigProvider, "id">>(makeBlankProvider());
+
+  async function loadProviders() {
+    setLoading(true);
+    try {
+      const res = await fetch(`${BASE}api/gig-providers`);
+      if (res.ok) setProviders(await res.json());
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { loadProviders(); }, []);
+
+  function toggleEnabled(v: boolean) {
+    setEnabled(v);
+    localStorage.setItem(GIG_ECONOMY_KEY, String(v));
+  }
+
+  function openNew(preset?: string) {
+    setForm({ ...makeBlankProvider(), providerName: preset ?? "" });
+    setEditingId("new");
+  }
+
+  function openEdit(p: GigProvider) {
+    setForm({
+      providerName: p.providerName,
+      providerType: p.providerType,
+      status: p.status,
+      paymentFrequency: p.paymentFrequency,
+      expectedPaymentDay: p.expectedPaymentDay,
+      expectedWeeklyIncome: p.expectedWeeklyIncome,
+      taxSetAsidePct: p.taxSetAsidePct,
+      vehicleCostMethod: p.vehicleCostMethod,
+      usesLocationTracking: p.usesLocationTracking,
+      usesShiftTracking: p.usesShiftTracking,
+      usesJourneyTracking: p.usesJourneyTracking,
+      feedsMyohBudget: p.feedsMyohBudget,
+      notes: p.notes,
+    });
+    setEditingId(p.id);
+  }
+
+  async function saveProvider() {
+    if (!form.providerName.trim()) { toast({ title: "Provider name is required", variant: "destructive" }); return; }
+    const body = {
+      ...form,
+      expectedWeeklyIncome: form.expectedWeeklyIncome ?? null,
+      paymentFrequency: form.paymentFrequency || null,
+      expectedPaymentDay: form.expectedPaymentDay || null,
+      notes: form.notes || null,
+    };
+    try {
+      if (editingId === "new") {
+        const res = await fetch(`${BASE}api/gig-providers`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error("Failed to create");
+        toast({ title: "Provider added" });
+      } else {
+        const res = await fetch(`${BASE}api/gig-providers/${editingId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error("Failed to update");
+        toast({ title: "Provider updated" });
+      }
+      setEditingId(null);
+      await loadProviders();
+    } catch {
+      toast({ title: "Save failed", variant: "destructive" });
+    }
+  }
+
+  async function deleteProvider(id: number) {
+    if (!confirm("Remove this provider?")) return;
+    await fetch(`${BASE}api/gig-providers/${id}`, { method: "DELETE" });
+    toast({ title: "Provider removed" });
+    await loadProviders();
+  }
+
+  const sf = (key: keyof Omit<GigProvider, "id">) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm(p => ({ ...p, [key]: e.target.value }));
+
+  const STATUS_COLOURS: Record<string, string> = {
+    Active: "bg-emerald-100 text-emerald-800",
+    Applying: "bg-blue-100 text-blue-800",
+    Interested: "bg-amber-100 text-amber-800",
+    Paused: "bg-slate-100 text-slate-700",
+    Retired: "bg-red-100 text-red-700",
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Enable/disable toggle */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Zap className="h-4 w-4 text-amber-500" /> Gig Economy Support
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-sm">Enable Gig Economy companion features</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Enables provider tracking and household gig income summary. The Gig Economy Hub is a separate companion app — MYOH remains the household source of truth.
+              </div>
+            </div>
+            <Switch checked={enabled} onCheckedChange={toggleEnabled} />
+          </div>
+          {enabled && (
+            <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800">
+              <ExternalLink className="h-3.5 w-3.5 inline mr-1.5" />
+              <strong>Gig Economy Hub</strong> handles shift capture, OCR scanning, route calculation, and zone decisions.
+              MYOH receives household-level summaries only. Use Hub → Export → Send to MYOH to import earnings.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {enabled && (
+        <>
+          {/* Provider list */}
+          <Card>
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <CardTitle className="text-base">Gig Providers</CardTitle>
+              <Button size="sm" onClick={() => openNew()}>
+                <Plus className="h-4 w-4 mr-1" /> Add Provider
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Select providers below to quickly add them, or use Add Provider for a custom one.
+              </p>
+
+              {/* Quick-add preset buttons */}
+              <div className="flex flex-wrap gap-2">
+                {PRESET_PROVIDERS.map(name => {
+                  const exists = providers.some(p => p.providerName === name);
+                  return (
+                    <button
+                      key={name}
+                      disabled={exists}
+                      onClick={() => openNew(name)}
+                      className={`text-xs px-2.5 py-1.5 rounded-full border transition-colors ${
+                        exists
+                          ? "bg-muted text-muted-foreground border-muted cursor-default"
+                          : "bg-background hover:bg-accent border-border cursor-pointer"
+                      }`}
+                    >
+                      {exists ? <Check className="h-3 w-3 inline mr-1" /> : <Plus className="h-3 w-3 inline mr-1" />}
+                      {name}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {loading ? (
+                <Skeleton className="h-16 w-full" />
+              ) : providers.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">No providers yet. Add your first one above.</p>
+              ) : (
+                <div className="space-y-2">
+                  {providers.map(p => (
+                    <div key={p.id} className="rounded-md border p-3 flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{p.providerName}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOURS[p.status] ?? "bg-muted text-muted-foreground"}`}>
+                            {p.status}
+                          </span>
+                          <span className="text-xs text-muted-foreground capitalize">{p.providerType}</span>
+                          {p.feedsMyohBudget && <span className="text-xs text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">feeds budget</span>}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
+                          {p.expectedWeeklyIncome != null && <span>Expected: ${p.expectedWeeklyIncome.toFixed(2)}/wk</span>}
+                          {p.taxSetAsidePct > 0 && <span>Tax set-aside: {p.taxSetAsidePct}%</span>}
+                          {p.paymentFrequency && <span>Pays: {p.paymentFrequency}</span>}
+                        </div>
+                      </div>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteProvider(p.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Provider form (inline) */}
+          {editingId !== null && (
+            <Card className="border-primary/40">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{editingId === "new" ? "Add Provider" : "Edit Provider"}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <Label>Provider Name *</Label>
+                    <Input className="h-11" placeholder="e.g. DoorDash" value={form.providerName} onChange={sf("providerName")} />
+                  </div>
+                  <div>
+                    <Label>Provider Type</Label>
+                    <Select value={form.providerType} onValueChange={v => setForm(p => ({ ...p, providerType: v }))}>
+                      <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                      <SelectContent>{PROVIDER_TYPES.map(t => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Status</Label>
+                    <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v }))}>
+                      <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                      <SelectContent>{PROVIDER_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Payment Frequency</Label>
+                    <Select value={form.paymentFrequency ?? ""} onValueChange={v => setForm(p => ({ ...p, paymentFrequency: v || null }))}>
+                      <SelectTrigger className="h-11"><SelectValue placeholder="Select…" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">— Not set —</SelectItem>
+                        {PAYMENT_FREQUENCIES.map(f => <SelectItem key={f} value={f} className="capitalize">{f}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Expected Payment Day</Label>
+                    <Input className="h-11" placeholder="e.g. Monday, 15th of month" value={form.expectedPaymentDay ?? ""} onChange={sf("expectedPaymentDay")} />
+                  </div>
+                  <div>
+                    <Label>Expected Weekly Income ($)</Label>
+                    <Input className="h-11" type="number" step="0.01" placeholder="0.00" value={form.expectedWeeklyIncome ?? ""} onChange={e => setForm(p => ({ ...p, expectedWeeklyIncome: e.target.value ? parseFloat(e.target.value) : null }))} />
+                  </div>
+                  <div>
+                    <Label>Default Tax Set-Aside (%)</Label>
+                    <Input className="h-11" type="number" step="0.1" min="0" max="100" placeholder="0" value={form.taxSetAsidePct} onChange={e => setForm(p => ({ ...p, taxSetAsidePct: parseFloat(e.target.value) || 0 }))} />
+                  </div>
+                  <div>
+                    <Label>Vehicle Cost Method</Label>
+                    <Select value={form.vehicleCostMethod} onValueChange={v => setForm(p => ({ ...p, vehicleCostMethod: v }))}>
+                      <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="fuel_estimate">Fuel estimate</SelectItem>
+                        <SelectItem value="ato_rate">ATO cents-per-km rate</SelectItem>
+                        <SelectItem value="actual_costs">Actual costs</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Tracking toggles */}
+                <div className="space-y-2 pt-1">
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tracking (in Gig Economy Hub)</div>
+                  {([ ["usesLocationTracking", "Uses location tracking"] as const, ["usesShiftTracking", "Uses shift tracking"] as const, ["usesJourneyTracking", "Uses journey tracking"] as const ]).map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <Label className="text-sm font-normal">{label}</Label>
+                      <Switch checked={form[key]} onCheckedChange={v => setForm(p => ({ ...p, [key]: v }))} />
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-normal">Feeds MYOH budget</Label>
+                    <Switch checked={form.feedsMyohBudget} onCheckedChange={v => setForm(p => ({ ...p, feedsMyohBudget: v }))} />
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Notes</Label>
+                  <Textarea placeholder="Optional notes" rows={2} value={form.notes ?? ""} onChange={e => setForm(p => ({ ...p, notes: e.target.value || null }))} />
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <Button onClick={saveProvider}>Save Provider</Button>
+                  <Button variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function Settings() {
@@ -691,6 +1031,7 @@ export default function Settings() {
           <TabsTrigger value="arrears">Arrears</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="gig">Gig Work</TabsTrigger>
+          <TabsTrigger value="gig-economy">Gig Economy</TabsTrigger>
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
           <TabsTrigger value="data">Data</TabsTrigger>
           <TabsTrigger value="defaults">Defaults</TabsTrigger>
@@ -785,6 +1126,11 @@ export default function Settings() {
             title="Gig Payment Statuses"
             hint="Payment status values for gig entries (pending, fast-paid, deposited, received)."
           />
+        </TabsContent>
+
+        {/* Gig Economy companion setup */}
+        <TabsContent value="gig-economy" className="space-y-6">
+          <GigEconomySection />
         </TabsContent>
 
         {/* Audit Log */}
