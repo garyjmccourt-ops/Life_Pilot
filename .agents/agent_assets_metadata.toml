@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "oWLQitwS7uemR0Q1XAUty"
+uri = "file://.local/hub-replit-md.md"
+type = "text"
+title = "Gig Economy Hub — Agent Instructions (REPLIT.md)"
