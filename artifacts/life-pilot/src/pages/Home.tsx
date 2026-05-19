@@ -268,9 +268,8 @@ function ArrearsMatrix() {
                 <TableCell>{formatCurrency(row.weeklyTotal)}/wk</TableCell>
                 <TableCell>
                   <Badge variant={
-                    row.riskLevel === "critical" ? "destructive" :
-                    row.riskLevel === "high"     ? "signal" :
-                    row.riskLevel === "medium"   ? "active" :
+                    row.riskLevel === "high"   ? "signal" :
+                    row.riskLevel === "medium" ? "active" :
                     "pending"
                   }>
                     {row.riskLevel}
