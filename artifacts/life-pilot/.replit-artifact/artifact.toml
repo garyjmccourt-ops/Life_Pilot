@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/life-pilot/"
+title = "Life Pilot"
+version = "1.0.0"
+id = "artifacts/life-pilot"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/life-pilot/" ]
+localPort = 21408
+
+[services.development]
+run = "pnpm --filter @workspace/life-pilot run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/life-pilot", "run", "build" ]
+publicDir = "artifacts/life-pilot/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21408"
+BASE_PATH = "/life-pilot/"
