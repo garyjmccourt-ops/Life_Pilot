@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { 
@@ -6,14 +5,13 @@ import {
   useGetArrearsMatrix,
   useGetUpcomingSchedule,
   useListTasks,
-  useListComms
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, CheckCircle2, Clock, Wallet, TrendingUp, TrendingDown, ArrowRight, Circle, CheckCircle, Download, ChevronDown, FileJson, FileSpreadsheet } from "lucide-react";
+import { AlertCircle, CheckCircle2, Wallet, TrendingUp, TrendingDown, ArrowRight, Circle, Download, ChevronDown, FileJson, FileSpreadsheet, Bike, ShoppingCart, LifeBuoy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImportDialog } from "@/components/ImportDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -69,7 +67,7 @@ function ExportDropdown() {
           className="gap-2 cursor-pointer"
           onClick={() => triggerDownload(
             "api/export",
-            `myoh-export-${new Date().toISOString().slice(0,10)}.json`,
+            `lifepilot-export-${new Date().toISOString().slice(0,10)}.json`,
             toast
           )}
         >
@@ -93,6 +91,69 @@ function ExportDropdown() {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+const LIFE_BUCKETS = [
+  {
+    label: "Money Life",
+    desc: "Income, bills, budget and cashflow.",
+    href: "/income-bills",
+    icon: Wallet,
+    color: "text-primary",
+    bg: "bg-primary/8",
+    border: "border-primary/20",
+  },
+  {
+    label: "Work Life",
+    desc: "Gig shifts, earnings and platforms.",
+    href: "/gig-work",
+    icon: Bike,
+    color: "text-emerald-600",
+    bg: "bg-emerald-50",
+    border: "border-emerald-200",
+  },
+  {
+    label: "Home Life",
+    desc: "Household budget and shopping.",
+    href: "/family-budget",
+    icon: ShoppingCart,
+    color: "text-amber-600",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+  },
+  {
+    label: "Support Life",
+    desc: "Debts, tasks and communications.",
+    href: "/arrears",
+    icon: LifeBuoy,
+    color: "text-rose-600",
+    bg: "bg-rose-50",
+    border: "border-rose-200",
+  },
+];
+
+function LifeBuckets() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {LIFE_BUCKETS.map(({ label, desc, href, icon: Icon, color, bg, border }) => (
+        <Link key={href} href={href}>
+          <Card className={`cursor-pointer hover:shadow-md transition-shadow border ${border} h-full`}>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-start gap-3">
+                <div className={`p-2 rounded-lg ${bg} flex-shrink-0`}>
+                  <Icon className={`h-4 w-4 ${color}`} />
+                </div>
+                <div className="min-w-0">
+                  <div className={`text-xs font-semibold uppercase tracking-widest ${color} mb-0.5`}>{label}</div>
+                  <div className="text-sm font-medium text-foreground leading-snug">{desc}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -241,7 +302,7 @@ function UpcomingPayments() {
       <CardContent>
         <div className="space-y-4">
           {!schedule?.length ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No upcoming scheduled payments.</p>
+            <p className="text-sm text-muted-foreground text-center py-4">Nothing scheduled in the next 14 days.</p>
           ) : (
             schedule.slice(0, 6).map((payment, i) => (
               <div key={i} className="flex justify-between items-center pb-3 border-b border-border last:border-0 last:pb-0">
@@ -277,7 +338,7 @@ function PriorityTasks() {
       <CardContent>
         <div className="space-y-3">
           {!highPriority.length ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No high priority tasks open.</p>
+            <p className="text-sm text-muted-foreground text-center py-4">You're on top of it — no priority tasks right now.</p>
           ) : (
             highPriority.map(task => (
               <div key={task.id} className="flex gap-3 items-start border border-border p-3 rounded-lg bg-destructive/5">
@@ -301,13 +362,15 @@ export default function Home() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Your financial control center.</p>
+          <p className="text-muted-foreground mt-2 text-lg">Money, work, home, and support — all in one place.</p>
         </div>
         <div className="flex gap-2">
           <ImportDialog />
           <ExportDropdown />
         </div>
       </div>
+
+      <LifeBuckets />
 
       <SummaryCards />
       

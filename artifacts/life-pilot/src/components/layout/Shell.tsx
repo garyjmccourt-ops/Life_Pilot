@@ -23,20 +23,53 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/income-bills", label: "Income & Bills", icon: Wallet },
-  { href: "/gig-work", label: "Gig Work", icon: Bike },
-  { href: "/family-budget", label: "Family Budget", icon: PieChart },
-  { href: "/arrears", label: "Arrears", icon: AlertTriangle },
-  { href: "/shopping", label: "Shopping", icon: ShoppingCart },
-  { href: "/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "/comms", label: "Comms Log", icon: MessageSquare },
-  { href: "/weekly", label: "Weekly Tracker", icon: CalendarDays },
-  { href: "/scenarios", label: "Scenarios", icon: GitBranch },
-  { href: "/bnpl", label: "BNPL & Cards", icon: CreditCard },
-  { href: "/settings", label: "Settings", icon: Settings2 },
-  { href: "/docs", label: "Docs / Help", icon: BookOpen },
+type NavItem = { href: string; label: string; icon: React.ElementType };
+type NavGroup = { label: string | null; items: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: null,
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Money Life",
+    items: [
+      { href: "/income-bills", label: "Money In & Out", icon: Wallet },
+      { href: "/weekly",       label: "Weekly Tracker",  icon: CalendarDays },
+      { href: "/scenarios",    label: "Scenarios",        icon: GitBranch },
+      { href: "/bnpl",         label: "Credit & Cards",   icon: CreditCard },
+    ],
+  },
+  {
+    label: "Work Life",
+    items: [
+      { href: "/gig-work", label: "Gig Work", icon: Bike },
+    ],
+  },
+  {
+    label: "Home Life",
+    items: [
+      { href: "/family-budget", label: "Family Budget", icon: PieChart },
+      { href: "/shopping",      label: "Shopping",       icon: ShoppingCart },
+    ],
+  },
+  {
+    label: "Support Life",
+    items: [
+      { href: "/arrears", label: "Arrears",        icon: AlertTriangle },
+      { href: "/tasks",   label: "Tasks",           icon: CheckSquare },
+      { href: "/comms",   label: "Communications", icon: MessageSquare },
+    ],
+  },
+  {
+    label: null,
+    items: [
+      { href: "/settings", label: "Settings",  icon: Settings2 },
+      { href: "/docs",     label: "Help & Docs", icon: BookOpen },
+    ],
+  },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -71,28 +104,38 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
-          {NAV_ITEMS.map((item) => {
-            const isActive =
-              (item.href === "/dashboard" && (location === "/" || location === "/dashboard")) ||
-              (item.href !== "/dashboard" && location.startsWith(item.href));
-            const Icon = item.icon;
-
-            return (
-              <Link key={item.href} href={item.href} className="block">
-                <div className={`
-                  flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
-                  ${isActive
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  }
-                `}>
-                  <Icon className="h-4 w-4 flex-shrink-0" />
-                  {item.label}
+        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-4">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={gi}>
+              {group.label && (
+                <div className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40 select-none">
+                  {group.label}
                 </div>
-              </Link>
-            );
-          })}
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const isActive =
+                    (item.href === "/dashboard" && (location === "/" || location === "/dashboard")) ||
+                    (item.href !== "/dashboard" && location.startsWith(item.href));
+                  const Icon = item.icon;
+                  return (
+                    <Link key={item.href} href={item.href} className="block">
+                      <div className={`
+                        flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
+                        ${isActive
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        }
+                      `}>
+                        <Icon className="h-4 w-4 flex-shrink-0" />
+                        {item.label}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Household label footer */}
