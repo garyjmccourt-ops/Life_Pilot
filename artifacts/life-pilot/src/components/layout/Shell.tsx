@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   CreditCard,
+  Map,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -72,6 +73,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: null,
     divider: true,
     items: [
+      { href: "/roadmap",  label: "Roadmap",      icon: Map },
       { href: "/settings", label: "Settings",    icon: Settings2 },
       { href: "/docs",     label: "Help & Guides", icon: BookOpen },
     ],
