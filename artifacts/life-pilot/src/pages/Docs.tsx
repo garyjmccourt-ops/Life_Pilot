@@ -163,7 +163,7 @@ function OverviewTab() {
     { icon: MessageSquare, label: "Comms Log",        href: "/comms",        desc: "Record calls, emails, and letters to/from creditors and services.",                        order: 7 },
     { icon: CalendarDays,  label: "Weekly Tracker",   href: "/weekly",       desc: "Enter actual weekly income and spending to compare against budget.",                        order: 8 },
     { icon: ShoppingCart,  label: "Shopping",         href: "/shopping",     desc: "Manage recurring shopping items and build weekly lists.",                                   order: 9 },
-    { icon: GitBranch,     label: "Scenarios",        href: "/scenarios",    desc: "Guided what-if builder — model lower DoorDash, deferred bills, extra arrears payments, repair credits, and pressure weeks against live household data.",  order: 10 },
+    { icon: GitBranch,     label: "Scenarios",        href: "/scenarios",    desc: "Future View — model a lower income week, deferred bills, extra debt payments, repair credits, and pressure weeks against live household data before committing to anything.",  order: 10 },
     { icon: LayoutDashboard,label:"Dashboard",        href: "/dashboard",    desc: "Single-screen overview of cashflow, arrears, upcoming bills, and open tasks.",             order: 11 },
   ];
 
@@ -266,7 +266,7 @@ function AdminTab() {
               { label: "tasks", desc: "Action items, linked to arrears or household" },
               { label: "comms_entries", desc: "Communication log — calls, letters, outcomes" },
               { label: "weekly_entries", desc: "Week-by-week cashflow records and notes" },
-              { label: "gig_entries", desc: "DoorDash / gig work shifts and earnings" },
+              { label: "gig_entries", desc: "Extra work income shifts and earnings per platform" },
               { label: "budget_categories", desc: "Household budget lines with planned/actual weekly amounts" },
               { label: "scenarios", desc: "What-if cashflow scenarios for planning" },
               { label: "shopping_items", desc: "Master shopping item list grouped by store" },
@@ -769,14 +769,14 @@ export default function Docs() {
           <DocSection
             icon={GitBranch}
             title="Scenarios"
-            tagline="Guided what-if builder — run rule-based calculations against live household data before committing to anything."
+            tagline="Future View — run what-if calculations against live household data to plan ahead before committing to anything."
             what={
               <span>
                 The Scenarios page has two parts: a <strong>Quick What-If Builder</strong> and a{" "}
                 <strong>Saved Scenarios</strong> library.
                 <br /><br />
                 The <strong>builder</strong> offers six guided prompts that calculate real impacts against your
-                current income, bills, and arrears data: lower DoorDash week, defer a bill, cut
+                current income, bills, and arrears data: lower income week, defer a bill, cut
                 grocery/incidental spend, pay extra toward a debt, accept a repair credit, and model a
                 pressure week where multiple bills fall at once. Each prompt shows a baseline-vs-scenario
                 comparison table, a plain-English summary, and suggested next steps.
