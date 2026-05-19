@@ -1,4 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+/* ── Life Pilot Brand Tokens ─────────────────────────────────────────────── */
+:root {
+  --lp-warm-sand: hsl(40 33% 96%);
+  --lp-deep-slate: hsl(200 40% 15%);
+  --lp-deep-teal: hsl(180 25% 35%);
+  --lp-near-white: hsl(40 33% 98%);
+  --lp-darker-sand: hsl(40 33% 93%);
+  --lp-warm-grey: hsl(40 20% 85%);
+  --lp-mid-slate: hsl(200 20% 45%);
+  --lp-muted-red: hsl(10 50% 50%);
+  --lp-signal-orange: hsl(24 85% 55%);
+  --lp-soft-signal: hsl(28 80% 92%);
+  --lp-dark-signal: hsl(24 65% 32%);
+
+  --lp-font-heading: 'Libre Baskerville', Georgia, serif;
+  --lp-font-body: 'DM Sans', system-ui, sans-serif;
+  --lp-font-mono: 'JetBrains Mono', monospace;
+}
 @layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
 @import "tw-animate-css";

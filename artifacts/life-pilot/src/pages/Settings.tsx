@@ -551,7 +551,7 @@ function DataManagementSection() {
             <CardTitle className="text-base">Import Data — JSON</CardTitle>
           </div>
           <p className="text-xs text-muted-foreground">
-            Import a previously exported MYOH JSON file. This will add the records — it does not delete or overwrite existing data.
+            Import a previously exported Life Pilot JSON file. This will add the records — it does not delete or overwrite existing data.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -573,7 +573,7 @@ function DataManagementSection() {
 
 // ── BudgetDefaultsSection ─────────────────────────────────────────────────────
 
-const DEFAULTS_KEY = "myoh_budget_defaults";
+const DEFAULTS_KEY = "lifepilot_budget_defaults";
 
 const DEFAULT_VALUES = {
   weekStartDay: "Monday",
@@ -695,7 +695,7 @@ const PROVIDER_STATUSES = ["Interested", "Applying", "Active", "Paused", "Retire
 const PAYMENT_FREQUENCIES = ["weekly", "fortnightly", "monthly", "per-shift", "other"];
 const PRESET_PROVIDERS = ["DoorDash", "Uber Eats", "Menulog", "Amazon Flex", "Airtasker", "Freelancer / service work", "Other"];
 
-const GIG_ECONOMY_KEY = "myoh_gig_economy_enabled";
+const GIG_ECONOMY_KEY = "lifepilot_gig_economy_enabled";
 
 function makeBlankProvider(): Omit<GigProvider, "id"> {
   return {
@@ -823,7 +823,7 @@ function GigEconomySection() {
             <div>
               <div className="font-medium text-sm">Enable Gig Economy companion features</div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                Enables provider tracking and household gig income summary. The Gig Economy Hub is a separate companion app — MYOH remains the household source of truth.
+                Enables provider tracking and household gig income summary. The Gig Economy Hub is a separate companion app — Life Pilot remains the household source of truth.
               </div>
             </div>
             <Switch checked={enabled} onCheckedChange={toggleEnabled} />
@@ -832,7 +832,7 @@ function GigEconomySection() {
             <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800">
               <ExternalLink className="h-3.5 w-3.5 inline mr-1.5" />
               <strong>Gig Economy Hub</strong> handles shift capture, OCR scanning, route calculation, and zone decisions.
-              MYOH receives household-level summaries only. Use Hub → Export → Send to MYOH to import earnings.
+              Life Pilot receives household-level summaries only. Use Hub → Export → Send to Life Pilot to import earnings.
             </div>
           )}
         </CardContent>
@@ -985,7 +985,7 @@ function GigEconomySection() {
                     </div>
                   ))}
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-normal">Feeds MYOH budget</Label>
+                    <Label className="text-sm font-normal">Feeds Life Pilot budget</Label>
                     <Switch checked={form.feedsMyohBudget} onCheckedChange={v => setForm(p => ({ ...p, feedsMyohBudget: v }))} />
                   </div>
                 </div>

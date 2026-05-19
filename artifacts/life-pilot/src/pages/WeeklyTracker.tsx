@@ -560,8 +560,8 @@ const REVIEW_ITEMS = [
 ];
 
 function WeeklyNotesSection({ selectedWeek }: { selectedWeek: string }) {
-  const storageKey = `myoh_notes_${selectedWeek}`;
-  const checkKey = `myoh_checks_${selectedWeek}`;
+  const storageKey = `lifepilot_notes_${selectedWeek}`;
+  const checkKey = `lifepilot_checks_${selectedWeek}`;
 
   const [notes, setNotes] = useState(() => {
     try { return localStorage.getItem(storageKey) ?? ""; } catch { return ""; }
@@ -574,8 +574,8 @@ function WeeklyNotesSection({ selectedWeek }: { selectedWeek: string }) {
   });
 
   useEffect(() => {
-    const storageKey = `myoh_notes_${selectedWeek}`;
-    const checkKey = `myoh_checks_${selectedWeek}`;
+    const storageKey = `lifepilot_notes_${selectedWeek}`;
+    const checkKey = `lifepilot_checks_${selectedWeek}`;
     try { setNotes(localStorage.getItem(storageKey) ?? ""); } catch { setNotes(""); }
     try {
       const saved = localStorage.getItem(checkKey);

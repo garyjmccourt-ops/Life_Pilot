@@ -96,7 +96,7 @@ function getCurrentMonday(): string {
   return new Date(m.getTime() - offset * 60 * 1000).toISOString().slice(0, 10);
 }
 
-const WEEK_KEY = `myoh_shopping_${getCurrentMonday()}`;
+const WEEK_KEY = `lifepilot_shopping_${getCurrentMonday()}`;
 
 interface WeeklyState {
   neededIds: number[];

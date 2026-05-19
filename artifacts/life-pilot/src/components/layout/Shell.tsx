@@ -97,8 +97,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
         {/* Household label footer */}
         <div className="border-t border-sidebar-border px-4 py-3">
-          <div className="text-xs font-medium text-sidebar-foreground">My Household</div>
-          <div className="text-xs text-sidebar-foreground/60">Single-household mode</div>
+          <div className="text-xs font-medium text-sidebar-foreground">Life Pilot</div>
+          <div className="text-xs text-sidebar-foreground/60">Your life, your plan</div>
         </div>
       </aside>
 

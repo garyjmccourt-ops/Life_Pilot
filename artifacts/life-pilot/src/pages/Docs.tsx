@@ -171,7 +171,7 @@ function OverviewTab() {
     <div className="space-y-8">
       <div className="prose prose-sm max-w-none">
         <p className="text-muted-foreground leading-relaxed text-base">
-          MYOH is a single-household financial management tool designed to give one household complete visibility
+          Life Pilot is a personal financial management tool designed to give one household complete visibility
           and control over their income, expenses, debts, and daily financial actions. It is built around
           an <strong>Australian financial context</strong> — financial year starts 1 July, weeks begin Monday,
           and currency is AUD.
@@ -233,7 +233,7 @@ function OverviewTab() {
           <div className="flex gap-2"><Shield className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" /><span><strong>System values are protected.</strong> Values marked "system" in Settings cannot be deleted — only deactivated. They are part of the app's core logic.</span></div>
           <div className="flex gap-2"><Star className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-500" /><span><strong>One default per dropdown.</strong> Each settings namespace supports one starred default. Forms pre-select the default; if none is starred, the first active entry is used.</span></div>
           <div className="flex gap-2"><Shield className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" /><span><strong>Deactivated values stay on records.</strong> Existing data is never corrupted. Deactivated values show on existing records but cannot be selected for new ones.</span></div>
-          <div className="flex gap-2"><Shield className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" /><span><strong>Single household.</strong> MYOH is designed for one household. All data is shared. Authentication is disabled in the current development phase.</span></div>
+          <div className="flex gap-2"><Shield className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" /><span><strong>Single household.</strong> Life Pilot is designed for one household. All data is shared. Authentication is disabled in the current development phase.</span></div>
         </CardContent>
       </Card>
     </div>
@@ -249,12 +249,12 @@ function AdminTab() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Zap className="h-4 w-4 text-amber-500" /> Quick Reference — MYOH Data Model
+            <Zap className="h-4 w-4 text-amber-500" /> Quick Reference — Life Pilot Data Model
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            MYOH has 14 core data tables. Each module owns its own table. Arrears is the central entity —
+            Life Pilot has 14 core data tables. Each module owns its own table. Arrears is the central entity —
             tasks, comms, scenarios, and the weekly tracker all reference arrears items.
           </p>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -340,7 +340,7 @@ function AdminTab() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
-            MYOH data lives in a PostgreSQL database. There is no automatic cloud backup — use the export function regularly.
+            Life Pilot data lives in a PostgreSQL database. There is no automatic cloud backup — use the export function regularly.
           </p>
           <StepList steps={[
             "Go to Settings → Data tab.",
@@ -361,7 +361,7 @@ function AdminTab() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
-            MYOH is built around a <strong>rent-first allocation principle</strong>. This means Sam's wage income is
+            Life Pilot is built around a <strong>rent-first allocation principle</strong>. This means Sam's wage income is
             mentally ringfenced for rent and rent arrears first. Gary's DoorDash and other income covers bills,
             fuel, food, and incidentals.
           </p>
@@ -415,7 +415,7 @@ export default function Docs() {
           <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">Documentation</h1>
         </div>
         <p className="text-muted-foreground text-lg">
-          How MYOH works — module by module. Business rules, relationships, and setup guidance.
+          How Life Pilot works — module by module. Business rules, relationships, and setup guidance.
         </p>
       </div>
 
@@ -526,7 +526,7 @@ export default function Docs() {
                 <br /><br />
                 <strong>Shift capture and OCR scanning have moved to the Gig Economy Hub</strong> — a
                 separate companion app for operational gig-work decisions. Record shifts in the Hub, then
-                export them to MYOH using Hub → Export → Send to MYOH. MYOH remains the household financial
+                export them to Life Pilot using Hub → Export → Send to Life Pilot. Life Pilot remains the household financial
                 source of truth.
               </span>
             }
@@ -536,20 +536,20 @@ export default function Docs() {
               { label: "Settings (gig_platform)", href: "/settings" },
             ]}
             rules={[
-              "MYOH receives household-level gig summaries only. Detailed shift capture, OCR scanning, route-km calculation, and zone/hotspot decisions belong in the Gig Economy Hub companion app.",
+              "Life Pilot receives household-level gig summaries only. Detailed shift capture, OCR scanning, route-km calculation, and zone/hotspot decisions belong in the Gig Economy Hub companion app.",
               "Platform options are controlled by Settings > Gig Work > Gig Platforms. To add a new platform, add it in Settings first.",
               "Payment statuses (Pending, Fast-Paid, Deposited, Received) are controlled by Settings > Gig Work > Gig Payment Statuses.",
               "Fuel cost is auto-estimated from the kilometres entered, using the fuel rate set in Gig Work (litres per 100km × price per litre).",
               "Net income = Gross + Tips − Fees − Fuel − Other Expenses. This is calculated automatically.",
               "Fast-Pay amounts are tracked separately from regular weekly deposits. The Dashboard shows total fast-pay balance outstanding.",
-              "The Hub sends shift summaries to MYOH via POST /api/gig/import-summary. Entries imported from the Hub appear here alongside any manually added shifts.",
+              "The Hub sends shift summaries to Life Pilot via POST /api/gig/import-summary. Entries imported from the Hub appear here alongside any manually added shifts.",
             ]}
             setup={[
               "Go to Settings > Gig Work. Confirm your platforms are listed. Add any missing ones.",
               "In Gig Work, open the fuel settings (fuel icon) and set your vehicle's fuel consumption (L/100km) and current fuel price.",
-              "To record a new shift: use the Gig Economy Hub companion app to scan or enter the shift, then export it to MYOH. Or add manually here using Add Shift.",
+              "To record a new shift: use the Gig Economy Hub companion app to scan or enter the shift, then export it to Life Pilot. Or add manually here using Add Shift.",
               "Set the payment status as money moves from Pending → Fast-Paid → Deposited → Received.",
-              "Install and configure the Gig Economy Hub when it is available — paste your MYOH API URL into the Hub's Settings so the export bridge works automatically.",
+              "Install and configure the Gig Economy Hub when it is available — paste your Life Pilot API URL into the Hub's Settings so the export bridge works automatically.",
             ]}
           />
         </TabsContent>
@@ -636,7 +636,7 @@ export default function Docs() {
             tagline="Full household action tracking — status, priority, person, due date, and organised filter views."
             what={
               <span>
-                Tasks are the action layer of MYOH. Each task has a <strong>status</strong> (Not Started,
+                Tasks are the action layer of Life Pilot. Each task has a <strong>status</strong> (Not Started,
                 In Progress, Waiting, Done, Deferred, Cancelled), a <strong>priority</strong> (Critical /
                 High / Medium / Low), an optional <strong>due date</strong>, an <strong>assigned person</strong>,
                 and a <strong>bucket</strong> driven by your Settings lookup (e.g. Today, This Week, Backlog,

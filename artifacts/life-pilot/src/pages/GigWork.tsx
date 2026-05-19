@@ -199,8 +199,8 @@ function ProviderSummaryCard({ entries }: { entries: GigEntry[] }) {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    const isEnabled = localStorage.getItem("myoh_gig_economy_enabled") !== "false"
-      && localStorage.getItem("myoh_gig_economy_enabled") !== null;
+    const isEnabled = localStorage.getItem("lifepilot_gig_economy_enabled") !== "false"
+      && localStorage.getItem("lifepilot_gig_economy_enabled") !== null;
     setEnabled(isEnabled);
     if (isEnabled) {
       fetch(`${BASE}api/gig-providers`)
@@ -599,7 +599,7 @@ export default function GigWork() {
         <div className="min-w-0">
           <p className="font-medium text-blue-900 dark:text-blue-100">Shift capture has moved to the Gig Economy Hub</p>
           <p className="text-blue-700 dark:text-blue-300 text-xs mt-0.5">
-            Record shifts and scan screenshots in the Hub companion app, then use Hub → Export → Send to MYOH to import earnings here.
+            Record shifts and scan screenshots in the Hub companion app, then use Hub → Export → Send to Life Pilot to import earnings here.
             You can still add shifts manually below using Add Shift.
           </p>
         </div>
