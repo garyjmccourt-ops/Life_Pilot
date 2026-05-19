@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { formatDate, formatCurrency } from "@/lib/formatters";
 import { useToast } from "@/hooks/use-toast";
+import { useLookup } from "@/hooks/use-lookup";
 import {
   Check, Edit2, ChevronLeft, ChevronRight, Plus, Trash2,
   DollarSign, Bike, TrendingUp, Receipt, AlertCircle,
@@ -450,20 +451,30 @@ function RentFirstSection({ selectedWeek }: { selectedWeek: string }) {
   const { data: allEntries = [] } = useListIncomeEntries();
   const { data: arrears = [] } = useListArrears();
   const { data: bills = [] } = useListBills();
+  const { data: peopleLookup = [] } = useLookup("household_people");
+
+  const activePeople = peopleLookup.filter(p => p.value !== "" && p.label !== "");
+  const primaryName = activePeople[0]?.label ?? "";
+  const secondaryName = activePeople[1]?.label ?? "";
+  const primaryLabel = primaryName || "Primary earner";
+  const secondaryLabel = secondaryName || "Secondary earner";
+
+  const matchPerson = (person: string | null | undefined, name: string) =>
+    name !== "" && (person ?? "").toLowerCase() === name.toLowerCase();
 
   const weekEntries = allEntries.filter(e => {
     const d = (typeof e.dateReceived === "string" ? e.dateReceived : (e.dateReceived as Date).toISOString()).slice(0, 10);
     return d >= selectedWeek && d <= weekEnd;
   });
 
-  const samEntries = weekEntries.filter(e => (e.person ?? "").toLowerCase().includes("sam"));
-  const garyEntries = weekEntries.filter(e => (e.person ?? "").toLowerCase().includes("gary"));
-  const other = weekEntries.filter(e => !(e.person ?? "").toLowerCase().includes("sam") && !(e.person ?? "").toLowerCase().includes("gary"));
+  const primaryEntries = weekEntries.filter(e => matchPerson(e.person, primaryName));
+  const secondaryEntries = weekEntries.filter(e => matchPerson(e.person, secondaryName));
+  const other = weekEntries.filter(e => !matchPerson(e.person, primaryName) && !matchPerson(e.person, secondaryName));
 
-  const samTotal = samEntries.reduce((s, e) => s + e.grossAmount, 0);
-  const garyTotal = garyEntries.reduce((s, e) => s + e.grossAmount, 0);
+  const primaryTotal = primaryEntries.reduce((s, e) => s + e.grossAmount, 0);
+  const secondaryTotal = secondaryEntries.reduce((s, e) => s + e.grossAmount, 0);
   const otherTotal = other.reduce((s, e) => s + e.grossAmount, 0);
-  const totalReceived = samTotal + garyTotal + otherTotal;
+  const totalReceived = primaryTotal + secondaryTotal + otherTotal;
 
   const rentArrears = (arrears as any[]).filter((a: any) => a.status === "active" && a.category === "rent");
   const weeklyRent = rentArrears.reduce((s: number, a: any) => s + (a.weeklyOngoing ?? 0) + (a.weeklyArrears ?? 0), 0);
@@ -477,9 +488,9 @@ function RentFirstSection({ selectedWeek }: { selectedWeek: string }) {
   const totalCommitments = weeklyRent + billsThisWeek + weeklyNonRentArrears;
   const netPosition = totalReceived - totalCommitments;
 
-  const samCoveredRent = samTotal >= weeklyRent;
-  const garyTarget = billsThisWeek + weeklyNonRentArrears;
-  const garyCovered = garyTotal >= garyTarget;
+  const primaryCoveredRent = primaryTotal >= weeklyRent;
+  const secondaryTarget = billsThisWeek + weeklyNonRentArrears;
+  const secondaryCovered = secondaryTotal >= secondaryTarget;
 
   return (
     <Card>
@@ -498,28 +509,28 @@ function RentFirstSection({ selectedWeek }: { selectedWeek: string }) {
           {/* Primary earner row */}
           <div className="flex items-start gap-3 px-3 py-2.5">
             <div className="flex-1">
-              <div className="font-medium">Primary earner</div>
+              <div className="font-medium">{primaryLabel}</div>
               <div className="text-xs text-muted-foreground mt-0.5">Income → rent / arrears first</div>
             </div>
             <div className="text-right flex-shrink-0">
-              <div className="font-semibold">{formatCurrency(samTotal)} received</div>
-              <div className={`text-xs mt-0.5 ${samCoveredRent ? "text-emerald-600" : "text-destructive"}`}>
+              <div className="font-semibold">{formatCurrency(primaryTotal)} received</div>
+              <div className={`text-xs mt-0.5 ${primaryCoveredRent ? "text-emerald-600" : "text-destructive"}`}>
                 Rent commitment: {formatCurrency(weeklyRent)}
-                {weeklyRent === 0 ? " — no rent arrears recorded" : samCoveredRent ? " ✓ covered" : ` — shortfall ${formatCurrency(weeklyRent - samTotal)}`}
+                {weeklyRent === 0 ? " — no rent arrears recorded" : primaryCoveredRent ? " ✓ covered" : ` — shortfall ${formatCurrency(weeklyRent - primaryTotal)}`}
               </div>
             </div>
           </div>
           {/* Secondary earner row */}
           <div className="flex items-start gap-3 px-3 py-2.5">
             <div className="flex-1">
-              <div className="font-medium">Secondary earner</div>
+              <div className="font-medium">{secondaryLabel}</div>
               <div className="text-xs text-muted-foreground mt-0.5">Other income → bills, fuel, food</div>
             </div>
             <div className="text-right flex-shrink-0">
-              <div className="font-semibold">{formatCurrency(garyTotal)} received</div>
-              <div className={`text-xs mt-0.5 ${garyCovered ? "text-emerald-600" : "text-amber-600"}`}>
-                Bills + arrears: {formatCurrency(garyTarget)}
-                {garyTarget === 0 ? " — no bills/arrears this week" : garyCovered ? " ✓ covered" : " — tight"}
+              <div className="font-semibold">{formatCurrency(secondaryTotal)} received</div>
+              <div className={`text-xs mt-0.5 ${secondaryCovered ? "text-emerald-600" : "text-amber-600"}`}>
+                Bills + arrears: {formatCurrency(secondaryTarget)}
+                {secondaryTarget === 0 ? " — no bills/arrears this week" : secondaryCovered ? " ✓ covered" : " — tight"}
               </div>
             </div>
           </div>
