@@ -17,6 +17,7 @@ import scenariosRouter from "./scenarios";
 import shoppingRouter from "./shopping";
 import settingsRouter from "./settings";
 import bnplRouter from "./bnpl";
+import roadmapRouter from "./roadmap";
 
 const router: IRouter = Router();
 
@@ -38,5 +39,6 @@ router.use(scenariosRouter);
 router.use(shoppingRouter);
 router.use(settingsRouter);
 router.use(bnplRouter);
+router.use(roadmapRouter);
 
 export default router;

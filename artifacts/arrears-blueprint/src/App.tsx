@@ -23,6 +23,7 @@ import Scenarios from "@/pages/Scenarios";
 import Settings from "@/pages/Settings";
 import Docs from "@/pages/Docs";
 import Bnpl from "@/pages/Bnpl";
+import Roadmap from "@/pages/Roadmap";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -55,6 +56,7 @@ function AppRouter() {
         <Route path="/settings" component={Settings} />
         <Route path="/docs" component={Docs} />
         <Route path="/bnpl" component={Bnpl} />
+        <Route path="/roadmap" component={Roadmap} />
         <Route component={NotFound} />
       </Switch>
     </Shell>
