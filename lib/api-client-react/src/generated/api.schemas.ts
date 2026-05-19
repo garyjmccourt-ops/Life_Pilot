@@ -443,6 +443,16 @@ export interface GigEntry {
   incomeEntryId?: number | null;
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  estimatedKm?: number | null;
+  /** @nullable */
+  activeMinutes?: number | null;
+  /** @nullable */
+  deliveriesCount?: number | null;
+  /** @nullable */
+  offersCount?: number | null;
+  /** @nullable */
+  routeChain?: string | null;
   createdAt: string;
 }
 
@@ -470,6 +480,16 @@ export interface GigEntryInput {
   incomeEntryId?: number | null;
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  estimatedKm?: number | null;
+  /** @nullable */
+  activeMinutes?: number | null;
+  /** @nullable */
+  deliveriesCount?: number | null;
+  /** @nullable */
+  offersCount?: number | null;
+  /** @nullable */
+  routeChain?: string | null;
 }
 
 export interface BudgetCategory {

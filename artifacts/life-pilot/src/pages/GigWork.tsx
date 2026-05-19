@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useListGigEntries, useCreateGigEntry, useUpdateGigEntry, useDeleteGigEntry, getListIncomeEntriesQueryKey } from "@workspace/api-client-react";
+import { useListGigEntries, useCreateGigEntry, useUpdateGigEntry, useDeleteGigEntry, getListIncomeEntriesQueryKey, GigPlatform, GigPaymentStatus } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLookup, getDefaultValue } from "@/hooks/use-lookup";
 import { useToast } from "@/hooks/use-toast";
@@ -17,7 +17,7 @@ import {
   Bike, Plus, Pencil, Trash2, TrendingUp, Clock, DollarSign, Zap,
   Settings, Fuel, Package, ExternalLink,
   AlertTriangle, ChevronDown, ChevronUp, ChevronRight,
-  Link2, ArrowRightCircle,
+  Link2, ArrowRightCircle, Loader2,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -434,7 +434,7 @@ export default function GigWork() {
     const activeMins = parseInt(form.activeMinutes) || null;
     return {
       entryDate: form.entryDate,
-      platform: form.platform,
+      platform: form.platform as GigPlatform,
       person: form.person || null,
       startTime: form.startTime || null,
       endTime: form.endTime || null,
@@ -447,7 +447,7 @@ export default function GigWork() {
       fuelEstimate: parseFloat(form.fuelEstimate) || 0,
       otherExpenses: parseFloat(form.otherExpenses) || 0,
       netIncome: parseFloat(form.netIncome) || 0,
-      paymentStatus: form.paymentStatus,
+      paymentStatus: form.paymentStatus as GigPaymentStatus,
       notes: form.notes || null,
       estimatedKm: parseFloat(form.estimatedKm) || null,
       activeMinutes: activeMins,

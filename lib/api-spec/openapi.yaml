@@ -1095,6 +1095,11 @@ components:
         paymentStatus: { $ref: "#/components/schemas/GigPaymentStatus" }
         incomeEntryId: { type: ["integer", "null"] }
         notes: { type: ["string", "null"] }
+        estimatedKm: { type: ["number", "null"] }
+        activeMinutes: { type: ["integer", "null"] }
+        deliveriesCount: { type: ["integer", "null"] }
+        offersCount: { type: ["integer", "null"] }
+        routeChain: { type: ["string", "null"] }
         createdAt: { type: string, format: date-time }
       required: [id, entryDate, platform, grossEarnings, tips, fastPayAmount,
                  weeklyDepositAmount, fees, fuelEstimate, otherExpenses, netIncome,
@@ -1119,6 +1124,11 @@ components:
         paymentStatus: { $ref: "#/components/schemas/GigPaymentStatus" }
         incomeEntryId: { type: ["integer", "null"] }
         notes: { type: ["string", "null"] }
+        estimatedKm: { type: ["number", "null"] }
+        activeMinutes: { type: ["integer", "null"] }
+        deliveriesCount: { type: ["integer", "null"] }
+        offersCount: { type: ["integer", "null"] }
+        routeChain: { type: ["string", "null"] }
       required: [entryDate, platform, grossEarnings, tips, fastPayAmount,
                  weeklyDepositAmount, fees, fuelEstimate, otherExpenses, netIncome,
                  paymentStatus]
