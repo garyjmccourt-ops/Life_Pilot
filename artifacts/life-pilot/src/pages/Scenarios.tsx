@@ -171,7 +171,7 @@ function calcLowerDoorDash(
     actions.push("Update the Weekly Tracker with the lower actual income once received.");
   } else {
     actions.push("Cover all essential bills. Hold non-essential spending.");
-    actions.push("Log actual DoorDash earnings in Gig Work as shifts complete.");
+    actions.push("Log actual DoorDash earnings in Extra Work Income as shifts complete.");
   }
 
   return {

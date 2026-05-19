@@ -38,7 +38,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/income-bills", label: "Money In & Out", icon: Wallet },
       { href: "/weekly",       label: "Weekly Tracker",  icon: CalendarDays },
-      { href: "/scenarios",    label: "Scenarios",        icon: GitBranch },
+      { href: "/arrears",      label: "Arrears",          icon: AlertTriangle },
       { href: "/bnpl",         label: "Credit & Cards",   icon: CreditCard },
     ],
   },
@@ -56,11 +56,16 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: "Future View",
+    items: [
+      { href: "/scenarios", label: "Scenarios", icon: GitBranch },
+    ],
+  },
+  {
     label: "Support Life",
     items: [
-      { href: "/arrears", label: "Arrears",        icon: AlertTriangle },
-      { href: "/tasks",   label: "Tasks",           icon: CheckSquare },
-      { href: "/comms",   label: "Communications", icon: MessageSquare },
+      { href: "/tasks", label: "Tasks",           icon: CheckSquare },
+      { href: "/comms", label: "Communications", icon: MessageSquare },
     ],
   },
   {

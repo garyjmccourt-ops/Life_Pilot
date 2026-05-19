@@ -815,26 +815,19 @@ function GigEconomySection() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Zap className="h-4 w-4 text-amber-500" /> Gig Economy Support
+            <Zap className="h-4 w-4 text-amber-500" /> Extra Work Providers
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-medium text-sm">Enable Gig Economy companion features</div>
+              <div className="font-medium text-sm">Enable extra work provider tracking</div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                Enables provider tracking and household gig income summary. The Gig Economy Hub is a separate companion app — Life Pilot remains the household source of truth.
+                Enables provider tracking and household income summary for gig and casual work platforms.
               </div>
             </div>
             <Switch checked={enabled} onCheckedChange={toggleEnabled} />
           </div>
-          {enabled && (
-            <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800">
-              <ExternalLink className="h-3.5 w-3.5 inline mr-1.5" />
-              <strong>Gig Economy Hub</strong> handles shift capture, OCR scanning, route calculation, and zone decisions.
-              Life Pilot receives household-level summaries only. Use Hub → Export → Send to Life Pilot to import earnings.
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -977,7 +970,7 @@ function GigEconomySection() {
 
                 {/* Tracking toggles */}
                 <div className="space-y-2 pt-1">
-                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tracking (in Gig Economy Hub)</div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tracking features</div>
                   {([ ["usesLocationTracking", "Uses location tracking"] as const, ["usesShiftTracking", "Uses shift tracking"] as const, ["usesJourneyTracking", "Uses journey tracking"] as const ]).map(([key, label]) => (
                     <div key={key} className="flex items-center justify-between">
                       <Label className="text-sm font-normal">{label}</Label>
