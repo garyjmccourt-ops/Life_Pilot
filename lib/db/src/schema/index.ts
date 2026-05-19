@@ -16,3 +16,4 @@ export * from "./shoppingListItems";
 export * from "./bnplItems";
 export * from "./storedValueItems";
 export * from "./gigProviders";
+export * from "./roadmapItems";
