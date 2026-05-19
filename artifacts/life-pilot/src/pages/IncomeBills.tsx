@@ -66,7 +66,7 @@ function IncomeList() {
       {!income?.length ? (
         <Card className="flex flex-col items-center justify-center py-12 text-center border-dashed">
           <Wallet className="h-12 w-12 text-primary/20 mb-4" />
-          <h3 className="font-serif text-lg font-medium">No income sources</h3>
+          <h3 className="font-serif text-lg font-medium">No income sources added yet.</h3>
           <p className="text-sm text-muted-foreground mb-4">Add your salary, benefits, or other regular income.</p>
           <Button onClick={() => setIsCreateOpen(true)} variant="outline"><PlusCircle className="h-4 w-4 mr-2" /> Add Source</Button>
         </Card>
@@ -362,7 +362,7 @@ function BillsList() {
       {bills.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-12 text-center border-dashed">
           <Receipt className="h-12 w-12 text-primary/20 mb-4" />
-          <h3 className="font-serif text-lg font-medium">No recurring bills</h3>
+          <h3 className="font-serif text-lg font-medium">No bills added yet.</h3>
           <p className="text-sm text-muted-foreground mb-4">Add your rent, utilities, subscriptions, etc.</p>
           <Button onClick={() => setIsCreateOpen(true)} variant="outline"><PlusCircle className="h-4 w-4 mr-2" /> Add Bill</Button>
         </Card>

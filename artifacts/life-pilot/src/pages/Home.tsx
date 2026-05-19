@@ -267,10 +267,11 @@ function ArrearsMatrix() {
                 <TableCell>{formatCurrency(row.balance)}</TableCell>
                 <TableCell>{formatCurrency(row.weeklyTotal)}/wk</TableCell>
                 <TableCell>
-                  <Badge variant={row.riskLevel === "high" ? "destructive" : "outline"} className={
-                    row.riskLevel === "high" ? "bg-destructive text-destructive-foreground" :
-                    row.riskLevel === "medium" ? "bg-primary/20 text-primary" :
-                    "bg-secondary text-secondary-foreground"
+                  <Badge variant={
+                    row.riskLevel === "critical" ? "destructive" :
+                    row.riskLevel === "high"     ? "signal" :
+                    row.riskLevel === "medium"   ? "active" :
+                    "pending"
                   }>
                     {row.riskLevel}
                   </Badge>

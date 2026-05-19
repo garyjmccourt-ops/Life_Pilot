@@ -9,15 +9,15 @@ export default function NotFound() {
         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
           <Map className="w-8 h-8 text-primary" />
         </div>
-        <h1 className="text-3xl font-serif font-bold text-foreground mb-3 tracking-tight">Protocol Not Found</h1>
+        <h1 className="text-3xl font-serif font-bold text-foreground mb-3 tracking-tight">Page not found</h1>
         <p className="text-foreground/70 mb-8 leading-relaxed">
-          The reference page you're looking for isn't in this field manual. Let's get back to the structured system.
+          This page doesn't exist. Head back to your dashboard and pick up where you left off.
         </p>
         
         <Link href="/">
           <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all group">
             <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-            Return to Blueprint
+            Back to Dashboard
           </Button>
         </Link>
       </div>

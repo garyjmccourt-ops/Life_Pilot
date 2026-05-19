@@ -212,8 +212,8 @@ export default function ArrearsList() {
       {!arrears?.length ? (
         <Card className="flex flex-col items-center justify-center py-16 text-center border-dashed">
           <AlertTriangle className="h-12 w-12 text-primary/20 mb-4" />
-          <h3 className="font-serif text-lg font-medium">No arrears records</h3>
-          <p className="text-sm text-muted-foreground mb-4">You have no recorded arrears.</p>
+          <h3 className="font-serif text-lg font-medium">No debts recorded yet.</h3>
+          <p className="text-sm text-muted-foreground mb-4">Add an arrears item when you have a debt or payment arrangement to track.</p>
           <Button onClick={() => setIsCreateOpen(true)} variant="outline"><PlusCircle className="h-4 w-4 mr-2" /> Add Arrears</Button>
         </Card>
       ) : (

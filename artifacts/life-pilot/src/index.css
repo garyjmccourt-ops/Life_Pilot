@@ -71,6 +71,11 @@
   --color-sidebar-accent-border: var(--sidebar-accent-border);
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
+  --color-signal: hsl(var(--signal));
+  --color-signal-foreground: hsl(var(--signal-foreground));
+  --color-signal-soft: hsl(var(--signal-soft));
+  --color-signal-dark: hsl(var(--signal-dark));
+
   --font-sans: var(--app-font-sans);
   --font-serif: var(--app-font-serif);
   --font-mono: var(--app-font-mono);
@@ -146,6 +151,11 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 
+  --signal: 24 85% 55%;
+  --signal-foreground: 0 0% 100%;
+  --signal-soft: 28 80% 92%;
+  --signal-dark: 24 65% 32%;
+
   --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
@@ -212,6 +222,23 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* ── Life Pilot system utilities ─────────────────────────────────────────── */
+
+/* Four-dash motif: restrained system marker, use sparingly */
+.lp-four-dash {
+  display: block;
+  letter-spacing: 0.2em;
+  color: hsl(var(--signal) / 0.5);
+  font-size: 0.6rem;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Signal action highlight — orange, for next-action prompts only */
+.lp-signal-action {
+  @apply bg-[hsl(var(--signal-soft))] border border-[hsl(var(--signal)/0.3)] text-[hsl(var(--signal-dark))] rounded-md px-3 py-2 text-sm;
 }
 
 /* Template formatting */

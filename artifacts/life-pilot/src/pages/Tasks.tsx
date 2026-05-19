@@ -296,7 +296,7 @@ export default function Tasks() {
       {sorted.length === 0 ? (
         <div className="py-16 text-center text-muted-foreground border border-dashed rounded-lg">
           <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="font-medium">No tasks in this view</p>
+          <p className="font-medium">Nothing here right now.</p>
           <p className="text-sm mt-1">
             {quickFilter !== "active" ? "Try switching to All Active" : "Create a task to get started"}
           </p>

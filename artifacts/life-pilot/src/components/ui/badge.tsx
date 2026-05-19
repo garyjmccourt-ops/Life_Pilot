@@ -22,6 +22,11 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-destructive-foreground shadow-xs",
           // @replit shadow-xs" - use badge outline variable
         outline: "text-foreground border [border-color:var(--badge-outline)]",
+        // Life Pilot status variants
+        signal:   "border-transparent bg-[hsl(var(--signal))] text-[hsl(var(--signal-foreground))] shadow-xs",
+        active:   "border-transparent bg-primary/15 text-primary border border-primary/30",
+        resolved: "border-transparent bg-emerald-100 text-emerald-800 border border-emerald-200",
+        pending:  "border-transparent bg-muted text-muted-foreground border border-border",
       },
     },
     defaultVariants: {
