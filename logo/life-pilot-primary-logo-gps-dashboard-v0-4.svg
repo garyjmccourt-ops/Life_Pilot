@@ -1,0 +1,38 @@
+<svg width="1800" height="760" viewBox="0 0 1800 760" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Life Pilot primary logo GPS dashboard v0.4</title>
+  <desc id="desc">A wide rounded GPS-style dashboard icon with a quiet route signal, orange waypoint, four system dashes, and Life Pilot wordmark outside the mark.</desc>
+  <rect width="1800" height="760" fill="#F8F6F0"/>
+
+  <!-- GPS/tablet dashboard mark -->
+  <g transform="translate(170 185)">
+    <!-- outer tablet/device body -->
+    <rect x="0" y="0" width="470" height="330" rx="48" fill="#17313C"/>
+    <rect x="20" y="20" width="430" height="290" rx="34" fill="#FBFAF7"/>
+
+    <!-- subtle old GPS/tablet inner screen feel -->
+    <rect x="48" y="52" width="374" height="214" rx="26" fill="#F8F6F0" stroke="#DDD8CF" stroke-width="5"/>
+    <path d="M72 224 H398" stroke="#DDD8CF" stroke-width="5" stroke-linecap="round" opacity="0.75"/>
+    <path d="M72 183 C138 126 222 105 394 108" stroke="#436F70" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <circle cx="304" cy="113" r="17" fill="#ED7628"/>
+    <circle cx="304" cy="113" r="7" fill="#FBFAF7" opacity="0.95"/>
+
+    <!-- simple map/device cues, kept restrained -->
+    <path d="M94 84 H158" stroke="#DDD8CF" stroke-width="5" stroke-linecap="round"/>
+    <path d="M94 104 H132" stroke="#DDD8CF" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="235" cy="286" r="8" fill="#DDD8CF"/>
+
+    <!-- four ecosystem dashes as system tabs -->
+    <g transform="translate(72 286)">
+      <path d="M0 0 H36" stroke="#436F70" stroke-width="7" stroke-linecap="round"/>
+      <path d="M52 0 H88" stroke="#ED7628" stroke-width="7" stroke-linecap="round"/>
+      <path d="M104 0 H140" stroke="#B8668B" stroke-width="7" stroke-linecap="round"/>
+      <path d="M156 0 H192" stroke="#5C7885" stroke-width="7" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- wordmark outside icon -->
+  <g transform="translate(735 250)">
+    <text x="0" y="92" fill="#17313C" font-family="Libre Baskerville, Georgia, serif" font-size="112" font-weight="700" letter-spacing="-2.4">Life Pilot</text>
+    <text x="6" y="152" fill="#5C7885" font-family="DM Sans, Arial, sans-serif" font-size="34" font-weight="500" letter-spacing="0.2">See what matters. Plan what’s next.</text>
+  </g>
+</svg>
