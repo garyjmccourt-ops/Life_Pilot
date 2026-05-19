@@ -45,7 +45,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Work Life",
     items: [
-      { href: "/gig-work", label: "Gig Work", icon: Bike },
+      { href: "/gig-work", label: "Extra Work Income", icon: Bike },
     ],
   },
   {

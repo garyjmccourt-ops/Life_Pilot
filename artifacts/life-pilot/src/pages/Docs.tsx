@@ -157,7 +157,7 @@ function OverviewTab() {
     { icon: Settings2,     label: "Settings",        href: "/settings",     desc: "Configure all dropdown values, defaults, and household people. Must be set up first.",        order: 1 },
     { icon: Wallet,        label: "Income & Bills",   href: "/income-bills", desc: "Record income sources, bills, and actual income received.",                                  order: 2 },
     { icon: PieChart,      label: "Family Budget",    href: "/family-budget",desc: "Set weekly spending targets per category group.",                                            order: 3 },
-    { icon: Bike,          label: "Gig Work",         href: "/gig-work",     desc: "Track casual/gig income shifts per platform with automatic net calculation.",               order: 4 },
+    { icon: Bike,          label: "Extra Work Income", href: "/gig-work",     desc: "Track casual and gig work shifts per platform with automatic net income calculation.",    order: 4 },
     { icon: AlertTriangle, label: "Arrears",          href: "/arrears",      desc: "Manage outstanding debts and payment arrangements with full strategy tracking.",            order: 5 },
     { icon: CheckSquare,   label: "Tasks",            href: "/tasks",        desc: "Action tasks with full status tracking (Not Started → In Progress → Waiting → Done), priority levels, person assignment, and filter views.",                order: 6 },
     { icon: MessageSquare, label: "Comms Log",        href: "/comms",        desc: "Record calls, emails, and letters to/from creditors and services.",                        order: 7 },
@@ -189,7 +189,7 @@ function OverviewTab() {
             "Settings — configure household people, task buckets, bill categories, and gig platforms. Set defaults for each dropdown.",
             "Income & Bills — add all regular income sources and recurring bills.",
             "Family Budget — create category groups and set weekly spending targets.",
-            "Gig Work — configure platforms and start recording shifts as they happen.",
+            "Extra Work Income — configure platforms and start recording shifts as they happen.",
             "Arrears — add any outstanding debts, set status and risk level, link tasks.",
             "Tasks — add immediate action items with status, priority, due date, and assigned person. Use the Today / Overdue filters during your weekly review.",
             "Comms Log — start recording communications as they occur.",
@@ -393,7 +393,7 @@ function AdminTab() {
             "Tasks — process the highest priority open tasks (pay, contact).",
             "Arrears — update any arrears status or notes after communications.",
             "Comms Log — log any calls or letters received today.",
-            "Gig Work — record any completed gig shifts.",
+            "Extra Work Income — record any completed work shifts.",
             "End of week: Shopping → This Week checklist, Family Budget review.",
           ]} />
         </CardContent>
@@ -424,7 +424,7 @@ export default function Docs() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="income">Income & Bills</TabsTrigger>
-          <TabsTrigger value="gig">Gig Work</TabsTrigger>
+          <TabsTrigger value="gig">Extra Work Income</TabsTrigger>
           <TabsTrigger value="budget">Family Budget</TabsTrigger>
           <TabsTrigger value="arrears">Arrears</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
@@ -453,7 +453,7 @@ export default function Docs() {
             }
             relations={[
               { label: "Income & Bills", href: "/income-bills" },
-              { label: "Gig Work", href: "/gig-work" },
+              { label: "Extra Work Income", href: "/gig-work" },
               { label: "Family Budget", href: "/family-budget" },
               { label: "Arrears", href: "/arrears" },
               { label: "Tasks", href: "/tasks" },
@@ -469,7 +469,7 @@ export default function Docs() {
               "Open Settings > Household. Add the names of people in your household. These names appear in task assignment and gig shift dropdowns.",
               "Open Finance tab. Review bill categories and payment methods. Add any custom categories you need (e.g. a specific bank account as a payment method).",
               "Open Tasks tab. Review task buckets. The default buckets (Today, This Week, Backlog, Waiting) cover most workflows — customise if needed. Star the bucket you use most as your default so new tasks pre-select it.",
-              "Open Gig Work tab. Add any platforms not already listed. Star the platform you use most.",
+              "Open Extra Work Income tab. Add any platforms not already listed. Star the platform you use most.",
               "Open Arrears tab. Review statuses and risk levels — the defaults cover all standard scenarios.",
               "Open Audit Log anytime to review what changes have been made and by whom.",
             ]}
@@ -515,19 +515,14 @@ export default function Docs() {
         <TabsContent value="gig">
           <DocSection
             icon={Bike}
-            title="Gig Work"
+            title="Extra Work Income"
             tagline="Track every shift — gross earnings, platform fees, fuel costs, and net income — in one place."
             what={
               <span>
-                Gig Work records household-level gig shift summaries for platforms like DoorDash, Uber Eats,
-                Airtasker, or cash work. Each entry captures: start/end time, gross earnings, tips, platform
-                fees, fuel cost (auto-calculated from kilometres), and net income. The tab shows period
-                summaries (this week, month, quarter, FY) and an effective hourly rate.
-                <br /><br />
-                <strong>Shift capture and OCR scanning have moved to the Gig Economy Hub</strong> — a
-                separate companion app for operational gig-work decisions. Record shifts in the Hub, then
-                export them to Life Pilot using Hub → Export → Send to Life Pilot. Life Pilot remains the household financial
-                source of truth.
+                Extra Work Income records shift summaries for casual and gig work platforms like DoorDash,
+                Uber, Airtasker, or cash work. Each entry captures: start/end time, gross earnings, tips,
+                platform fees, fuel cost (auto-calculated from kilometres), and net income. The page shows
+                period summaries (this week, month, quarter, financial year) and an effective hourly rate.
               </span>
             }
             relations={[
@@ -536,20 +531,17 @@ export default function Docs() {
               { label: "Settings (gig_platform)", href: "/settings" },
             ]}
             rules={[
-              "Life Pilot receives household-level gig summaries only. Detailed shift capture, OCR scanning, route-km calculation, and zone/hotspot decisions belong in the Gig Economy Hub companion app.",
-              "Platform options are controlled by Settings > Gig Work > Gig Platforms. To add a new platform, add it in Settings first.",
+              "All shifts are entered manually using Add Shift. Platform options are controlled by Settings > Gig Work > Gig Platforms — add any new platforms there first.",
               "Payment statuses (Pending, Fast-Paid, Deposited, Received) are controlled by Settings > Gig Work > Gig Payment Statuses.",
-              "Fuel cost is auto-estimated from the kilometres entered, using the fuel rate set in Gig Work (litres per 100km × price per litre).",
-              "Net income = Gross + Tips − Fees − Fuel − Other Expenses. This is calculated automatically.",
+              "Fuel cost is auto-estimated from the kilometres entered, using the fuel rate configured via the fuel icon (litres per 100km × price per litre).",
+              "Net income = Gross + Tips − Fees − Fuel − Other Expenses. Calculated automatically.",
               "Fast-Pay amounts are tracked separately from regular weekly deposits. The Dashboard shows total fast-pay balance outstanding.",
-              "The Hub sends shift summaries to Life Pilot via POST /api/gig/import-summary. Entries imported from the Hub appear here alongside any manually added shifts.",
             ]}
             setup={[
               "Go to Settings > Gig Work. Confirm your platforms are listed. Add any missing ones.",
-              "In Gig Work, open the fuel settings (fuel icon) and set your vehicle's fuel consumption (L/100km) and current fuel price.",
-              "To record a new shift: use the Gig Economy Hub companion app to scan or enter the shift, then export it to Life Pilot. Or add manually here using Add Shift.",
-              "Set the payment status as money moves from Pending → Fast-Paid → Deposited → Received.",
-              "Install and configure the Gig Economy Hub when it is available — paste your Life Pilot API URL into the Hub's Settings so the export bridge works automatically.",
+              "Open Extra Work Income, click the fuel icon, and set your vehicle's fuel consumption (L/100km) and current fuel price.",
+              "Click Add Shift to record a completed shift — enter the date, platform, hours worked, gross earnings, and any fees or expenses.",
+              "Update the payment status as money moves from Pending → Fast-Paid → Deposited → Received.",
             ]}
           />
         </TabsContent>
@@ -841,7 +833,7 @@ export default function Docs() {
               { label: "Income & Bills", href: "/income-bills" },
               { label: "Arrears", href: "/arrears" },
               { label: "Tasks", href: "/tasks" },
-              { label: "Gig Work", href: "/gig-work" },
+              { label: "Extra Work Income", href: "/gig-work" },
               { label: "Weekly Tracker", href: "/weekly" },
             ]}
             rules={[

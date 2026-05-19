@@ -106,7 +106,7 @@ const LIFE_BUCKETS = [
   },
   {
     label: "Work Life",
-    desc: "Gig shifts, earnings and platforms.",
+    desc: "Extra work income, earnings and platforms.",
     href: "/gig-work",
     icon: Bike,
     color: "text-emerald-600",

@@ -240,7 +240,7 @@ function ProviderSummaryCard({ entries }: { entries: GigEntry[] }) {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <Zap className="h-4 w-4 text-amber-500" />
-          Gig Economy — Household Contribution
+          Extra Work — Household Contribution
           <span className="text-xs font-normal text-muted-foreground ml-auto">{active.length} active provider{active.length !== 1 ? "s" : ""}</span>
         </CardTitle>
       </CardHeader>
@@ -275,10 +275,10 @@ function ProviderSummaryCard({ entries }: { entries: GigEntry[] }) {
           <div className="flex items-end">
             <button
               disabled
-              title="Open Gig Economy Hub — coming soon"
+              title="Provider analytics — coming soon"
               className="text-xs flex items-center gap-1 text-muted-foreground border border-dashed border-muted-foreground/40 rounded px-2 py-1 cursor-not-allowed opacity-60"
             >
-              <ExternalLink className="h-3 w-3" /> Open Hub
+              <ExternalLink className="h-3 w-3" /> Analytics
             </button>
           </div>
         </div>
@@ -577,7 +577,7 @@ export default function GigWork() {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Bike className="h-5 w-5 text-primary shrink-0" />
-          <h1 className="text-xl md:text-2xl font-bold truncate">Gig Work</h1>
+          <h1 className="text-xl md:text-2xl font-bold truncate">Extra Work Income</h1>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <Button variant="ghost" size="icon" className="h-10 w-10" onClick={openFuelDialog} title="Fuel settings">
@@ -592,18 +592,6 @@ export default function GigWork() {
 
       {/* Provider summary card — only shown if Gig Economy enabled + providers exist */}
       <ProviderSummaryCard entries={entries} />
-
-      {/* Gig Economy Hub notice */}
-      <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 p-3 text-sm">
-        <ArrowRightCircle className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <p className="font-medium text-blue-900 dark:text-blue-100">Shift capture has moved to the Gig Economy Hub</p>
-          <p className="text-blue-700 dark:text-blue-300 text-xs mt-0.5">
-            Record shifts and scan screenshots in the Hub companion app, then use Hub → Export → Send to Life Pilot to import earnings here.
-            You can still add shifts manually below using Add Shift.
-          </p>
-        </div>
-      </div>
 
       {/* Fuel badge */}
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground -mt-2">
@@ -690,7 +678,7 @@ export default function GigWork() {
             <p className="text-muted-foreground text-sm py-4 text-center">Loading…</p>
           ) : entries.length === 0 ? (
             <p className="text-muted-foreground text-sm py-8 text-center">
-              No gig entries yet — add a shift manually or import from the Gig Economy Hub.
+              No shifts recorded yet — add a shift using the button above.
             </p>
           ) : (
             <>
