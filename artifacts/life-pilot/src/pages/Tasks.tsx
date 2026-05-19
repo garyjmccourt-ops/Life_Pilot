@@ -636,7 +636,7 @@ function TaskDialog({
                   </SelectContent>
                 </Select>
               ) : (
-                <Input value={form.assignedPerson} onChange={sf("assignedPerson")} placeholder="e.g. Gary" />
+                <Input value={form.assignedPerson} onChange={sf("assignedPerson")} placeholder="e.g. Household member" />
               )}
             </div>
             <div className="space-y-1.5">

@@ -307,7 +307,7 @@ function BillsList() {
       {/* Rent-first model note */}
       <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
         <TrendingDown className="h-4 w-4 mt-0.5 shrink-0" />
-        <span><strong>Rent-first model:</strong> Sam's wages cover rent/arrears first. Gary's DoorDash/work covers bills, fuel, food and incidentals.</span>
+        <span><strong>Rent-first model:</strong> Primary income covers rent and arrears first. Other income covers bills, fuel, food and incidentals.</span>
       </div>
 
       {/* Cashflow windows */}
@@ -754,7 +754,7 @@ function ActualReceivedSection() {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Input placeholder="e.g. Sam" value={form.person} onChange={sf("person")} className="h-8 text-sm" />
+                  <Input placeholder="e.g. Person 1" value={form.person} onChange={sf("person")} className="h-8 text-sm" />
                 )}
               </div>
               <div className="space-y-1">

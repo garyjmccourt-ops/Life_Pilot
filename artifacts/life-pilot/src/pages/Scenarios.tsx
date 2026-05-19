@@ -79,7 +79,7 @@ const SCENARIO_TYPES: Array<{
     id: "lower-doordash",
     icon: Truck,
     title: "Lower DoorDash / Gig Week",
-    prompt: "What if Gary earns less from DoorDash this week?",
+    prompt: "What if gig income is lower than usual this week?",
     description: "Model the impact of a quiet gig week on your weekly budget.",
     iconBg: "bg-orange-50 text-orange-600",
   },
@@ -188,7 +188,7 @@ function calcLowerDoorDash(
     billsChange: 0,
     arrearsChange: 0,
     surplusChange: delta,
-    summary: `If Gary earns ${fmt(params.thisWeekAmount)} from DoorDash this week instead of the usual ${fmt(params.typicalWeekly)}, your weekly surplus ${newSurplus >= base.weeklySurplus ? "improves" : "drops"} to ${fmt(newSurplus)}${newSurplus < 0 ? " — a shortfall that needs covering" : ""}.`,
+    summary: `If gig income is ${fmt(params.thisWeekAmount)} this week instead of the usual ${fmt(params.typicalWeekly)}, your weekly surplus ${newSurplus >= base.weeklySurplus ? "improves" : "drops"} to ${fmt(newSurplus)}${newSurplus < 0 ? " — a shortfall that needs covering" : ""}.`,
     impacts,
     suggestedActions: actions,
     assumptions: {

@@ -304,7 +304,7 @@ function ForecastIncomeSection() {
         </p>
         {/* Rent-first model note */}
         <div className="mt-2 text-xs bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-amber-800 leading-relaxed">
-          <strong>Rent-first model:</strong> Sam's wages go to rent first. Gary's DoorDash / work covers bills, fuel, food and incidentals.
+          <strong>Rent-first model:</strong> Primary income covers rent and arrears first. Other income covers bills, fuel, food and incidentals.
         </div>
       </CardHeader>
       <CardContent>
@@ -489,17 +489,17 @@ function RentFirstSection({ selectedWeek }: { selectedWeek: string }) {
           <CardTitle className="text-base font-serif">Rent-First Allocation</CardTitle>
         </div>
         <p className="text-xs text-muted-foreground">
-          Sam's wages protect rent first. Gary's DoorDash/work covers bills, fuel, food.
+          Primary income covers rent first. Other income covers bills, fuel, food.
           Week of {selectedWeek} – {weekEnd}.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="divide-y rounded-md border overflow-hidden text-sm">
-          {/* Sam row */}
+          {/* Primary earner row */}
           <div className="flex items-start gap-3 px-3 py-2.5">
             <div className="flex-1">
-              <div className="font-medium">Sam</div>
-              <div className="text-xs text-muted-foreground mt-0.5">Wages → rent / arrears first</div>
+              <div className="font-medium">Primary earner</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Income → rent / arrears first</div>
             </div>
             <div className="text-right flex-shrink-0">
               <div className="font-semibold">{formatCurrency(samTotal)} received</div>
@@ -509,11 +509,11 @@ function RentFirstSection({ selectedWeek }: { selectedWeek: string }) {
               </div>
             </div>
           </div>
-          {/* Gary row */}
+          {/* Secondary earner row */}
           <div className="flex items-start gap-3 px-3 py-2.5">
             <div className="flex-1">
-              <div className="font-medium">Gary</div>
-              <div className="text-xs text-muted-foreground mt-0.5">DoorDash / work → bills, fuel, food</div>
+              <div className="font-medium">Secondary earner</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Other income → bills, fuel, food</div>
             </div>
             <div className="text-right flex-shrink-0">
               <div className="font-semibold">{formatCurrency(garyTotal)} received</div>
@@ -865,7 +865,7 @@ function ActualIncomeSection({
             </div>
             <div>
               <Label className="text-xs">Person</Label>
-              <Input placeholder="e.g. Sam" value={form.person} onChange={sf("person")} className="h-8 text-sm" />
+              <Input placeholder="e.g. Person 1" value={form.person} onChange={sf("person")} className="h-8 text-sm" />
             </div>
             <div>
               <Label className="text-xs">Amount ($)</Label>

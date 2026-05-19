@@ -627,7 +627,7 @@ function BudgetDefaultsSection() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Budget Assumptions</CardTitle>
-          <p className="text-xs text-muted-foreground">Default figures Gary and Sam use as weekly planning references.</p>
+          <p className="text-xs text-muted-foreground">Default figures used as your household's weekly planning references.</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

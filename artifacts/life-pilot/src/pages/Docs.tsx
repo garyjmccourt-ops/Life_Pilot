@@ -259,7 +259,7 @@ function AdminTab() {
           </p>
           <div className="grid sm:grid-cols-2 gap-3">
             {[
-              { label: "income_sources", desc: "Recurring income sources (Sam wages, Gary DoorDash)" },
+              { label: "income_sources", desc: "Recurring income sources (salary, gig work, benefits)" },
               { label: "income_entries", desc: "Actual payments received, linked to a source" },
               { label: "bills", desc: "Regular recurring bills and utilities" },
               { label: "arrears_items", desc: "Debts, arrears, payment arrangements — central entity" },
@@ -298,7 +298,7 @@ function AdminTab() {
             },
             {
               issue: "Weekly Tracker rent-first section shows nothing",
-              fix: "Ensure income entries are recorded with the 'Person' field set to 'Sam' or 'Gary'. Also ensure at least one arrears item has category 'rent' and status 'active'.",
+              fix: "Ensure income entries are recorded with the 'Person' field matching a household member. Also ensure at least one arrears item has category 'rent' and status 'active'.",
             },
             {
               issue: "Family Budget safe-to-spend is wildly wrong",
@@ -361,16 +361,16 @@ function AdminTab() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
-            Life Pilot is built around a <strong>rent-first allocation principle</strong>. This means Sam's wage income is
-            mentally ringfenced for rent and rent arrears first. Gary's DoorDash and other income covers bills,
+            Life Pilot is built around a <strong>rent-first allocation principle</strong>. One income stream is
+            mentally ringfenced for rent and rent arrears first. Other household income covers bills,
             fuel, food, and incidentals.
           </p>
           <p>
             This is not enforced technically — it's a planning discipline. The Weekly Tracker's "Rent-First Allocation"
-            section shows how income recorded with person = Sam vs Gary maps against those commitments.
+            section groups income entries by the Person field to show how each earner's income maps against those commitments.
           </p>
           <RuleBlock>
-            Always record income entries with the correct <strong>Person</strong> field set (Sam / Gary) for the rent-first section to work correctly in the Weekly Tracker.
+            Always record income entries with the correct <strong>Person</strong> field set so the rent-first section works correctly in the Weekly Tracker.
           </RuleBlock>
           <p>
             Rent arrears should be tracked in the Arrears module with category = <code className="font-mono text-xs bg-muted px-1 rounded">rent</code> and status = <code className="font-mono text-xs bg-muted px-1 rounded">active</code>.
@@ -393,7 +393,7 @@ function AdminTab() {
             "Tasks — process the highest priority open tasks (pay, contact).",
             "Arrears — update any arrears status or notes after communications.",
             "Comms Log — log any calls or letters received today.",
-            "Gig Work (Gary) — record any completed DoorDash shifts.",
+            "Gig Work — record any completed gig shifts.",
             "End of week: Shopping → This Week checklist, Family Budget review.",
           ]} />
         </CardContent>
@@ -659,13 +659,13 @@ export default function Docs() {
               "Priority is stored as p1 (High), p2 (Medium), p3 (Low), or 'critical'. These storage values are fixed and will not be affected by any label changes in Settings.",
               "The Done / Deferred / Cancelled section at the bottom is collapsed by default. Expand it to review completed history. Tasks are never deleted by marking done — they are preserved.",
               "Four quick-filter tabs show live counts: All Active, Today (due today), This Week (due Mon–Sun), Overdue (past due and still active). Use Overdue as your first check in any weekly review.",
-              "Assigned person pulls from the household_people Settings lookup. Add Gary, Sam, or any other household member there once, and they appear in all task dropdowns.",
+              "Assigned person pulls from the household_people Settings lookup. Add household members there once and they appear in all task dropdowns.",
               "Tasks linked to an arrears item (via the Arrears link field) appear in the Related Tasks panel on that arrears item's detail page.",
               "Tasks are not auto-created — all tasks must be added manually.",
             ]}
             setup={[
               "Go to Settings > Tasks. Review the default task buckets (Today, This Week, Backlog, Waiting). Star the bucket you use most so new tasks pre-select it.",
-              "Go to Settings > Household. Confirm Gary and Sam are listed as household people — they appear in the Assigned To dropdown on every task.",
+              "Go to Settings > Household. Confirm all household members are listed — they appear in the Assigned To dropdown on every task.",
               "Create tasks for immediate financial actions: calling creditors, submitting documents, reviewing statements, confirming income received.",
               "Use the quick-filter tabs daily: check Today and Overdue first. Move items to the next bucket as urgency changes by editing the task.",
               "For arrears-linked tasks, link them via the Arrears field in the edit modal so they appear in the Related Tasks panel on the arrears detail page.",
