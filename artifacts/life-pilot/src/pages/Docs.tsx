@@ -433,7 +433,7 @@ export default function Docs() {
           <TabsTrigger value="shopping">Shopping</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="admin">Admin / Help</TabsTrigger>
+          <TabsTrigger value="admin">Troubleshooting</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview"><OverviewTab /></TabsContent>

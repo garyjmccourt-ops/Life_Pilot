@@ -24,7 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 type NavItem = { href: string; label: string; icon: React.ElementType };
-type NavGroup = { label: string | null; items: NavItem[] };
+type NavGroup = { label: string | null; items: NavItem[]; divider?: boolean };
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -65,9 +65,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: null,
+    divider: true,
     items: [
-      { href: "/settings", label: "Settings",  icon: Settings2 },
-      { href: "/docs",     label: "Help & Docs", icon: BookOpen },
+      { href: "/settings", label: "Settings",    icon: Settings2 },
+      { href: "/docs",     label: "Help & Guides", icon: BookOpen },
     ],
   },
 ];
@@ -107,6 +108,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-4">
           {NAV_GROUPS.map((group, gi) => (
             <div key={gi}>
+              {group.divider && (
+                <div className="border-t border-sidebar-border mx-1 mb-2" />
+              )}
               {group.label && (
                 <div className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40 select-none">
                   {group.label}
