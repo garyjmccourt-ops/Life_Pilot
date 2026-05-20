@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Settings2, Lock, Plus, Pencil, Trash2, Check, X, ToggleLeft, ToggleRight, History, Star, Download, Upload, Info, Zap, ExternalLink } from "lucide-react";
+import { ImportGenerator } from "@/components/ImportGenerator";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -1034,6 +1035,7 @@ export default function Settings() {
           <TabsTrigger value="gig-economy">Gig Economy</TabsTrigger>
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
           <TabsTrigger value="data">Data</TabsTrigger>
+          <TabsTrigger value="generate">Generate Import</TabsTrigger>
           <TabsTrigger value="defaults">Defaults</TabsTrigger>
         </TabsList>
 
@@ -1141,6 +1143,11 @@ export default function Settings() {
         {/* Data import/export */}
         <TabsContent value="data" className="space-y-6">
           <DataManagementSection />
+        </TabsContent>
+
+        {/* Generate Import */}
+        <TabsContent value="generate" className="space-y-6">
+          <ImportGenerator />
         </TabsContent>
 
         {/* Budget defaults */}
