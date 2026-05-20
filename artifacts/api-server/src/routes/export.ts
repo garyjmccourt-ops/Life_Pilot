@@ -261,7 +261,6 @@ router.get("/export/csv/shopping", async (_req, res): Promise<void> => {
 router.get("/export/template", async (_req, res): Promise<void> => {
   const { readFileSync } = await import("fs");
   const { resolve } = await import("path");
-  // Served from frontend public dir; fall back to inline if not found
   try {
     const templatePath = resolve(
       process.cwd(),
@@ -273,6 +272,42 @@ router.get("/export/template", async (_req, res): Promise<void> => {
     res.send(raw);
   } catch {
     res.status(404).json({ error: "Template file not found" });
+  }
+});
+
+// ── GET /export/starter — clean household starter with real structure ──
+router.get("/export/starter", async (_req, res): Promise<void> => {
+  const { readFileSync } = await import("fs");
+  const { resolve } = await import("path");
+  try {
+    const filePath = resolve(
+      process.cwd(),
+      "../../artifacts/arrears-blueprint/public/myoh-clean-starter.json"
+    );
+    const raw = readFileSync(filePath, "utf-8");
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="myoh-clean-starter.json"');
+    res.send(raw);
+  } catch {
+    res.status(404).json({ error: "Starter file not found" });
+  }
+});
+
+// ── GET /export/wipe — replace-mode wipe file (clears all data) ───────
+router.get("/export/wipe", async (_req, res): Promise<void> => {
+  const { readFileSync } = await import("fs");
+  const { resolve } = await import("path");
+  try {
+    const filePath = resolve(
+      process.cwd(),
+      "../../artifacts/arrears-blueprint/public/myoh-wipe-replace.json"
+    );
+    const raw = readFileSync(filePath, "utf-8");
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="myoh-wipe-replace.json"');
+    res.send(raw);
+  } catch {
+    res.status(404).json({ error: "Wipe file not found" });
   }
 });
 

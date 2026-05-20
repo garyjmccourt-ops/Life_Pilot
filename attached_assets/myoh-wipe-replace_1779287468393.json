@@ -1,0 +1,18 @@
+{
+  "mode": "replace",
+  "data": {
+    "incomeSources": [],
+    "incomeEntries": [],
+    "bills": [],
+    "arrearsItems": [],
+    "tasks": [],
+    "commsEntries": [],
+    "weeklyEntries": [],
+    "gigEntries": [],
+    "budgetCategories": [],
+    "scenarios": [],
+    "shoppingItems": [],
+    "shoppingLists": [],
+    "shoppingListItems": []
+  }
+}

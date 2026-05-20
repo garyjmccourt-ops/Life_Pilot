@@ -1,0 +1,376 @@
+{
+  "mode": "merge",
+  "data": {
+    "incomeSources": [
+      {
+        "name": "Sam wages — normal week forecast",
+        "amount": 0,
+        "frequency": "weekly",
+        "notes": "Placeholder only. Update once actual working baseline is confirmed."
+      },
+      {
+        "name": "Gary DoorDash / work forecast",
+        "amount": 0,
+        "frequency": "weekly",
+        "notes": "Placeholder only. Use actual income entries once earned."
+      },
+      {
+        "name": "Gig Work",
+        "amount": 0,
+        "frequency": "weekly",
+        "notes": "For actual gig income tracking."
+      }
+    ],
+    "bills": [
+      {
+        "provider": "STD Family Trust",
+        "category": "Rent",
+        "amount": 1080,
+        "frequency": "fortnightly",
+        "dueDay": null,
+        "dueDate": null,
+        "accountRef": null,
+        "autopay": false,
+        "notes": "Current fortnightly rent baseline."
+      },
+      {
+        "provider": "SA Water – STD Family Trust",
+        "category": "Utilities",
+        "amount": 201.96,
+        "frequency": "one-off",
+        "dueDay": null,
+        "dueDate": null,
+        "accountRef": "INV-0440",
+        "autopay": false,
+        "notes": "Overdue SA Water reference item. Keep only if still unpaid."
+      },
+      {
+        "provider": "Starlink",
+        "category": "Internet",
+        "amount": 111,
+        "frequency": "monthly",
+        "dueDay": null,
+        "dueDate": null,
+        "accountRef": null,
+        "autopay": false,
+        "notes": "Temporary budget assumption based on reduced 12-month offer. Confirm actual arrangement."
+      },
+      {
+        "provider": "ELGAS",
+        "category": "Utilities",
+        "amount": 0,
+        "frequency": "monthly",
+        "dueDay": null,
+        "dueDate": null,
+        "accountRef": null,
+        "autopay": false,
+        "notes": "Create now, update once actual bill/arrears confirmed."
+      },
+      {
+        "provider": "Electricity Provider",
+        "category": "Utilities",
+        "amount": 0,
+        "frequency": "monthly",
+        "dueDay": null,
+        "dueDate": null,
+        "accountRef": null,
+        "autopay": false,
+        "notes": "Replace with actual provider and amount once confirmed."
+      },
+      {
+        "provider": "Mobile Provider",
+        "category": "Mobile",
+        "amount": 0,
+        "frequency": "monthly",
+        "dueDay": null,
+        "dueDate": null,
+        "accountRef": null,
+        "autopay": false,
+        "notes": "Replace with actual provider and amount once confirmed."
+      },
+      {
+        "provider": "Child Support",
+        "category": "Child support",
+        "amount": 0,
+        "frequency": "weekly",
+        "dueDay": null,
+        "dueDate": null,
+        "accountRef": null,
+        "autopay": false,
+        "notes": "Set actual weekly amount once confirmed."
+      },
+      {
+        "provider": "Afterpay",
+        "category": "Debt / instalment",
+        "amount": 0,
+        "frequency": "weekly",
+        "dueDay": null,
+        "dueDate": null,
+        "accountRef": null,
+        "autopay": false,
+        "notes": "Set only if active and still relevant."
+      }
+    ],
+    "arrearsItems": [
+      {
+        "creditor": "STD Family Trust / Peter — rent arrears plan",
+        "category": "rent",
+        "balance": 5801.96,
+        "ongoingCharge": 1080,
+        "ongoingFrequency": "fortnightly",
+        "arrearsPayment": 150,
+        "arrearsFrequency": "weekly",
+        "riskLevel": "high",
+        "status": "active",
+        "nextReviewDate": null,
+        "accountRef": "RENT-ARREARS-PLAN",
+        "summary": "Main rent arrears plan for Kerley Court.",
+        "objective": "Protect current rent first, then reduce arrears.",
+        "workingPlan": "Current rent first, arrears next, bond later.",
+        "communicationPosition": "Use latest agreed timing and landlord updates.",
+        "externalAcknowledgement": null,
+        "externalPaymentIntent": null,
+        "externalStagedReduction": null,
+        "externalReviewPoints": null,
+        "externalChannel": "email / direct communication",
+        "evidenceLinks": null
+      }
+    ],
+    "budgetCategories": [
+      {
+        "name": "Rent / Housing",
+        "group": "housing",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": "Set after weekly equivalent is confirmed.",
+        "color": null
+      },
+      {
+        "name": "Rent Arrears",
+        "group": "arrears",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": "For Peter arrears plan only.",
+        "color": null
+      },
+      {
+        "name": "SA Water Allowance",
+        "group": "utilities",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": "Quarterly water allowance if retained.",
+        "color": null
+      },
+      {
+        "name": "Electricity",
+        "group": "utilities",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      },
+      {
+        "name": "Gas / ELGAS",
+        "group": "utilities",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      },
+      {
+        "name": "Phone & Internet",
+        "group": "communications",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      },
+      {
+        "name": "Child Support",
+        "group": "family",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      },
+      {
+        "name": "Afterpay",
+        "group": "debt",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      },
+      {
+        "name": "Groceries / Food / Toiletries",
+        "group": "food",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      },
+      {
+        "name": "Fuel",
+        "group": "transport",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": "Protect earning capacity first.",
+        "color": null
+      },
+      {
+        "name": "Medical & Pharmacy",
+        "group": "health",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": "Include Sam medical buffer here.",
+        "color": null
+      },
+      {
+        "name": "Emergency Buffer",
+        "group": "buffer",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": true,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      },
+      {
+        "name": "Incidentals",
+        "group": "incidentals",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": false,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      },
+      {
+        "name": "Smoking",
+        "group": "personal",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": false,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": "Optional realism line only if you want it visible.",
+        "color": null
+      },
+      {
+        "name": "Personal Spending",
+        "group": "personal",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": false,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      },
+      {
+        "name": "Subscriptions",
+        "group": "bills",
+        "plannedWeekly": 0,
+        "actualWeekly": 0,
+        "essential": false,
+        "includeInScenario": true,
+        "carryForward": false,
+        "notes": null,
+        "color": null
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "Base — Rent-First Household Plan",
+        "label": "base-rent-first",
+        "status": "active",
+        "startDate": "2026-05-19",
+        "endDate": null,
+        "incomeAssumptions": "Use confirmed income only until stable.",
+        "billAssumptions": "Current rent first, core bills next, arrears after essentials.",
+        "arrearsAssumptions": "Peter arrears plan is active and reviewed as needed.",
+        "spendingChanges": "Base scenario only. Fill once actual figures are confirmed.",
+        "notes": "Main MYOH baseline."
+      },
+      {
+        "name": "Survival Week",
+        "label": "survival-week",
+        "status": "draft",
+        "startDate": "2026-05-19",
+        "endDate": null,
+        "incomeAssumptions": "Actual received income only.",
+        "billAssumptions": "Essentials only.",
+        "arrearsAssumptions": "Minimum viable arrears contribution only.",
+        "spendingChanges": "Reduce all non-essential spending.",
+        "notes": "Use for pressure weeks."
+      },
+      {
+        "name": "Pressure Week",
+        "label": "pressure-week",
+        "status": "draft",
+        "startDate": "2026-05-19",
+        "endDate": null,
+        "incomeAssumptions": "Income disruption week.",
+        "billAssumptions": "Triage required.",
+        "arrearsAssumptions": "Review plan against real cash position.",
+        "spendingChanges": "Hard cut discretionary items.",
+        "notes": "Flags weeks that need intervention."
+      },
+      {
+        "name": "Gig Work Catch-up Plan",
+        "label": "gig-catch-up",
+        "status": "draft",
+        "startDate": "2026-05-19",
+        "endDate": null,
+        "incomeAssumptions": "Gig work used only after earned.",
+        "billAssumptions": "Current bills first.",
+        "arrearsAssumptions": "Apply surplus after essentials.",
+        "spendingChanges": "No discretionary spending until safe.",
+        "notes": "Use when DoorDash/gig income is active."
+      }
+    ],
+    "tasks": [],
+    "commsEntries": [],
+    "weeklyEntries": [],
+    "gigEntries": [],
+    "incomeEntries": [],
+    "shoppingItems": [],
+    "shoppingLists": [],
+    "shoppingListItems": []
+  }
+}

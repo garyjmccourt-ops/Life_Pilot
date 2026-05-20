@@ -515,15 +515,31 @@ function DataManagementSection() {
             Downloads all modules as a single JSON file. Use this for backups, sharing with financial counsellors, or migrating data.
           </p>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <a href={`${BASE}api/export`} download>
-            <Button variant="default" className="gap-2">
-              <Download className="h-4 w-4" /> Download Full Export (JSON)
-            </Button>
-          </a>
-          <a href={`${BASE}api/export/template`} download>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" /> Download Blank Template (JSON)
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <a href={`${BASE}api/export`} download>
+              <Button variant="default" className="gap-2">
+                <Download className="h-4 w-4" /> Download Full Export
+              </Button>
+            </a>
+            <a href={`${BASE}api/export/template`} download>
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" /> Blank Schema Template
+              </Button>
+            </a>
+            <a href={`${BASE}api/export/starter`} download>
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" /> Clean Starter (Gary &amp; Sam)
+              </Button>
+            </a>
+          </div>
+          <div className="flex items-start gap-2 bg-red-50 border border-red-100 rounded-md px-3 py-2 text-xs text-red-700">
+            <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+            <span><strong>Wipe &amp; Reset</strong> — downloads a replace-mode file that will erase all data when imported. Use with extreme care.</span>
+          </div>
+          <a href={`${BASE}api/export/wipe`} download>
+            <Button variant="outline" className="gap-2 border-red-200 text-red-700 hover:bg-red-50">
+              <Download className="h-4 w-4" /> Download Wipe File
             </Button>
           </a>
         </CardContent>
