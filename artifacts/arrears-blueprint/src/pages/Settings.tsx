@@ -515,10 +515,15 @@ function DataManagementSection() {
             Downloads all modules as a single JSON file. Use this for backups, sharing with financial counsellors, or migrating data.
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-wrap gap-2">
           <a href={`${BASE}api/export`} download>
             <Button variant="default" className="gap-2">
               <Download className="h-4 w-4" /> Download Full Export (JSON)
+            </Button>
+          </a>
+          <a href={`${BASE}api/export/template`} download>
+            <Button variant="outline" className="gap-2">
+              <Download className="h-4 w-4" /> Download Blank Template (JSON)
             </Button>
           </a>
         </CardContent>
