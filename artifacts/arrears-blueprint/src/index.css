@@ -70,46 +70,46 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  /* Deep slate/teal on warm sand */
-  --background: 40 33% 96%;
-  --foreground: 200 40% 15%;
+  /* Deep slate/teal on cool blue-grey — distinct from Life Pilot */
+  --background: 215 30% 95%;
+  --foreground: 215 40% 15%;
 
-  --border: 40 20% 85%;
+  --border: 215 20% 84%;
 
-  --card: 40 33% 98%;
-  --card-foreground: 200 40% 15%;
-  --card-border: 40 20% 85%;
+  --card: 215 30% 98%;
+  --card-foreground: 215 40% 15%;
+  --card-border: 215 20% 84%;
 
-  --sidebar: 40 33% 93%;
-  --sidebar-foreground: 200 40% 15%;
-  --sidebar-border: 40 20% 85%;
-  --sidebar-primary: 180 25% 35%;
-  --sidebar-primary-foreground: 40 33% 98%;
-  --sidebar-accent: 40 33% 90%;
-  --sidebar-accent-foreground: 200 40% 15%;
-  --sidebar-ring: 180 25% 35%;
+  --sidebar: 215 30% 91%;
+  --sidebar-foreground: 215 40% 15%;
+  --sidebar-border: 215 20% 84%;
+  --sidebar-primary: 215 45% 38%;
+  --sidebar-primary-foreground: 215 30% 98%;
+  --sidebar-accent: 215 30% 87%;
+  --sidebar-accent-foreground: 215 40% 15%;
+  --sidebar-ring: 215 45% 38%;
 
-  --popover: 40 33% 98%;
-  --popover-foreground: 200 40% 15%;
-  --popover-border: 40 20% 85%;
+  --popover: 215 30% 98%;
+  --popover-foreground: 215 40% 15%;
+  --popover-border: 215 20% 84%;
 
-  --primary: 180 25% 35%;
-  --primary-foreground: 40 33% 98%;
+  --primary: 215 45% 38%;
+  --primary-foreground: 215 30% 98%;
 
-  --secondary: 150 15% 85%;
-  --secondary-foreground: 200 40% 15%;
+  --secondary: 215 20% 84%;
+  --secondary-foreground: 215 40% 15%;
 
-  --muted: 40 20% 90%;
-  --muted-foreground: 200 20% 45%;
+  --muted: 215 20% 90%;
+  --muted-foreground: 215 20% 45%;
 
-  --accent: 40 20% 90%;
-  --accent-foreground: 200 40% 15%;
+  --accent: 215 20% 90%;
+  --accent-foreground: 215 40% 15%;
 
   --destructive: 10 50% 50%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 40 20% 85%;
-  --ring: 180 25% 35%;
+  --input: 215 20% 84%;
+  --ring: 215 45% 38%;
   
   --chart-1: 180 25% 35%;
   --chart-2: 150 15% 50%;
