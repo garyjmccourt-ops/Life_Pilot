@@ -1,0 +1,140 @@
+{
+  "_comment": "MYOH import prepared from current export plus updated Peter payment plan discussed in chat. Remove this comment key before importing if the app rejects comments.",
+  "mode": "merge",
+  "data": {
+    "arrearsItems": [
+      {
+        "creditor": "STD Family Trust / Peter \u2014 rent arrears plan",
+        "category": "rent",
+        "balance": 5801.96,
+        "ongoingCharge": 540.0,
+        "ongoingFrequency": "weekly",
+        "arrearsPayment": 150.0,
+        "arrearsFrequency": "weekly",
+        "riskLevel": "high",
+        "status": "active",
+        "nextReviewDate": "2026-05-29",
+        "accountRef": "RENT-ARREARS-PLAN-2026-05",
+        "summary": "Household rent arrears plan only. Staged arrears reductions total $5,801.96 across the dated base schedule. Current rent remains $1,080/fortnight ($540/week).",
+        "objective": "Protect current rent first and clear arrears under the dated rent-first plan, while allowing short-term payment timing shifts where income is reduced.",
+        "workingPlan": "Payment of $430 sent on 2026-05-21 covering prior shortfall ($280) plus arrears add-on ($150). Fortnightly rent originally due 2026-05-22 is pushed to 2026-05-29 at $1,080. Overdue SA Water $201.96 is pushed to 2026-06-05. Current rent remains priority ahead of bond restoration.",
+        "communicationPosition": "Reduced income week due to sickness required a short staged catch-up. Landlord to be advised of $430 payment sent and revised dates.",
+        "externalAcknowledgement": "Landlord accepted plan in principle.",
+        "externalPaymentIntent": "2026-05-21 paid $430; 2026-05-29 pay $1,080 current rent; 2026-06-05 pay $201.96 overdue SA Water.",
+        "externalStagedReduction": "Current short-term sequence: $430 paid 2026-05-21, then $1,080 on 2026-05-29, then $201.96 on 2026-06-05. Earlier broader staged reduction schedule remains subject to review once income stabilises.",
+        "externalReviewPoints": "Review again after 2026-05-29 landlord payment and before 2026-06-05 water payment.",
+        "externalChannel": "email / direct landlord communication",
+        "evidenceLinks": "Statement for Gary McCourt As At 17May2026.pdf; Invoice INV-0440.pdf; Final Rent Proposal To Peter - Conditional 12 Week Version.pdf"
+      }
+    ],
+    "tasks": [
+      {
+        "title": "Confirm rent / landlord payment made",
+        "description": null,
+        "category": null,
+        "bucket": "pay",
+        "status": "done",
+        "priority": "p1",
+        "dueDate": "2026-05-21",
+        "startDate": null,
+        "assignedPerson": null,
+        "creditorTag": "STD Family Trust / Peter",
+        "arrearsItemId": null,
+        "recurring": false,
+        "completedAt": "2026-05-21T00:00:00.000Z",
+        "notes": "Payment of $430 sent on 2026-05-21 covering prior shortfall $280 plus arrears add-on $150."
+      },
+      {
+        "title": "Update next fortnight landlord payment target",
+        "description": null,
+        "category": null,
+        "bucket": "review",
+        "status": "done",
+        "priority": "p1",
+        "dueDate": "2026-05-22",
+        "startDate": null,
+        "assignedPerson": null,
+        "creditorTag": "STD Family Trust / Peter",
+        "arrearsItemId": null,
+        "recurring": false,
+        "completedAt": "2026-05-21T00:00:00.000Z",
+        "notes": "Superseded by revised short-term timing: $430 paid 2026-05-21; $1,080 pushed to 2026-05-29; SA Water $201.96 pushed to 2026-06-05."
+      },
+      {
+        "title": "Pay scheduled landlord amount \u2014 22 May 2026",
+        "description": null,
+        "category": null,
+        "bucket": "pay",
+        "status": "deferred",
+        "priority": "critical",
+        "dueDate": "2026-05-22",
+        "startDate": null,
+        "assignedPerson": null,
+        "creditorTag": "STD Family Trust / Peter",
+        "arrearsItemId": null,
+        "recurring": false,
+        "completedAt": null,
+        "notes": "Deferred due to reduced income caused by sickness. Replaced by payment plan: $430 paid 2026-05-21, then $1,080 due 2026-05-29."
+      },
+      {
+        "title": "Pay shifted landlord amount \u2014 29 May 2026",
+        "description": "Fortnightly rent originally due 22 May 2026, pushed by one week.",
+        "category": null,
+        "bucket": "pay",
+        "status": "open",
+        "priority": "critical",
+        "dueDate": "2026-05-29",
+        "startDate": null,
+        "assignedPerson": null,
+        "creditorTag": "STD Family Trust / Peter",
+        "arrearsItemId": null,
+        "recurring": false,
+        "completedAt": null,
+        "notes": "Pay $1,080 for fortnightly rent originally due 2026-05-22."
+      },
+      {
+        "title": "Pay overdue SA Water \u2014 5 June 2026",
+        "description": "Shifted water payment under staged catch-up.",
+        "category": null,
+        "bucket": "pay",
+        "status": "open",
+        "priority": "p1",
+        "dueDate": "2026-06-05",
+        "startDate": null,
+        "assignedPerson": null,
+        "creditorTag": "SA Water \u2013 STD Family Trust",
+        "arrearsItemId": null,
+        "recurring": false,
+        "completedAt": null,
+        "notes": "Pay $201.96 overdue SA Water INV-0440 on 2026-06-05."
+      },
+      {
+        "title": "Review 5 June landlord payment target",
+        "description": null,
+        "category": null,
+        "bucket": "review",
+        "status": "open",
+        "priority": "p1",
+        "dueDate": "2026-06-05",
+        "startDate": null,
+        "assignedPerson": null,
+        "creditorTag": "STD Family Trust / Peter",
+        "arrearsItemId": null,
+        "recurring": false,
+        "completedAt": null,
+        "notes": "Revised for current staged plan: focus on overdue SA Water $201.96 on 2026-06-05. Review next rent-cycle target separately after 2026-05-29 payment is made."
+      }
+    ],
+    "commsEntries": [
+      {
+        "occurredAt": "2026-05-21T00:00:00.000Z",
+        "channel": "email",
+        "creditor": "STD Family Trust / Peter",
+        "arrearsItemId": null,
+        "who": "Gary",
+        "outcome": "Advised reduced income due to sickness, confirmed $430 payment sent, and proposed shifted dates of 2026-05-29 for rent and 2026-06-05 for overdue SA Water.",
+        "nextStep": "Send or confirm email to Peter and make 2026-05-29 rent payment."
+      }
+    ]
+  }
+}
