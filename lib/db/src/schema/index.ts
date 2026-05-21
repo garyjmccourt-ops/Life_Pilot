@@ -14,6 +14,8 @@ export * from "./shoppingItems";
 export * from "./shoppingLists";
 export * from "./shoppingListItems";
 export * from "./bnplItems";
+export * from "./bnplScheduleEntries";
 export * from "./storedValueItems";
+export * from "./storedValueTransactions";
 export * from "./gigProviders";
 export * from "./roadmapItems";

@@ -14,6 +14,10 @@ import {
   shoppingItemsTable,
   shoppingListsTable,
   shoppingListItemsTable,
+  bnplItemsTable,
+  storedValueItemsTable,
+  bnplScheduleEntriesTable,
+  storedValueTransactionsTable,
 } from "@workspace/db";
 import { n } from "../lib/calc";
 
@@ -56,7 +60,7 @@ const SCHEMA_DOC = {
 };
 
 router.get("/export", async (_req, res): Promise<void> => {
-  const [income, incomeEntries, bills, arrears, tasks, comms, weeks, gig, budget, scenarios, shoppingItems, shoppingLists, shoppingListItems] =
+  const [income, incomeEntries, bills, arrears, tasks, comms, weeks, gig, budget, scenarios, shoppingItems, shoppingLists, shoppingListItems, bnplItems, storedValueItems, bnplScheduleEntries, storedValueTransactions] =
     await Promise.all([
       db.select().from(incomeSourcesTable).orderBy(incomeSourcesTable.id),
       db.select().from(incomeEntriesTable).orderBy(incomeEntriesTable.id),
@@ -71,6 +75,10 @@ router.get("/export", async (_req, res): Promise<void> => {
       db.select().from(shoppingItemsTable).orderBy(shoppingItemsTable.id),
       db.select().from(shoppingListsTable).orderBy(shoppingListsTable.id),
       db.select().from(shoppingListItemsTable).orderBy(shoppingListItemsTable.id),
+      db.select().from(bnplItemsTable).orderBy(bnplItemsTable.id),
+      db.select().from(storedValueItemsTable).orderBy(storedValueItemsTable.id),
+      db.select().from(bnplScheduleEntriesTable).orderBy(bnplScheduleEntriesTable.id),
+      db.select().from(storedValueTransactionsTable).orderBy(storedValueTransactionsTable.id),
     ]);
 
   const payload = {
@@ -150,6 +158,26 @@ router.get("/export", async (_req, res): Promise<void> => {
         estimatedPrice: r.estimatedPrice != null ? n(r.estimatedPrice) : null,
         actualPrice: r.actualPrice != null ? n(r.actualPrice) : null,
         needed: r.needed, bought: r.bought, priority: r.priority, notes: r.notes,
+      })),
+      bnplItems: bnplItems.map((r) => ({
+        id: r.id, provider: r.provider, description: r.description,
+        originalAmount: n(r.originalAmount), remainingBalance: n(r.remainingBalance),
+        instalmentAmount: n(r.instalmentAmount), instalmentFrequency: r.instalmentFrequency,
+        nextPaymentDate: r.nextPaymentDate ?? null, status: r.status,
+        feeRisk: r.feeRisk ?? null, linkedBudgetCategory: r.linkedBudgetCategory ?? null, notes: r.notes ?? null,
+      })),
+      storedValueItems: storedValueItems.map((r) => ({
+        id: r.id, provider: r.provider, startingValue: n(r.startingValue),
+        remainingBalance: n(r.remainingBalance), purchaseDate: r.purchaseDate ?? null,
+        expiryDate: r.expiryDate ?? null, linkedBudgetCategory: r.linkedBudgetCategory ?? null, notes: r.notes ?? null,
+      })),
+      bnplScheduleEntries: bnplScheduleEntries.map((r) => ({
+        id: r.id, bnplItemId: r.bnplItemId, dueDate: r.dueDate,
+        amount: n(r.amount), status: r.status, paidDate: r.paidDate ?? null, notes: r.notes ?? null,
+      })),
+      storedValueTransactions: storedValueTransactions.map((r) => ({
+        id: r.id, storedValueItemId: r.storedValueItemId, transactionDate: r.transactionDate,
+        type: r.type, amount: n(r.amount), description: r.description ?? null, notes: r.notes ?? null,
       })),
     },
   };

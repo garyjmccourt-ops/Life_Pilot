@@ -13,6 +13,10 @@ import {
   gigEntriesTable,
   budgetCategoriesTable,
   scenariosTable,
+  bnplItemsTable,
+  storedValueItemsTable,
+  bnplScheduleEntriesTable,
+  storedValueTransactionsTable,
 } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -230,6 +234,52 @@ const ScenarioSchema = z.object({
   notes: z.string().nullable().optional(),
 });
 
+const BnplItemSchema = z.object({
+  id: z.number().int().optional(),
+  provider: z.string().min(1),
+  description: z.string().min(1),
+  originalAmount: z.number(),
+  remainingBalance: z.number(),
+  instalmentAmount: z.number(),
+  instalmentFrequency: z.string().default("fortnightly"),
+  nextPaymentDate: z.string().nullable().optional(),
+  status: z.string().default("active"),
+  feeRisk: z.string().nullable().optional(),
+  linkedBudgetCategory: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+});
+
+const BnplScheduleEntrySchema = z.object({
+  id: z.number().int().optional(),
+  bnplItemId: z.number().int(),
+  dueDate: z.string().min(1),
+  amount: z.number(),
+  status: z.enum(["scheduled", "paid", "missed", "skipped"]).default("scheduled"),
+  paidDate: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+});
+
+const StoredValueItemSchema = z.object({
+  id: z.number().int().optional(),
+  provider: z.string().min(1),
+  startingValue: z.number(),
+  remainingBalance: z.number(),
+  purchaseDate: z.string().nullable().optional(),
+  expiryDate: z.string().nullable().optional(),
+  linkedBudgetCategory: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+});
+
+const StoredValueTransactionSchema = z.object({
+  id: z.number().int().optional(),
+  storedValueItemId: z.number().int(),
+  transactionDate: z.string().min(1),
+  type: z.enum(["top_up", "spend"]),
+  amount: z.number(),
+  description: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+});
+
 const ImportBody = z.object({
   mode: z.enum(["replace", "merge", "add-only"]).default("merge"),
   sections: z.array(z.string()).optional().default([]),
@@ -244,6 +294,10 @@ const ImportBody = z.object({
     gigEntries: z.array(GigEntrySchema).optional().default([]),
     budgetCategories: z.array(BudgetCategorySchema).optional().default([]),
     scenarios: z.array(ScenarioSchema).optional().default([]),
+    bnplItems: z.array(BnplItemSchema).optional().default([]),
+    storedValueItems: z.array(StoredValueItemSchema).optional().default([]),
+    bnplScheduleEntries: z.array(BnplScheduleEntrySchema).optional().default([]),
+    storedValueTransactions: z.array(StoredValueTransactionSchema).optional().default([]),
   }),
 });
 
@@ -281,6 +335,10 @@ router.post("/import", async (req, res): Promise<void> => {
       if (mode === "replace") {
         const sel = new Set(sections);
         // Delete child-like tables first to avoid FK-like ordering issues
+        if (sel.has("bnplScheduleEntries")) await tx.delete(bnplScheduleEntriesTable);
+        if (sel.has("storedValueTransactions")) await tx.delete(storedValueTransactionsTable);
+        if (sel.has("bnplItems")) await tx.delete(bnplItemsTable);
+        if (sel.has("storedValueItems")) await tx.delete(storedValueItemsTable);
         if (sel.has("commsEntries")) await tx.delete(commsEntriesTable);
         if (sel.has("tasks")) await tx.delete(tasksTable);
         if (sel.has("weeklyEntries")) await tx.delete(weeklyEntriesTable);
@@ -579,6 +637,82 @@ router.post("/import", async (req, res): Promise<void> => {
         scenarioCount++;
       }
 
+      // ── BNPL Items ────────────────────────────────────────────────
+      let bnplItemCount = 0;
+      const bnplIdMap = new Map<number, number>();
+      for (const r of data.bnplItems) {
+        const values = {
+          provider: r.provider,
+          description: r.description,
+          originalAmount: String(r.originalAmount),
+          remainingBalance: String(r.remainingBalance),
+          instalmentAmount: String(r.instalmentAmount),
+          instalmentFrequency: r.instalmentFrequency,
+          nextPaymentDate: r.nextPaymentDate ?? null,
+          status: r.status,
+          feeRisk: r.feeRisk ?? null,
+          linkedBudgetCategory: r.linkedBudgetCategory ?? null,
+          notes: r.notes ?? null,
+        };
+        const [ins] = await tx.insert(bnplItemsTable)
+          .values({ ...(r.id != null ? { id: r.id } : {}), ...values })
+          .returning({ id: bnplItemsTable.id });
+        if (r.id != null) bnplIdMap.set(r.id, ins.id);
+        bnplItemCount++;
+      }
+
+      // ── Stored Value Items ────────────────────────────────────────
+      let storedValueItemCount = 0;
+      const storedValueIdMap = new Map<number, number>();
+      for (const r of data.storedValueItems) {
+        const values = {
+          provider: r.provider,
+          startingValue: String(r.startingValue),
+          remainingBalance: String(r.remainingBalance),
+          purchaseDate: r.purchaseDate ?? null,
+          expiryDate: r.expiryDate ?? null,
+          linkedBudgetCategory: r.linkedBudgetCategory ?? null,
+          notes: r.notes ?? null,
+        };
+        const [ins] = await tx.insert(storedValueItemsTable)
+          .values({ ...(r.id != null ? { id: r.id } : {}), ...values })
+          .returning({ id: storedValueItemsTable.id });
+        if (r.id != null) storedValueIdMap.set(r.id, ins.id);
+        storedValueItemCount++;
+      }
+
+      // ── BNPL Schedule Entries ─────────────────────────────────────
+      let bnplScheduleCount = 0;
+      for (const r of data.bnplScheduleEntries) {
+        const bnplItemId = bnplIdMap.get(r.bnplItemId) ?? r.bnplItemId;
+        await tx.insert(bnplScheduleEntriesTable).values({
+          ...(r.id != null ? { id: r.id } : {}),
+          bnplItemId,
+          dueDate: r.dueDate,
+          amount: String(r.amount),
+          status: r.status,
+          paidDate: r.paidDate ?? null,
+          notes: r.notes ?? null,
+        });
+        bnplScheduleCount++;
+      }
+
+      // ── Stored Value Transactions ─────────────────────────────────
+      let storedValueTxCount = 0;
+      for (const r of data.storedValueTransactions) {
+        const storedValueItemId = storedValueIdMap.get(r.storedValueItemId) ?? r.storedValueItemId;
+        await tx.insert(storedValueTransactionsTable).values({
+          ...(r.id != null ? { id: r.id } : {}),
+          storedValueItemId,
+          transactionDate: r.transactionDate,
+          type: r.type,
+          amount: String(r.amount),
+          description: r.description ?? null,
+          notes: r.notes ?? null,
+        });
+        storedValueTxCount++;
+      }
+
       // ── Reset sequences so future inserts don't collide ───────────
       await Promise.all([
         resetSeq(tx, "income_sources"),
@@ -591,6 +725,10 @@ router.post("/import", async (req, res): Promise<void> => {
         resetSeq(tx, "gig_entries"),
         resetSeq(tx, "budget_categories"),
         resetSeq(tx, "scenarios"),
+        resetSeq(tx, "bnpl_items"),
+        resetSeq(tx, "stored_value_items"),
+        resetSeq(tx, "bnpl_schedule_entries"),
+        resetSeq(tx, "stored_value_transactions"),
       ]);
 
       return {
@@ -604,6 +742,10 @@ router.post("/import", async (req, res): Promise<void> => {
         gigEntries: gigCount,
         budgetCategories: budgetCount,
         scenarios: scenarioCount,
+        bnplItems: bnplItemCount,
+        storedValueItems: storedValueItemCount,
+        bnplScheduleEntries: bnplScheduleCount,
+        storedValueTransactions: storedValueTxCount,
       };
     });
 

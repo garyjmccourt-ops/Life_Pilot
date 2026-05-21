@@ -512,7 +512,7 @@ export const ListTasksResponseItem = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   category: zod.string().nullish(),
-  bucket: zod.string(),
+  bucket: zod.enum(["pay", "contact", "file", "review", "negotiate", "watch"]),
   status: zod.enum([
     "open",
     "in-progress",
@@ -538,7 +538,7 @@ export const CreateTaskBody = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   category: zod.string().nullish(),
-  bucket: zod.string(),
+  bucket: zod.enum(["pay", "contact", "file", "review", "negotiate", "watch"]),
   status: zod.enum([
     "open",
     "in-progress",
@@ -566,7 +566,7 @@ export const UpdateTaskBody = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   category: zod.string().nullish(),
-  bucket: zod.string(),
+  bucket: zod.enum(["pay", "contact", "file", "review", "negotiate", "watch"]),
   status: zod.enum([
     "open",
     "in-progress",
@@ -591,7 +591,7 @@ export const UpdateTaskResponse = zod.object({
   title: zod.string(),
   description: zod.string().nullish(),
   category: zod.string().nullish(),
-  bucket: zod.string(),
+  bucket: zod.enum(["pay", "contact", "file", "review", "negotiate", "watch"]),
   status: zod.enum([
     "open",
     "in-progress",
@@ -743,6 +743,11 @@ export const ListGigEntriesResponseItem = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
+  estimatedKm: zod.number().nullish(),
+  activeMinutes: zod.number().nullish(),
+  deliveriesCount: zod.number().nullish(),
+  offersCount: zod.number().nullish(),
+  routeChain: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 export const ListGigEntriesResponse = zod.array(ListGigEntriesResponseItem);
@@ -765,6 +770,11 @@ export const CreateGigEntryBody = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
+  estimatedKm: zod.number().nullish(),
+  activeMinutes: zod.number().nullish(),
+  deliveriesCount: zod.number().nullish(),
+  offersCount: zod.number().nullish(),
+  routeChain: zod.string().nullish(),
 });
 
 export const UpdateGigEntryParams = zod.object({
@@ -789,6 +799,11 @@ export const UpdateGigEntryBody = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
+  estimatedKm: zod.number().nullish(),
+  activeMinutes: zod.number().nullish(),
+  deliveriesCount: zod.number().nullish(),
+  offersCount: zod.number().nullish(),
+  routeChain: zod.string().nullish(),
 });
 
 export const UpdateGigEntryResponse = zod.object({
@@ -810,6 +825,11 @@ export const UpdateGigEntryResponse = zod.object({
   paymentStatus: zod.enum(["pending", "fast-paid", "deposited", "received"]),
   incomeEntryId: zod.number().nullish(),
   notes: zod.string().nullish(),
+  estimatedKm: zod.number().nullish(),
+  activeMinutes: zod.number().nullish(),
+  deliveriesCount: zod.number().nullish(),
+  offersCount: zod.number().nullish(),
+  routeChain: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 
@@ -1186,4 +1206,421 @@ export const UpdateShoppingListItemResponse = zod.object({
 
 export const DeleteShoppingListItemParams = zod.object({
   id: zod.coerce.number(),
+});
+
+export const ListBnplItemsResponseItem = zod.object({
+  id: zod.number(),
+  provider: zod.string(),
+  description: zod.string(),
+  originalAmount: zod.number(),
+  remainingBalance: zod.number(),
+  instalmentAmount: zod.number(),
+  instalmentFrequency: zod.string(),
+  nextPaymentDate: zod.coerce.date().nullish(),
+  status: zod.string(),
+  feeRisk: zod.string().nullish(),
+  linkedBudgetCategory: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+export const ListBnplItemsResponse = zod.array(ListBnplItemsResponseItem);
+
+export const createBnplItemBodyInstalmentFrequencyDefault = `fortnightly`;
+export const createBnplItemBodyStatusDefault = `active`;
+
+export const CreateBnplItemBody = zod.object({
+  provider: zod.string(),
+  description: zod.string(),
+  originalAmount: zod.number(),
+  remainingBalance: zod.number(),
+  instalmentAmount: zod.number(),
+  instalmentFrequency: zod
+    .string()
+    .default(createBnplItemBodyInstalmentFrequencyDefault),
+  nextPaymentDate: zod.coerce.date().nullish(),
+  status: zod.string().default(createBnplItemBodyStatusDefault),
+  feeRisk: zod.string().nullish(),
+  linkedBudgetCategory: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateBnplItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const updateBnplItemBodyInstalmentFrequencyDefault = `fortnightly`;
+export const updateBnplItemBodyStatusDefault = `active`;
+
+export const UpdateBnplItemBody = zod.object({
+  provider: zod.string(),
+  description: zod.string(),
+  originalAmount: zod.number(),
+  remainingBalance: zod.number(),
+  instalmentAmount: zod.number(),
+  instalmentFrequency: zod
+    .string()
+    .default(updateBnplItemBodyInstalmentFrequencyDefault),
+  nextPaymentDate: zod.coerce.date().nullish(),
+  status: zod.string().default(updateBnplItemBodyStatusDefault),
+  feeRisk: zod.string().nullish(),
+  linkedBudgetCategory: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateBnplItemResponse = zod.object({
+  id: zod.number(),
+  provider: zod.string(),
+  description: zod.string(),
+  originalAmount: zod.number(),
+  remainingBalance: zod.number(),
+  instalmentAmount: zod.number(),
+  instalmentFrequency: zod.string(),
+  nextPaymentDate: zod.coerce.date().nullish(),
+  status: zod.string(),
+  feeRisk: zod.string().nullish(),
+  linkedBudgetCategory: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const DeleteBnplItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListStoredValueItemsResponseItem = zod.object({
+  id: zod.number(),
+  provider: zod.string(),
+  startingValue: zod.number(),
+  remainingBalance: zod.number(),
+  purchaseDate: zod.coerce.date().nullish(),
+  expiryDate: zod.coerce.date().nullish(),
+  linkedBudgetCategory: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+export const ListStoredValueItemsResponse = zod.array(
+  ListStoredValueItemsResponseItem,
+);
+
+export const CreateStoredValueItemBody = zod.object({
+  provider: zod.string(),
+  startingValue: zod.number(),
+  remainingBalance: zod.number(),
+  purchaseDate: zod.coerce.date().nullish(),
+  expiryDate: zod.coerce.date().nullish(),
+  linkedBudgetCategory: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateStoredValueItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateStoredValueItemBody = zod.object({
+  provider: zod.string(),
+  startingValue: zod.number(),
+  remainingBalance: zod.number(),
+  purchaseDate: zod.coerce.date().nullish(),
+  expiryDate: zod.coerce.date().nullish(),
+  linkedBudgetCategory: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateStoredValueItemResponse = zod.object({
+  id: zod.number(),
+  provider: zod.string(),
+  startingValue: zod.number(),
+  remainingBalance: zod.number(),
+  purchaseDate: zod.coerce.date().nullish(),
+  expiryDate: zod.coerce.date().nullish(),
+  linkedBudgetCategory: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const DeleteStoredValueItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListBnplScheduleQueryParams = zod.object({
+  bnplItemId: zod.coerce.number().optional(),
+});
+
+export const ListBnplScheduleResponseItem = zod.object({
+  id: zod.number(),
+  bnplItemId: zod.number(),
+  dueDate: zod.coerce.date(),
+  amount: zod.number(),
+  status: zod.enum(["scheduled", "paid", "missed", "skipped"]),
+  paidDate: zod.coerce.date().nullish(),
+  notes: zod.string().nullish(),
+});
+export const ListBnplScheduleResponse = zod.array(ListBnplScheduleResponseItem);
+
+export const CreateBnplScheduleEntryBody = zod.object({
+  bnplItemId: zod.number(),
+  dueDate: zod.coerce.date(),
+  amount: zod.number(),
+  status: zod.enum(["scheduled", "paid", "missed", "skipped"]),
+  paidDate: zod.coerce.date().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateBnplScheduleEntryParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateBnplScheduleEntryBody = zod.object({
+  bnplItemId: zod.number(),
+  dueDate: zod.coerce.date(),
+  amount: zod.number(),
+  status: zod.enum(["scheduled", "paid", "missed", "skipped"]),
+  paidDate: zod.coerce.date().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateBnplScheduleEntryResponse = zod.object({
+  id: zod.number(),
+  bnplItemId: zod.number(),
+  dueDate: zod.coerce.date(),
+  amount: zod.number(),
+  status: zod.enum(["scheduled", "paid", "missed", "skipped"]),
+  paidDate: zod.coerce.date().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const DeleteBnplScheduleEntryParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListStoredValueTransactionsQueryParams = zod.object({
+  storedValueItemId: zod.coerce.number().optional(),
+});
+
+export const ListStoredValueTransactionsResponseItem = zod.object({
+  id: zod.number(),
+  storedValueItemId: zod.number(),
+  transactionDate: zod.coerce.date(),
+  type: zod.enum(["top_up", "spend"]),
+  amount: zod.number(),
+  description: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+export const ListStoredValueTransactionsResponse = zod.array(
+  ListStoredValueTransactionsResponseItem,
+);
+
+export const CreateStoredValueTransactionBody = zod.object({
+  storedValueItemId: zod.number(),
+  transactionDate: zod.coerce.date(),
+  type: zod.enum(["top_up", "spend"]),
+  amount: zod.number(),
+  description: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateStoredValueTransactionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateStoredValueTransactionBody = zod.object({
+  storedValueItemId: zod.number(),
+  transactionDate: zod.coerce.date(),
+  type: zod.enum(["top_up", "spend"]),
+  amount: zod.number(),
+  description: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateStoredValueTransactionResponse = zod.object({
+  id: zod.number(),
+  storedValueItemId: zod.number(),
+  transactionDate: zod.coerce.date(),
+  type: zod.enum(["top_up", "spend"]),
+  amount: zod.number(),
+  description: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const DeleteStoredValueTransactionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ExportDataResponse = zod.object({
+  exportedAt: zod.coerce.date(),
+  schema: zod.object({}).passthrough().optional(),
+  data: zod.object({
+    incomeSources: zod.array(zod.object({}).passthrough()).optional(),
+    incomeEntries: zod.array(zod.object({}).passthrough()).optional(),
+    bills: zod.array(zod.object({}).passthrough()).optional(),
+    arrearsItems: zod.array(zod.object({}).passthrough()).optional(),
+    tasks: zod.array(zod.object({}).passthrough()).optional(),
+    commsEntries: zod.array(zod.object({}).passthrough()).optional(),
+    weeklyEntries: zod.array(zod.object({}).passthrough()).optional(),
+    gigEntries: zod.array(zod.object({}).passthrough()).optional(),
+    budgetCategories: zod.array(zod.object({}).passthrough()).optional(),
+    scenarios: zod.array(zod.object({}).passthrough()).optional(),
+    shoppingItems: zod.array(zod.object({}).passthrough()).optional(),
+    shoppingLists: zod.array(zod.object({}).passthrough()).optional(),
+    shoppingListItems: zod.array(zod.object({}).passthrough()).optional(),
+    bnplItems: zod
+      .array(
+        zod.object({
+          id: zod.number(),
+          provider: zod.string(),
+          description: zod.string(),
+          originalAmount: zod.number(),
+          remainingBalance: zod.number(),
+          instalmentAmount: zod.number(),
+          instalmentFrequency: zod.string(),
+          nextPaymentDate: zod.coerce.date().nullish(),
+          status: zod.string(),
+          feeRisk: zod.string().nullish(),
+          linkedBudgetCategory: zod.string().nullish(),
+          notes: zod.string().nullish(),
+        }),
+      )
+      .optional(),
+    storedValueItems: zod
+      .array(
+        zod.object({
+          id: zod.number(),
+          provider: zod.string(),
+          startingValue: zod.number(),
+          remainingBalance: zod.number(),
+          purchaseDate: zod.coerce.date().nullish(),
+          expiryDate: zod.coerce.date().nullish(),
+          linkedBudgetCategory: zod.string().nullish(),
+          notes: zod.string().nullish(),
+        }),
+      )
+      .optional(),
+    bnplScheduleEntries: zod
+      .array(
+        zod.object({
+          id: zod.number(),
+          bnplItemId: zod.number(),
+          dueDate: zod.coerce.date(),
+          amount: zod.number(),
+          status: zod.enum(["scheduled", "paid", "missed", "skipped"]),
+          paidDate: zod.coerce.date().nullish(),
+          notes: zod.string().nullish(),
+        }),
+      )
+      .optional(),
+    storedValueTransactions: zod
+      .array(
+        zod.object({
+          id: zod.number(),
+          storedValueItemId: zod.number(),
+          transactionDate: zod.coerce.date(),
+          type: zod.enum(["top_up", "spend"]),
+          amount: zod.number(),
+          description: zod.string().nullish(),
+          notes: zod.string().nullish(),
+        }),
+      )
+      .optional(),
+  }),
+});
+
+export const importDataBodyModeDefault = `merge`;
+export const importDataBodyDataBnplItemsItemInstalmentFrequencyDefault = `fortnightly`;
+export const importDataBodyDataBnplItemsItemStatusDefault = `active`;
+
+export const ImportDataBody = zod.object({
+  mode: zod
+    .enum(["replace", "merge", "add-only"])
+    .default(importDataBodyModeDefault),
+  sections: zod
+    .array(
+      zod.enum([
+        "incomeSources",
+        "incomeEntries",
+        "bills",
+        "arrearsItems",
+        "tasks",
+        "commsEntries",
+        "weeklyEntries",
+        "gigEntries",
+        "budgetCategories",
+        "scenarios",
+        "bnplItems",
+        "storedValueItems",
+        "bnplScheduleEntries",
+        "storedValueTransactions",
+      ]),
+    )
+    .optional()
+    .describe("Sections to replace in replace mode; empty = all"),
+  data: zod.object({
+    incomeSources: zod.array(zod.object({}).passthrough()).optional(),
+    incomeEntries: zod.array(zod.object({}).passthrough()).optional(),
+    bills: zod.array(zod.object({}).passthrough()).optional(),
+    arrearsItems: zod.array(zod.object({}).passthrough()).optional(),
+    tasks: zod.array(zod.object({}).passthrough()).optional(),
+    commsEntries: zod.array(zod.object({}).passthrough()).optional(),
+    weeklyEntries: zod.array(zod.object({}).passthrough()).optional(),
+    gigEntries: zod.array(zod.object({}).passthrough()).optional(),
+    budgetCategories: zod.array(zod.object({}).passthrough()).optional(),
+    scenarios: zod.array(zod.object({}).passthrough()).optional(),
+    bnplItems: zod
+      .array(
+        zod.object({
+          provider: zod.string(),
+          description: zod.string(),
+          originalAmount: zod.number(),
+          remainingBalance: zod.number(),
+          instalmentAmount: zod.number(),
+          instalmentFrequency: zod
+            .string()
+            .default(importDataBodyDataBnplItemsItemInstalmentFrequencyDefault),
+          nextPaymentDate: zod.coerce.date().nullish(),
+          status: zod
+            .string()
+            .default(importDataBodyDataBnplItemsItemStatusDefault),
+          feeRisk: zod.string().nullish(),
+          linkedBudgetCategory: zod.string().nullish(),
+          notes: zod.string().nullish(),
+        }),
+      )
+      .optional(),
+    storedValueItems: zod
+      .array(
+        zod.object({
+          provider: zod.string(),
+          startingValue: zod.number(),
+          remainingBalance: zod.number(),
+          purchaseDate: zod.coerce.date().nullish(),
+          expiryDate: zod.coerce.date().nullish(),
+          linkedBudgetCategory: zod.string().nullish(),
+          notes: zod.string().nullish(),
+        }),
+      )
+      .optional(),
+    bnplScheduleEntries: zod
+      .array(
+        zod.object({
+          bnplItemId: zod.number(),
+          dueDate: zod.coerce.date(),
+          amount: zod.number(),
+          status: zod.enum(["scheduled", "paid", "missed", "skipped"]),
+          paidDate: zod.coerce.date().nullish(),
+          notes: zod.string().nullish(),
+        }),
+      )
+      .optional(),
+    storedValueTransactions: zod
+      .array(
+        zod.object({
+          storedValueItemId: zod.number(),
+          transactionDate: zod.coerce.date(),
+          type: zod.enum(["top_up", "spend"]),
+          amount: zod.number(),
+          description: zod.string().nullish(),
+          notes: zod.string().nullish(),
+        }),
+      )
+      .optional(),
+  }),
+});
+
+export const ImportDataResponse = zod.object({
+  imported: zod.record(zod.string(), zod.number()).optional(),
 });

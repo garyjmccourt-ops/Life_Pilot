@@ -61,6 +61,16 @@ type WeeklyEntryRow = { _id: string; weekStart: string; plannedIn: string; actua
 type TaskRow = { _id: string; title: string; bucket: string; status: string; priority: string; assignedPerson: Owner; dueDate: string; notes: string };
 type CommsRow = { _id: string; occurredAt: string; channel: string; creditor: string; who: Owner; outcome: string; nextStep: string };
 
+const BNPL_STATUSES = ["active", "paid", "paused", "cancelled"] as const;
+const BNPL_FREQS = ["weekly", "fortnightly", "monthly"] as const;
+const SCHEDULE_STATUSES = ["scheduled", "paid", "missed", "skipped"] as const;
+const SV_TX_TYPES = ["top_up", "spend"] as const;
+
+type BnplItemRow = { _id: string; provider: string; description: string; originalAmount: string; remainingBalance: string; instalmentAmount: string; instalmentFrequency: string; nextPaymentDate: string; status: string; feeRisk: string; notes: string };
+type BnplScheduleRow = { _id: string; bnplItemIndex: number; dueDate: string; amount: string; status: string; paidDate: string; notes: string };
+type StoredValueRow = { _id: string; provider: string; startingValue: string; remainingBalance: string; purchaseDate: string; expiryDate: string; notes: string };
+type StoredValueTxRow = { _id: string; storedValueItemIndex: number; transactionDate: string; type: string; amount: string; description: string; notes: string };
+
 type GeneratorState = {
   mode: "merge" | "add-only" | "replace";
   incomeSources: IncomeSourceRow[];
@@ -71,6 +81,10 @@ type GeneratorState = {
   weeklyEntries: WeeklyEntryRow[];
   tasks: TaskRow[];
   commsEntries: CommsRow[];
+  bnplItems: BnplItemRow[];
+  bnplScheduleEntries: BnplScheduleRow[];
+  storedValueItems: StoredValueRow[];
+  storedValueTransactions: StoredValueTxRow[];
 };
 
 type ValidationError = { section: string; row: number; field: string; message: string };
@@ -85,6 +99,10 @@ const blankGigEntry = (): GigEntryRow => ({ _id: uid(), entryDate: today(), plat
 const blankWeeklyEntry = (): WeeklyEntryRow => ({ _id: uid(), weekStart: getMondayOf(today()), plannedIn: "", actualIn: "", plannedOut: "", actualOut: "", notes: "" });
 const blankTask = (): TaskRow => ({ _id: uid(), title: "", bucket: "pay", status: "open", priority: "p2", assignedPerson: "Shared", dueDate: "", notes: "" });
 const blankComms = (): CommsRow => ({ _id: uid(), occurredAt: today() + "T09:00:00.000Z", channel: "phone", creditor: "", who: "Gary", outcome: "", nextStep: "" });
+const blankBnplItem = (): BnplItemRow => ({ _id: uid(), provider: "", description: "", originalAmount: "", remainingBalance: "", instalmentAmount: "", instalmentFrequency: "fortnightly", nextPaymentDate: "", status: "active", feeRisk: "", notes: "" });
+const blankBnplSchedule = (): BnplScheduleRow => ({ _id: uid(), bnplItemIndex: 0, dueDate: "", amount: "", status: "scheduled", paidDate: "", notes: "" });
+const blankStoredValue = (): StoredValueRow => ({ _id: uid(), provider: "", startingValue: "", remainingBalance: "", purchaseDate: "", expiryDate: "", notes: "" });
+const blankStoredValueTx = (): StoredValueTxRow => ({ _id: uid(), storedValueItemIndex: 0, transactionDate: today(), type: "spend", amount: "", description: "", notes: "" });
 
 // ── Validation ────────────────────────────────────────────────────────────────
 
@@ -140,6 +158,30 @@ function validate(state: GeneratorState): ValidationError[] {
   state.commsEntries.forEach((r, i) => {
     if (!r.creditor.trim()) errors.push({ section: "Communications", row: i + 1, field: "creditor", message: "Creditor is required" });
     if (!r.outcome.trim()) errors.push({ section: "Communications", row: i + 1, field: "outcome", message: "Outcome is required" });
+  });
+
+  state.bnplItems.forEach((r, i) => {
+    if (!r.provider.trim()) errors.push({ section: "BNPL Items", row: i + 1, field: "provider", message: "Provider is required" });
+    if (!r.description.trim()) errors.push({ section: "BNPL Items", row: i + 1, field: "description", message: "Description is required" });
+    if (!r.originalAmount || isNaN(Number(r.originalAmount))) errors.push({ section: "BNPL Items", row: i + 1, field: "originalAmount", message: "Valid amount required" });
+    if (!r.remainingBalance || isNaN(Number(r.remainingBalance))) errors.push({ section: "BNPL Items", row: i + 1, field: "remainingBalance", message: "Valid balance required" });
+    if (!r.instalmentAmount || isNaN(Number(r.instalmentAmount))) errors.push({ section: "BNPL Items", row: i + 1, field: "instalmentAmount", message: "Valid instalment required" });
+  });
+
+  state.bnplScheduleEntries.forEach((r, i) => {
+    if (!r.dueDate) errors.push({ section: "BNPL Schedule", row: i + 1, field: "dueDate", message: "Due date is required" });
+    if (!r.amount || isNaN(Number(r.amount))) errors.push({ section: "BNPL Schedule", row: i + 1, field: "amount", message: "Valid amount required" });
+  });
+
+  state.storedValueItems.forEach((r, i) => {
+    if (!r.provider.trim()) errors.push({ section: "Stored Value", row: i + 1, field: "provider", message: "Provider is required" });
+    if (!r.startingValue || isNaN(Number(r.startingValue))) errors.push({ section: "Stored Value", row: i + 1, field: "startingValue", message: "Valid starting value required" });
+    if (!r.remainingBalance || isNaN(Number(r.remainingBalance))) errors.push({ section: "Stored Value", row: i + 1, field: "remainingBalance", message: "Valid balance required" });
+  });
+
+  state.storedValueTransactions.forEach((r, i) => {
+    if (!r.transactionDate) errors.push({ section: "Stored Value Transactions", row: i + 1, field: "transactionDate", message: "Date is required" });
+    if (!r.amount || isNaN(Number(r.amount))) errors.push({ section: "Stored Value Transactions", row: i + 1, field: "amount", message: "Valid amount required" });
   });
 
   return errors;
@@ -259,6 +301,44 @@ function buildPayload(state: GeneratorState) {
         who: r.who,
         outcome: r.outcome.trim(),
         nextStep: r.nextStep.trim() || null,
+      })),
+      bnplItems: state.bnplItems.map((r, idx) => ({
+        id: idx + 1,
+        provider: r.provider.trim(),
+        description: r.description.trim(),
+        originalAmount: Number(r.originalAmount),
+        remainingBalance: Number(r.remainingBalance),
+        instalmentAmount: Number(r.instalmentAmount),
+        instalmentFrequency: r.instalmentFrequency,
+        nextPaymentDate: r.nextPaymentDate || null,
+        status: r.status,
+        feeRisk: r.feeRisk.trim() || null,
+        notes: r.notes.trim() || null,
+      })),
+      bnplScheduleEntries: state.bnplScheduleEntries.map((r) => ({
+        bnplItemId: r.bnplItemIndex + 1,
+        dueDate: r.dueDate,
+        amount: Number(r.amount),
+        status: r.status,
+        paidDate: r.paidDate || null,
+        notes: r.notes.trim() || null,
+      })),
+      storedValueItems: state.storedValueItems.map((r, idx) => ({
+        id: idx + 1,
+        provider: r.provider.trim(),
+        startingValue: Number(r.startingValue),
+        remainingBalance: Number(r.remainingBalance),
+        purchaseDate: r.purchaseDate || null,
+        expiryDate: r.expiryDate || null,
+        notes: r.notes.trim() || null,
+      })),
+      storedValueTransactions: state.storedValueTransactions.map(r => ({
+        storedValueItemId: r.storedValueItemIndex + 1,
+        transactionDate: r.transactionDate,
+        type: r.type,
+        amount: Number(r.amount),
+        description: r.description.trim() || null,
+        notes: r.notes.trim() || null,
       })),
       budgetCategories: [],
       scenarios: [],
@@ -689,6 +769,154 @@ function CommsEntries({ rows, onChange }: { rows: CommsRow[]; onChange: (rows: C
   );
 }
 
+function BnplItemsSection({ rows, onChange }: { rows: BnplItemRow[]; onChange: (rows: BnplItemRow[]) => void }) {
+  const update = (id: string, patch: Partial<BnplItemRow>) => onChange(rows.map(r => r._id === id ? { ...r, ...patch } : r));
+  const remove = (id: string) => onChange(rows.filter(r => r._id !== id));
+  return (
+    <div>
+      <SectionHeader title="BNPL / Repayment Plans" count={rows.length} onAdd={() => onChange([...rows, blankBnplItem()])} addLabel="Add plan" />
+      {rows.length === 0 && <p className="text-xs text-muted-foreground italic py-2">No BNPL plans added.</p>}
+      <div className="space-y-3">
+        {rows.map((r, i) => (
+          <div key={r._id} className="flex gap-2 items-start p-3 border rounded-lg bg-muted/20">
+            <span className="text-xs text-muted-foreground mt-2 w-4 flex-shrink-0">{i + 1}</span>
+            <div className="grid sm:grid-cols-4 gap-2 flex-1">
+              <Field label="Provider *"><Input className="h-8 text-sm" value={r.provider} onChange={e => update(r._id, { provider: e.target.value })} placeholder="e.g. Afterpay" /></Field>
+              <div className="sm:col-span-2"><Field label="Description / Purchase *"><Input className="h-8 text-sm" value={r.description} onChange={e => update(r._id, { description: e.target.value })} placeholder="e.g. Winter jacket from ASOS" /></Field></div>
+              <Field label="Status">
+                <Select value={r.status} onValueChange={v => update(r._id, { status: v })}>
+                  <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>{BNPL_STATUSES.map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}</SelectContent>
+                </Select>
+              </Field>
+              <Field label="Original Amount ($) *"><Input className="h-8 text-sm" type="number" step="0.01" value={r.originalAmount} onChange={e => update(r._id, { originalAmount: e.target.value })} placeholder="0.00" /></Field>
+              <Field label="Remaining Balance ($) *"><Input className="h-8 text-sm" type="number" step="0.01" value={r.remainingBalance} onChange={e => update(r._id, { remainingBalance: e.target.value })} placeholder="0.00" /></Field>
+              <Field label="Instalment ($) *"><Input className="h-8 text-sm" type="number" step="0.01" value={r.instalmentAmount} onChange={e => update(r._id, { instalmentAmount: e.target.value })} placeholder="0.00" /></Field>
+              <Field label="Frequency">
+                <Select value={r.instalmentFrequency} onValueChange={v => update(r._id, { instalmentFrequency: v })}>
+                  <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>{BNPL_FREQS.map(f => <SelectItem key={f} value={f} className="capitalize">{f}</SelectItem>)}</SelectContent>
+                </Select>
+              </Field>
+              <Field label="Next Payment Date"><Input className="h-8 text-sm" type="date" value={r.nextPaymentDate} onChange={e => update(r._id, { nextPaymentDate: e.target.value })} /></Field>
+              <Field label="Fee Risk"><Input className="h-8 text-sm" value={r.feeRisk} onChange={e => update(r._id, { feeRisk: e.target.value })} placeholder="e.g. $10 late fee" /></Field>
+              <Field label="Notes"><Input className="h-8 text-sm" value={r.notes} onChange={e => update(r._id, { notes: e.target.value })} placeholder="Optional" /></Field>
+            </div>
+            <RemoveBtn onClick={() => remove(r._id)} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BnplScheduleSection({ rows, bnplItems, onChange }: { rows: BnplScheduleRow[]; bnplItems: BnplItemRow[]; onChange: (rows: BnplScheduleRow[]) => void }) {
+  const update = (id: string, patch: Partial<BnplScheduleRow>) => onChange(rows.map(r => r._id === id ? { ...r, ...patch } : r));
+  const remove = (id: string) => onChange(rows.filter(r => r._id !== id));
+  return (
+    <div>
+      <SectionHeader title="BNPL Schedule Entries" count={rows.length} onAdd={() => onChange([...rows, blankBnplSchedule()])} addLabel="Add entry" />
+      {rows.length === 0 && <p className="text-xs text-muted-foreground italic py-2">No schedule entries. Add instalment due dates here.</p>}
+      <div className="space-y-3">
+        {rows.map((r, i) => (
+          <div key={r._id} className="flex gap-2 items-start p-3 border rounded-lg bg-muted/20">
+            <span className="text-xs text-muted-foreground mt-2 w-4 flex-shrink-0">{i + 1}</span>
+            <div className="grid sm:grid-cols-4 gap-2 flex-1">
+              <Field label="BNPL Plan">
+                <Select value={String(r.bnplItemIndex)} onValueChange={v => update(r._id, { bnplItemIndex: Number(v) })}>
+                  <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select plan" /></SelectTrigger>
+                  <SelectContent>
+                    {bnplItems.length === 0 && <SelectItem value="0">Plan #1 (add plans above)</SelectItem>}
+                    {bnplItems.map((b, idx) => <SelectItem key={idx} value={String(idx)}>{b.provider || `Plan ${idx + 1}`} — {b.description.slice(0, 20) || "…"}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Due Date *"><Input className="h-8 text-sm" type="date" value={r.dueDate} onChange={e => update(r._id, { dueDate: e.target.value })} /></Field>
+              <Field label="Amount ($) *"><Input className="h-8 text-sm" type="number" step="0.01" value={r.amount} onChange={e => update(r._id, { amount: e.target.value })} placeholder="0.00" /></Field>
+              <Field label="Status">
+                <Select value={r.status} onValueChange={v => update(r._id, { status: v })}>
+                  <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>{SCHEDULE_STATUSES.map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}</SelectContent>
+                </Select>
+              </Field>
+              <Field label="Paid Date"><Input className="h-8 text-sm" type="date" value={r.paidDate} onChange={e => update(r._id, { paidDate: e.target.value })} /></Field>
+              <Field label="Notes"><Input className="h-8 text-sm" value={r.notes} onChange={e => update(r._id, { notes: e.target.value })} placeholder="Optional" /></Field>
+            </div>
+            <RemoveBtn onClick={() => remove(r._id)} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StoredValueSection({ rows, onChange }: { rows: StoredValueRow[]; onChange: (rows: StoredValueRow[]) => void }) {
+  const update = (id: string, patch: Partial<StoredValueRow>) => onChange(rows.map(r => r._id === id ? { ...r, ...patch } : r));
+  const remove = (id: string) => onChange(rows.filter(r => r._id !== id));
+  return (
+    <div>
+      <SectionHeader title="Gift Cards & Stored Value" count={rows.length} onAdd={() => onChange([...rows, blankStoredValue()])} addLabel="Add card" />
+      {rows.length === 0 && <p className="text-xs text-muted-foreground italic py-2">No gift cards added.</p>}
+      <div className="space-y-3">
+        {rows.map((r, i) => (
+          <div key={r._id} className="flex gap-2 items-start p-3 border rounded-lg bg-muted/20">
+            <span className="text-xs text-muted-foreground mt-2 w-4 flex-shrink-0">{i + 1}</span>
+            <div className="grid sm:grid-cols-4 gap-2 flex-1">
+              <div className="sm:col-span-2"><Field label="Provider / Store *"><Input className="h-8 text-sm" value={r.provider} onChange={e => update(r._id, { provider: e.target.value })} placeholder="e.g. Coles Group Gift Card" /></Field></div>
+              <Field label="Starting Value ($) *"><Input className="h-8 text-sm" type="number" step="0.01" value={r.startingValue} onChange={e => update(r._id, { startingValue: e.target.value })} placeholder="0.00" /></Field>
+              <Field label="Remaining Balance ($) *"><Input className="h-8 text-sm" type="number" step="0.01" value={r.remainingBalance} onChange={e => update(r._id, { remainingBalance: e.target.value })} placeholder="0.00" /></Field>
+              <Field label="Purchase Date"><Input className="h-8 text-sm" type="date" value={r.purchaseDate} onChange={e => update(r._id, { purchaseDate: e.target.value })} /></Field>
+              <Field label="Expiry Date"><Input className="h-8 text-sm" type="date" value={r.expiryDate} onChange={e => update(r._id, { expiryDate: e.target.value })} /></Field>
+              <div className="sm:col-span-2"><Field label="Notes"><Input className="h-8 text-sm" value={r.notes} onChange={e => update(r._id, { notes: e.target.value })} placeholder="Optional" /></Field></div>
+            </div>
+            <RemoveBtn onClick={() => remove(r._id)} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StoredValueTxSection({ rows, svItems, onChange }: { rows: StoredValueTxRow[]; svItems: StoredValueRow[]; onChange: (rows: StoredValueTxRow[]) => void }) {
+  const update = (id: string, patch: Partial<StoredValueTxRow>) => onChange(rows.map(r => r._id === id ? { ...r, ...patch } : r));
+  const remove = (id: string) => onChange(rows.filter(r => r._id !== id));
+  return (
+    <div>
+      <SectionHeader title="Stored Value Transactions" count={rows.length} onAdd={() => onChange([...rows, blankStoredValueTx()])} addLabel="Add transaction" />
+      {rows.length === 0 && <p className="text-xs text-muted-foreground italic py-2">No transactions added.</p>}
+      <div className="space-y-3">
+        {rows.map((r, i) => (
+          <div key={r._id} className="flex gap-2 items-start p-3 border rounded-lg bg-muted/20">
+            <span className="text-xs text-muted-foreground mt-2 w-4 flex-shrink-0">{i + 1}</span>
+            <div className="grid sm:grid-cols-4 gap-2 flex-1">
+              <Field label="Card / Store">
+                <Select value={String(r.storedValueItemIndex)} onValueChange={v => update(r._id, { storedValueItemIndex: Number(v) })}>
+                  <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select card" /></SelectTrigger>
+                  <SelectContent>
+                    {svItems.length === 0 && <SelectItem value="0">Card #1 (add cards above)</SelectItem>}
+                    {svItems.map((sv, idx) => <SelectItem key={idx} value={String(idx)}>{sv.provider || `Card ${idx + 1}`}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Date *"><Input className="h-8 text-sm" type="date" value={r.transactionDate} onChange={e => update(r._id, { transactionDate: e.target.value })} /></Field>
+              <Field label="Type">
+                <Select value={r.type} onValueChange={v => update(r._id, { type: v })}>
+                  <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>{SV_TX_TYPES.map(t => <SelectItem key={t} value={t}>{t === "top_up" ? "Top-up" : "Spend"}</SelectItem>)}</SelectContent>
+                </Select>
+              </Field>
+              <Field label="Amount ($) *"><Input className="h-8 text-sm" type="number" step="0.01" value={r.amount} onChange={e => update(r._id, { amount: e.target.value })} placeholder="0.00" /></Field>
+              <div className="sm:col-span-2"><Field label="Description"><Input className="h-8 text-sm" value={r.description} onChange={e => update(r._id, { description: e.target.value })} placeholder="e.g. Weekly groceries" /></Field></div>
+              <Field label="Notes"><Input className="h-8 text-sm" value={r.notes} onChange={e => update(r._id, { notes: e.target.value })} placeholder="Optional" /></Field>
+            </div>
+            <RemoveBtn onClick={() => remove(r._id)} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Collapsible section wrapper ───────────────────────────────────────────────
 
 function CollapsibleSection({ title, count, defaultOpen = false, children }: { title: string; count: number; defaultOpen?: boolean; children: React.ReactNode }) {
@@ -722,6 +950,10 @@ export function ImportGenerator() {
     weeklyEntries: [],
     tasks: [],
     commsEntries: [],
+    bnplItems: [],
+    bnplScheduleEntries: [],
+    storedValueItems: [],
+    storedValueTransactions: [],
   });
 
   const [errors, setErrors] = useState<ValidationError[]>([]);
@@ -736,7 +968,9 @@ export function ImportGenerator() {
 
   const totalRows = state.incomeSources.length + state.incomeEntries.length + state.bills.length +
     state.arrearsItems.length + state.gigEntries.length + state.weeklyEntries.length +
-    state.tasks.length + state.commsEntries.length;
+    state.tasks.length + state.commsEntries.length +
+    state.bnplItems.length + state.bnplScheduleEntries.length +
+    state.storedValueItems.length + state.storedValueTransactions.length;
 
   function handleValidate() {
     const errs = validate(state);
@@ -802,6 +1036,8 @@ export function ImportGenerator() {
           <TabsTrigger value="gig" className="text-xs">Gig Work</TabsTrigger>
           <TabsTrigger value="weekly" className="text-xs">Weekly</TabsTrigger>
           <TabsTrigger value="activity" className="text-xs">Tasks & Comms</TabsTrigger>
+          <TabsTrigger value="bnpl" className="text-xs">BNPL</TabsTrigger>
+          <TabsTrigger value="stored-value" className="text-xs">Stored Value</TabsTrigger>
         </TabsList>
 
         <TabsContent value="income" className="space-y-6 mt-4">
@@ -840,6 +1076,24 @@ export function ImportGenerator() {
           </CollapsibleSection>
           <CollapsibleSection title="Communications Log" count={state.commsEntries.length}>
             <CommsEntries rows={state.commsEntries} onChange={v => set("commsEntries", v)} />
+          </CollapsibleSection>
+        </TabsContent>
+
+        <TabsContent value="bnpl" className="space-y-6 mt-4">
+          <CollapsibleSection title="BNPL / Repayment Plans" count={state.bnplItems.length} defaultOpen>
+            <BnplItemsSection rows={state.bnplItems} onChange={v => set("bnplItems", v)} />
+          </CollapsibleSection>
+          <CollapsibleSection title="BNPL Schedule Entries (instalment due dates)" count={state.bnplScheduleEntries.length}>
+            <BnplScheduleSection rows={state.bnplScheduleEntries} bnplItems={state.bnplItems} onChange={v => set("bnplScheduleEntries", v)} />
+          </CollapsibleSection>
+        </TabsContent>
+
+        <TabsContent value="stored-value" className="space-y-6 mt-4">
+          <CollapsibleSection title="Gift Cards & Stored Value" count={state.storedValueItems.length} defaultOpen>
+            <StoredValueSection rows={state.storedValueItems} onChange={v => set("storedValueItems", v)} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Stored Value Transactions" count={state.storedValueTransactions.length}>
+            <StoredValueTxSection rows={state.storedValueTransactions} svItems={state.storedValueItems} onChange={v => set("storedValueTransactions", v)} />
           </CollapsibleSection>
         </TabsContent>
       </Tabs>

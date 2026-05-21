@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -11,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CreditCard, Gift, Plus, Pencil, Trash2, AlertTriangle, Info } from "lucide-react";
+import { CreditCard, Gift, Plus, Pencil, Trash2, AlertTriangle, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const BASE = import.meta.env.BASE_URL;
@@ -33,6 +32,16 @@ interface BnplItem {
   notes?: string | null;
 }
 
+interface BnplScheduleEntry {
+  id: number;
+  bnplItemId: number;
+  dueDate: string;
+  amount: number;
+  status: string;
+  paidDate?: string | null;
+  notes?: string | null;
+}
+
 interface StoredValueItem {
   id: number;
   provider: string;
@@ -41,6 +50,16 @@ interface StoredValueItem {
   purchaseDate?: string | null;
   expiryDate?: string | null;
   linkedBudgetCategory?: string | null;
+  notes?: string | null;
+}
+
+interface StoredValueTransaction {
+  id: number;
+  storedValueItemId: number;
+  transactionDate: string;
+  type: string;
+  amount: number;
+  description?: string | null;
   notes?: string | null;
 }
 
@@ -55,15 +74,23 @@ function toWeekly(amount: number, freq: string): number {
   }
 }
 
-const FREQ_LABELS: Record<string, string> = {
-  weekly: "weekly", fortnightly: "fortnightly", monthly: "monthly",
-};
-
 const STATUS_COLORS: Record<string, string> = {
   active:    "bg-blue-100 text-blue-700",
   paid:      "bg-green-100 text-green-700",
   paused:    "bg-amber-100 text-amber-700",
   cancelled: "bg-gray-100 text-gray-500",
+};
+
+const SCHEDULE_STATUS_COLORS: Record<string, string> = {
+  scheduled: "bg-blue-100 text-blue-700",
+  paid:      "bg-green-100 text-green-700",
+  missed:    "bg-red-100 text-red-700",
+  skipped:   "bg-gray-100 text-gray-500",
+};
+
+const TX_TYPE_COLORS: Record<string, string> = {
+  top_up: "bg-green-100 text-green-700",
+  spend:  "bg-amber-100 text-amber-700",
 };
 
 // ── Fetch hooks ───────────────────────────────────────────────────────────────
@@ -73,6 +100,304 @@ function useBnpl() {
 }
 function useStoredValue() {
   return useQuery<StoredValueItem[]>({ queryKey: ["stored-value"], queryFn: () => fetch(`${BASE}api/stored-value`).then(r => r.json()) });
+}
+function useBnplSchedule(bnplItemId: number) {
+  return useQuery<BnplScheduleEntry[]>({
+    queryKey: ["bnpl-schedule", bnplItemId],
+    queryFn: () => fetch(`${BASE}api/bnpl-schedule?bnplItemId=${bnplItemId}`).then(r => r.json()),
+  });
+}
+function useStoredValueTransactions(storedValueItemId: number) {
+  return useQuery<StoredValueTransaction[]>({
+    queryKey: ["stored-value-transactions", storedValueItemId],
+    queryFn: () => fetch(`${BASE}api/stored-value-transactions?storedValueItemId=${storedValueItemId}`).then(r => r.json()),
+  });
+}
+
+// ── Schedule sub-section ──────────────────────────────────────────────────────
+
+function BnplScheduleSection({ item }: { item: BnplItem }) {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [entryOpen, setEntryOpen] = useState(false);
+  const [entryId, setEntryId] = useState<number | null>(null);
+  const [form, setForm] = useState<any>({});
+  const { data: entries = [] } = useBnplSchedule(item.id);
+
+  const saveEntry = useMutation({
+    mutationFn: async (data: any) => {
+      const url = entryId ? `${BASE}api/bnpl-schedule/${entryId}` : `${BASE}api/bnpl-schedule`;
+      const method = entryId ? "PATCH" : "POST";
+      const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!r.ok) throw new Error("Save failed");
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["bnpl-schedule", item.id] });
+      setEntryOpen(false);
+      toast({ title: entryId ? "Entry updated" : "Entry added" });
+    },
+    onError: () => toast({ title: "Error saving", variant: "destructive" }),
+  });
+
+  const deleteEntry = useMutation({
+    mutationFn: (id: number) => fetch(`${BASE}api/bnpl-schedule/${id}`, { method: "DELETE" }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["bnpl-schedule", item.id] }); toast({ title: "Entry deleted" }); },
+  });
+
+  function openNew() {
+    setEntryId(null);
+    setForm({ bnplItemId: item.id, dueDate: "", amount: "", status: "scheduled", paidDate: "", notes: "" });
+    setEntryOpen(true);
+  }
+
+  function openEdit(e: BnplScheduleEntry) {
+    setEntryId(e.id);
+    setForm({ bnplItemId: e.bnplItemId, dueDate: e.dueDate, amount: String(e.amount), status: e.status, paidDate: e.paidDate ?? "", notes: e.notes ?? "" });
+    setEntryOpen(true);
+  }
+
+  function handleSave() {
+    saveEntry.mutate({
+      bnplItemId: item.id,
+      dueDate: form.dueDate,
+      amount: Number(form.amount) || 0,
+      status: form.status || "scheduled",
+      paidDate: form.paidDate || null,
+      notes: form.notes || null,
+    });
+  }
+
+  return (
+    <div className="mt-3 border-t pt-3">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+      >
+        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        Payment Schedule ({entries.length})
+      </button>
+
+      {open && (
+        <div className="mt-2">
+          <div className="flex justify-end mb-2">
+            <Button size="sm" variant="outline" className="h-6 text-xs gap-1" onClick={openNew}>
+              <Plus className="h-3 w-3" /> Add Entry
+            </Button>
+          </div>
+          {entries.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic py-1">No schedule entries yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-muted-foreground border-b">
+                    <th className="text-left py-1 pr-2 font-medium">Due Date</th>
+                    <th className="text-right py-1 pr-2 font-medium">Amount</th>
+                    <th className="text-left py-1 pr-2 font-medium">Status</th>
+                    <th className="text-left py-1 pr-2 font-medium">Paid Date</th>
+                    <th className="text-left py-1 pr-2 font-medium">Notes</th>
+                    <th className="py-1"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map(e => (
+                    <tr key={e.id} className="border-b border-muted/40">
+                      <td className="py-1 pr-2">{e.dueDate}</td>
+                      <td className="py-1 pr-2 text-right font-medium">{formatCurrency(e.amount)}</td>
+                      <td className="py-1 pr-2">
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${SCHEDULE_STATUS_COLORS[e.status] ?? "bg-gray-100 text-gray-600"}`}>
+                          {e.status}
+                        </span>
+                      </td>
+                      <td className="py-1 pr-2 text-muted-foreground">{e.paidDate ?? "—"}</td>
+                      <td className="py-1 pr-2 text-muted-foreground italic">{e.notes ?? ""}</td>
+                      <td className="py-1 flex gap-0.5">
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => openEdit(e)}><Pencil className="h-3 w-3" /></Button>
+                        <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive" onClick={() => { if (confirm("Delete entry?")) deleteEntry.mutate(e.id); }}><Trash2 className="h-3 w-3" /></Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      <Dialog open={entryOpen} onOpenChange={setEntryOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>{entryId ? "Edit Schedule Entry" : "Add Schedule Entry"}</DialogTitle></DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Due Date *</Label><Input type="date" value={form.dueDate ?? ""} onChange={e => setForm((p: any) => ({ ...p, dueDate: e.target.value }))} /></div>
+              <div><Label>Amount ($) *</Label><Input type="number" step="0.01" value={form.amount ?? ""} onChange={e => setForm((p: any) => ({ ...p, amount: e.target.value }))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Status</Label>
+                <Select value={form.status ?? "scheduled"} onValueChange={v => setForm((p: any) => ({ ...p, status: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="missed">Missed</SelectItem>
+                    <SelectItem value="skipped">Skipped</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Paid Date</Label><Input type="date" value={form.paidDate ?? ""} onChange={e => setForm((p: any) => ({ ...p, paidDate: e.target.value }))} /></div>
+            </div>
+            <div><Label>Notes</Label><Input value={form.notes ?? ""} onChange={e => setForm((p: any) => ({ ...p, notes: e.target.value }))} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEntryOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saveEntry.isPending}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ── Stored value transaction log ──────────────────────────────────────────────
+
+function StoredValueTransactionLog({ sv }: { sv: StoredValueItem }) {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [txOpen, setTxOpen] = useState(false);
+  const [txId, setTxId] = useState<number | null>(null);
+  const [form, setForm] = useState<any>({});
+  const { data: transactions = [] } = useStoredValueTransactions(sv.id);
+
+  const saveTx = useMutation({
+    mutationFn: async (data: any) => {
+      const url = txId ? `${BASE}api/stored-value-transactions/${txId}` : `${BASE}api/stored-value-transactions`;
+      const method = txId ? "PATCH" : "POST";
+      const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!r.ok) throw new Error("Save failed");
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["stored-value-transactions", sv.id] });
+      setTxOpen(false);
+      toast({ title: txId ? "Transaction updated" : "Transaction added" });
+    },
+    onError: () => toast({ title: "Error saving", variant: "destructive" }),
+  });
+
+  const deleteTx = useMutation({
+    mutationFn: (id: number) => fetch(`${BASE}api/stored-value-transactions/${id}`, { method: "DELETE" }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["stored-value-transactions", sv.id] }); toast({ title: "Transaction deleted" }); },
+  });
+
+  function openNew() {
+    setTxId(null);
+    setForm({ storedValueItemId: sv.id, transactionDate: new Date().toISOString().slice(0, 10), type: "spend", amount: "", description: "", notes: "" });
+    setTxOpen(true);
+  }
+
+  function openEdit(t: StoredValueTransaction) {
+    setTxId(t.id);
+    setForm({ storedValueItemId: t.storedValueItemId, transactionDate: t.transactionDate, type: t.type, amount: String(t.amount), description: t.description ?? "", notes: t.notes ?? "" });
+    setTxOpen(true);
+  }
+
+  function handleSave() {
+    saveTx.mutate({
+      storedValueItemId: sv.id,
+      transactionDate: form.transactionDate,
+      type: form.type,
+      amount: Number(form.amount) || 0,
+      description: form.description || null,
+      notes: form.notes || null,
+    });
+  }
+
+  return (
+    <div className="mt-3 border-t pt-3">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+      >
+        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        Transaction Log ({transactions.length})
+      </button>
+
+      {open && (
+        <div className="mt-2">
+          <div className="flex justify-end mb-2">
+            <Button size="sm" variant="outline" className="h-6 text-xs gap-1" onClick={openNew}>
+              <Plus className="h-3 w-3" /> Add Transaction
+            </Button>
+          </div>
+          {transactions.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic py-1">No transactions yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-muted-foreground border-b">
+                    <th className="text-left py-1 pr-2 font-medium">Date</th>
+                    <th className="text-left py-1 pr-2 font-medium">Type</th>
+                    <th className="text-right py-1 pr-2 font-medium">Amount</th>
+                    <th className="text-left py-1 pr-2 font-medium">Description</th>
+                    <th className="text-left py-1 pr-2 font-medium">Notes</th>
+                    <th className="py-1"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map(t => (
+                    <tr key={t.id} className="border-b border-muted/40">
+                      <td className="py-1 pr-2">{t.transactionDate}</td>
+                      <td className="py-1 pr-2">
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${TX_TYPE_COLORS[t.type] ?? "bg-gray-100 text-gray-600"}`}>
+                          {t.type === "top_up" ? "Top-up" : "Spend"}
+                        </span>
+                      </td>
+                      <td className="py-1 pr-2 text-right font-medium">{formatCurrency(t.amount)}</td>
+                      <td className="py-1 pr-2 text-muted-foreground">{t.description ?? "—"}</td>
+                      <td className="py-1 pr-2 text-muted-foreground italic">{t.notes ?? ""}</td>
+                      <td className="py-1 flex gap-0.5">
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => openEdit(t)}><Pencil className="h-3 w-3" /></Button>
+                        <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive" onClick={() => { if (confirm("Delete transaction?")) deleteTx.mutate(t.id); }}><Trash2 className="h-3 w-3" /></Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      <Dialog open={txOpen} onOpenChange={setTxOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>{txId ? "Edit Transaction" : "Add Transaction"}</DialogTitle></DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Date *</Label><Input type="date" value={form.transactionDate ?? ""} onChange={e => setForm((p: any) => ({ ...p, transactionDate: e.target.value }))} /></div>
+              <div><Label>Type</Label>
+                <Select value={form.type ?? "spend"} onValueChange={v => setForm((p: any) => ({ ...p, type: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="top_up">Top-up</SelectItem>
+                    <SelectItem value="spend">Spend</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><Label>Amount ($) *</Label><Input type="number" step="0.01" value={form.amount ?? ""} onChange={e => setForm((p: any) => ({ ...p, amount: e.target.value }))} /></div>
+            <div><Label>Description</Label><Input placeholder="e.g. Weekly groceries" value={form.description ?? ""} onChange={e => setForm((p: any) => ({ ...p, description: e.target.value }))} /></div>
+            <div><Label>Notes</Label><Input value={form.notes ?? ""} onChange={e => setForm((p: any) => ({ ...p, notes: e.target.value }))} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTxOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saveTx.isPending}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -275,7 +600,6 @@ export default function Bnpl() {
                           <span className="text-amber-600">{formatCurrency(weeklyAmt)}/wk</span>
                           {item.nextPaymentDate && <span>Next: {item.nextPaymentDate}</span>}
                         </div>
-                        {/* Progress bar */}
                         <div className="mt-2 w-full h-1.5 bg-muted rounded-full overflow-hidden">
                           <div className="h-full bg-destructive/70 rounded-full" style={{ width: `${Math.min(pct, 100)}%` }} />
                         </div>
@@ -285,6 +609,7 @@ export default function Bnpl() {
                           </p>
                         )}
                         {item.notes && <p className="text-xs text-muted-foreground mt-1 italic">{item.notes}</p>}
+                        <BnplScheduleSection item={item} />
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditBnpl(item)}><Pencil className="h-3 w-3" /></Button>
@@ -321,7 +646,7 @@ export default function Bnpl() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="space-y-3">
             {stored.map(sv => {
               const pct = sv.startingValue > 0 ? (sv.remainingBalance / sv.startingValue) * 100 : 0;
               const expiring = sv.expiryDate && new Date(sv.expiryDate) <= new Date(Date.now() + 30 * 86400000);
@@ -345,6 +670,7 @@ export default function Bnpl() {
                           </p>
                         )}
                         {sv.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{sv.notes}</p>}
+                        <StoredValueTransactionLog sv={sv} />
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditSv(sv)}><Pencil className="h-3 w-3" /></Button>

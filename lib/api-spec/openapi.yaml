@@ -21,6 +21,8 @@ tags:
   - name: budget
   - name: scenarios
   - name: shopping
+  - name: bnpl
+  - name: storedValue
 paths:
   /healthz:
     get:
@@ -786,6 +788,276 @@ paths:
       responses:
         "204": { description: Deleted }
 
+  /bnpl:
+    get:
+      operationId: listBnplItems
+      tags: [bnpl]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/BnplItem" }
+    post:
+      operationId: createBnplItem
+      tags: [bnpl]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BnplItemInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BnplItem" }
+  /bnpl/{id}:
+    patch:
+      operationId: updateBnplItem
+      tags: [bnpl]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BnplItemInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BnplItem" }
+    delete:
+      operationId: deleteBnplItem
+      tags: [bnpl]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /stored-value:
+    get:
+      operationId: listStoredValueItems
+      tags: [storedValue]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/StoredValueItem" }
+    post:
+      operationId: createStoredValueItem
+      tags: [storedValue]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StoredValueItemInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoredValueItem" }
+  /stored-value/{id}:
+    patch:
+      operationId: updateStoredValueItem
+      tags: [storedValue]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StoredValueItemInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoredValueItem" }
+    delete:
+      operationId: deleteStoredValueItem
+      tags: [storedValue]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /bnpl-schedule:
+    get:
+      operationId: listBnplSchedule
+      tags: [bnpl]
+      parameters:
+        - name: bnplItemId
+          in: query
+          required: false
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/BnplScheduleEntry" }
+    post:
+      operationId: createBnplScheduleEntry
+      tags: [bnpl]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BnplScheduleEntryInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BnplScheduleEntry" }
+  /bnpl-schedule/{id}:
+    patch:
+      operationId: updateBnplScheduleEntry
+      tags: [bnpl]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BnplScheduleEntryInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BnplScheduleEntry" }
+    delete:
+      operationId: deleteBnplScheduleEntry
+      tags: [bnpl]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /stored-value-transactions:
+    get:
+      operationId: listStoredValueTransactions
+      tags: [storedValue]
+      parameters:
+        - name: storedValueItemId
+          in: query
+          required: false
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/StoredValueTransaction" }
+    post:
+      operationId: createStoredValueTransaction
+      tags: [storedValue]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StoredValueTransactionInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoredValueTransaction" }
+  /stored-value-transactions/{id}:
+    patch:
+      operationId: updateStoredValueTransaction
+      tags: [storedValue]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StoredValueTransactionInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoredValueTransaction" }
+    delete:
+      operationId: deleteStoredValueTransaction
+      tags: [storedValue]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /export:
+    get:
+      operationId: exportData
+      tags: [health]
+      responses:
+        "200":
+          description: Full household data export as JSON attachment
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExportPayload" }
+
+  /import:
+    post:
+      operationId: importData
+      tags: [health]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ImportBody" }
+      responses:
+        "200":
+          description: Import result with counts per section
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imported:
+                    type: object
+                    additionalProperties: { type: integer }
+
 components:
   schemas:
     HealthStatus:
@@ -1288,6 +1560,189 @@ components:
         priority: { $ref: "#/components/schemas/ShoppingPriority" }
         notes: { type: ["string", "null"] }
       required: [item, category, needed, bought, priority]
+
+    ImportSection:
+      type: string
+      enum:
+        - incomeSources
+        - incomeEntries
+        - bills
+        - arrearsItems
+        - tasks
+        - commsEntries
+        - weeklyEntries
+        - gigEntries
+        - budgetCategories
+        - scenarios
+        - bnplItems
+        - storedValueItems
+        - bnplScheduleEntries
+        - storedValueTransactions
+
+    ImportBody:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: [replace, merge, add-only]
+          default: merge
+        sections:
+          type: array
+          items: { $ref: "#/components/schemas/ImportSection" }
+          description: Sections to replace in replace mode; empty = all
+        data:
+          type: object
+          properties:
+            incomeSources: { type: array, items: { type: object } }
+            incomeEntries: { type: array, items: { type: object } }
+            bills: { type: array, items: { type: object } }
+            arrearsItems: { type: array, items: { type: object } }
+            tasks: { type: array, items: { type: object } }
+            commsEntries: { type: array, items: { type: object } }
+            weeklyEntries: { type: array, items: { type: object } }
+            gigEntries: { type: array, items: { type: object } }
+            budgetCategories: { type: array, items: { type: object } }
+            scenarios: { type: array, items: { type: object } }
+            bnplItems: { type: array, items: { $ref: "#/components/schemas/BnplItemInput" } }
+            storedValueItems: { type: array, items: { $ref: "#/components/schemas/StoredValueItemInput" } }
+            bnplScheduleEntries: { type: array, items: { $ref: "#/components/schemas/BnplScheduleEntryInput" } }
+            storedValueTransactions: { type: array, items: { $ref: "#/components/schemas/StoredValueTransactionInput" } }
+      required: [data]
+
+    ExportPayload:
+      type: object
+      properties:
+        exportedAt: { type: string, format: date-time }
+        schema: { type: object }
+        data:
+          type: object
+          properties:
+            incomeSources: { type: array, items: { type: object } }
+            incomeEntries: { type: array, items: { type: object } }
+            bills: { type: array, items: { type: object } }
+            arrearsItems: { type: array, items: { type: object } }
+            tasks: { type: array, items: { type: object } }
+            commsEntries: { type: array, items: { type: object } }
+            weeklyEntries: { type: array, items: { type: object } }
+            gigEntries: { type: array, items: { type: object } }
+            budgetCategories: { type: array, items: { type: object } }
+            scenarios: { type: array, items: { type: object } }
+            shoppingItems: { type: array, items: { type: object } }
+            shoppingLists: { type: array, items: { type: object } }
+            shoppingListItems: { type: array, items: { type: object } }
+            bnplItems: { type: array, items: { $ref: "#/components/schemas/BnplItem" } }
+            storedValueItems: { type: array, items: { $ref: "#/components/schemas/StoredValueItem" } }
+            bnplScheduleEntries: { type: array, items: { $ref: "#/components/schemas/BnplScheduleEntry" } }
+            storedValueTransactions: { type: array, items: { $ref: "#/components/schemas/StoredValueTransaction" } }
+      required: [exportedAt, data]
+
+    BnplItem:
+      type: object
+      properties:
+        id: { type: integer }
+        provider: { type: string }
+        description: { type: string }
+        originalAmount: { type: number }
+        remainingBalance: { type: number }
+        instalmentAmount: { type: number }
+        instalmentFrequency: { type: string }
+        nextPaymentDate: { type: ["string", "null"], format: date }
+        status: { type: string }
+        feeRisk: { type: ["string", "null"] }
+        linkedBudgetCategory: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+      required: [id, provider, description, originalAmount, remainingBalance, instalmentAmount, instalmentFrequency, status]
+    BnplItemInput:
+      type: object
+      properties:
+        provider: { type: string }
+        description: { type: string }
+        originalAmount: { type: number }
+        remainingBalance: { type: number }
+        instalmentAmount: { type: number }
+        instalmentFrequency: { type: string, default: fortnightly }
+        nextPaymentDate: { type: ["string", "null"], format: date }
+        status: { type: string, default: active }
+        feeRisk: { type: ["string", "null"] }
+        linkedBudgetCategory: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+      required: [provider, description, originalAmount, remainingBalance, instalmentAmount]
+
+    StoredValueItem:
+      type: object
+      properties:
+        id: { type: integer }
+        provider: { type: string }
+        startingValue: { type: number }
+        remainingBalance: { type: number }
+        purchaseDate: { type: ["string", "null"], format: date }
+        expiryDate: { type: ["string", "null"], format: date }
+        linkedBudgetCategory: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+      required: [id, provider, startingValue, remainingBalance]
+    StoredValueItemInput:
+      type: object
+      properties:
+        provider: { type: string }
+        startingValue: { type: number }
+        remainingBalance: { type: number }
+        purchaseDate: { type: ["string", "null"], format: date }
+        expiryDate: { type: ["string", "null"], format: date }
+        linkedBudgetCategory: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+      required: [provider, startingValue, remainingBalance]
+
+    BnplScheduleEntryStatus:
+      type: string
+      enum: [scheduled, paid, missed, skipped]
+
+    StoredValueTransactionType:
+      type: string
+      enum: [top_up, spend]
+
+    BnplScheduleEntry:
+      type: object
+      properties:
+        id: { type: integer }
+        bnplItemId: { type: integer }
+        dueDate: { type: string, format: date }
+        amount: { type: number }
+        status: { $ref: "#/components/schemas/BnplScheduleEntryStatus" }
+        paidDate: { type: ["string", "null"], format: date }
+        notes: { type: ["string", "null"] }
+      required: [id, bnplItemId, dueDate, amount, status]
+    BnplScheduleEntryInput:
+      type: object
+      properties:
+        bnplItemId: { type: integer }
+        dueDate: { type: string, format: date }
+        amount: { type: number }
+        status: { $ref: "#/components/schemas/BnplScheduleEntryStatus" }
+        paidDate: { type: ["string", "null"], format: date }
+        notes: { type: ["string", "null"] }
+      required: [bnplItemId, dueDate, amount, status]
+
+    StoredValueTransaction:
+      type: object
+      properties:
+        id: { type: integer }
+        storedValueItemId: { type: integer }
+        transactionDate: { type: string, format: date }
+        type: { $ref: "#/components/schemas/StoredValueTransactionType" }
+        amount: { type: number }
+        description: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+      required: [id, storedValueItemId, transactionDate, type, amount]
+    StoredValueTransactionInput:
+      type: object
+      properties:
+        storedValueItemId: { type: integer }
+        transactionDate: { type: string, format: date }
+        type: { $ref: "#/components/schemas/StoredValueTransactionType" }
+        amount: { type: number }
+        description: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+      required: [storedValueItemId, transactionDate, type, amount]
 
     DashboardSummary:
       type: object

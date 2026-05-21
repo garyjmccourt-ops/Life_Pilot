@@ -685,6 +685,262 @@ export interface ShoppingListItemInput {
   notes?: string | null;
 }
 
+export type ImportSection = (typeof ImportSection)[keyof typeof ImportSection];
+
+export const ImportSection = {
+  incomeSources: "incomeSources",
+  incomeEntries: "incomeEntries",
+  bills: "bills",
+  arrearsItems: "arrearsItems",
+  tasks: "tasks",
+  commsEntries: "commsEntries",
+  weeklyEntries: "weeklyEntries",
+  gigEntries: "gigEntries",
+  budgetCategories: "budgetCategories",
+  scenarios: "scenarios",
+  bnplItems: "bnplItems",
+  storedValueItems: "storedValueItems",
+  bnplScheduleEntries: "bnplScheduleEntries",
+  storedValueTransactions: "storedValueTransactions",
+} as const;
+
+export type ImportBodyMode =
+  (typeof ImportBodyMode)[keyof typeof ImportBodyMode];
+
+export const ImportBodyMode = {
+  replace: "replace",
+  merge: "merge",
+  "add-only": "add-only",
+} as const;
+
+export type ImportBodyDataIncomeSourcesItem = { [key: string]: unknown };
+
+export type ImportBodyDataIncomeEntriesItem = { [key: string]: unknown };
+
+export type ImportBodyDataBillsItem = { [key: string]: unknown };
+
+export type ImportBodyDataArrearsItemsItem = { [key: string]: unknown };
+
+export type ImportBodyDataTasksItem = { [key: string]: unknown };
+
+export type ImportBodyDataCommsEntriesItem = { [key: string]: unknown };
+
+export type ImportBodyDataWeeklyEntriesItem = { [key: string]: unknown };
+
+export type ImportBodyDataGigEntriesItem = { [key: string]: unknown };
+
+export type ImportBodyDataBudgetCategoriesItem = { [key: string]: unknown };
+
+export type ImportBodyDataScenariosItem = { [key: string]: unknown };
+
+export interface BnplItemInput {
+  provider: string;
+  description: string;
+  originalAmount: number;
+  remainingBalance: number;
+  instalmentAmount: number;
+  instalmentFrequency?: string;
+  /** @nullable */
+  nextPaymentDate?: string | null;
+  status?: string;
+  /** @nullable */
+  feeRisk?: string | null;
+  /** @nullable */
+  linkedBudgetCategory?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface StoredValueItemInput {
+  provider: string;
+  startingValue: number;
+  remainingBalance: number;
+  /** @nullable */
+  purchaseDate?: string | null;
+  /** @nullable */
+  expiryDate?: string | null;
+  /** @nullable */
+  linkedBudgetCategory?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type BnplScheduleEntryStatus =
+  (typeof BnplScheduleEntryStatus)[keyof typeof BnplScheduleEntryStatus];
+
+export const BnplScheduleEntryStatus = {
+  scheduled: "scheduled",
+  paid: "paid",
+  missed: "missed",
+  skipped: "skipped",
+} as const;
+
+export interface BnplScheduleEntryInput {
+  bnplItemId: number;
+  dueDate: string;
+  amount: number;
+  status: BnplScheduleEntryStatus;
+  /** @nullable */
+  paidDate?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type StoredValueTransactionType =
+  (typeof StoredValueTransactionType)[keyof typeof StoredValueTransactionType];
+
+export const StoredValueTransactionType = {
+  top_up: "top_up",
+  spend: "spend",
+} as const;
+
+export interface StoredValueTransactionInput {
+  storedValueItemId: number;
+  transactionDate: string;
+  type: StoredValueTransactionType;
+  amount: number;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type ImportBodyData = {
+  incomeSources?: ImportBodyDataIncomeSourcesItem[];
+  incomeEntries?: ImportBodyDataIncomeEntriesItem[];
+  bills?: ImportBodyDataBillsItem[];
+  arrearsItems?: ImportBodyDataArrearsItemsItem[];
+  tasks?: ImportBodyDataTasksItem[];
+  commsEntries?: ImportBodyDataCommsEntriesItem[];
+  weeklyEntries?: ImportBodyDataWeeklyEntriesItem[];
+  gigEntries?: ImportBodyDataGigEntriesItem[];
+  budgetCategories?: ImportBodyDataBudgetCategoriesItem[];
+  scenarios?: ImportBodyDataScenariosItem[];
+  bnplItems?: BnplItemInput[];
+  storedValueItems?: StoredValueItemInput[];
+  bnplScheduleEntries?: BnplScheduleEntryInput[];
+  storedValueTransactions?: StoredValueTransactionInput[];
+};
+
+export interface ImportBody {
+  mode?: ImportBodyMode;
+  /** Sections to replace in replace mode; empty = all */
+  sections?: ImportSection[];
+  data: ImportBodyData;
+}
+
+export type ExportPayloadSchema = { [key: string]: unknown };
+
+export type ExportPayloadDataIncomeSourcesItem = { [key: string]: unknown };
+
+export type ExportPayloadDataIncomeEntriesItem = { [key: string]: unknown };
+
+export type ExportPayloadDataBillsItem = { [key: string]: unknown };
+
+export type ExportPayloadDataArrearsItemsItem = { [key: string]: unknown };
+
+export type ExportPayloadDataTasksItem = { [key: string]: unknown };
+
+export type ExportPayloadDataCommsEntriesItem = { [key: string]: unknown };
+
+export type ExportPayloadDataWeeklyEntriesItem = { [key: string]: unknown };
+
+export type ExportPayloadDataGigEntriesItem = { [key: string]: unknown };
+
+export type ExportPayloadDataBudgetCategoriesItem = { [key: string]: unknown };
+
+export type ExportPayloadDataScenariosItem = { [key: string]: unknown };
+
+export type ExportPayloadDataShoppingItemsItem = { [key: string]: unknown };
+
+export type ExportPayloadDataShoppingListsItem = { [key: string]: unknown };
+
+export type ExportPayloadDataShoppingListItemsItem = { [key: string]: unknown };
+
+export interface BnplItem {
+  id: number;
+  provider: string;
+  description: string;
+  originalAmount: number;
+  remainingBalance: number;
+  instalmentAmount: number;
+  instalmentFrequency: string;
+  /** @nullable */
+  nextPaymentDate?: string | null;
+  status: string;
+  /** @nullable */
+  feeRisk?: string | null;
+  /** @nullable */
+  linkedBudgetCategory?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface StoredValueItem {
+  id: number;
+  provider: string;
+  startingValue: number;
+  remainingBalance: number;
+  /** @nullable */
+  purchaseDate?: string | null;
+  /** @nullable */
+  expiryDate?: string | null;
+  /** @nullable */
+  linkedBudgetCategory?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface BnplScheduleEntry {
+  id: number;
+  bnplItemId: number;
+  dueDate: string;
+  amount: number;
+  status: BnplScheduleEntryStatus;
+  /** @nullable */
+  paidDate?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface StoredValueTransaction {
+  id: number;
+  storedValueItemId: number;
+  transactionDate: string;
+  type: StoredValueTransactionType;
+  amount: number;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type ExportPayloadData = {
+  incomeSources?: ExportPayloadDataIncomeSourcesItem[];
+  incomeEntries?: ExportPayloadDataIncomeEntriesItem[];
+  bills?: ExportPayloadDataBillsItem[];
+  arrearsItems?: ExportPayloadDataArrearsItemsItem[];
+  tasks?: ExportPayloadDataTasksItem[];
+  commsEntries?: ExportPayloadDataCommsEntriesItem[];
+  weeklyEntries?: ExportPayloadDataWeeklyEntriesItem[];
+  gigEntries?: ExportPayloadDataGigEntriesItem[];
+  budgetCategories?: ExportPayloadDataBudgetCategoriesItem[];
+  scenarios?: ExportPayloadDataScenariosItem[];
+  shoppingItems?: ExportPayloadDataShoppingItemsItem[];
+  shoppingLists?: ExportPayloadDataShoppingListsItem[];
+  shoppingListItems?: ExportPayloadDataShoppingListItemsItem[];
+  bnplItems?: BnplItem[];
+  storedValueItems?: StoredValueItem[];
+  bnplScheduleEntries?: BnplScheduleEntry[];
+  storedValueTransactions?: StoredValueTransaction[];
+};
+
+export interface ExportPayload {
+  exportedAt: string;
+  schema?: ExportPayloadSchema;
+  data: ExportPayloadData;
+}
+
 export interface DashboardSummary {
   weeklyIncome: number;
   actualIncomeThisWeek: number;
@@ -735,3 +991,17 @@ export interface ScheduledPayment {
   /** @nullable */
   creditor?: string | null;
 }
+
+export type ListBnplScheduleParams = {
+  bnplItemId?: number;
+};
+
+export type ListStoredValueTransactionsParams = {
+  storedValueItemId?: number;
+};
+
+export type ImportData200Imported = { [key: string]: number };
+
+export type ImportData200 = {
+  imported?: ImportData200Imported;
+};

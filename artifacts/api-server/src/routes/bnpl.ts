@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { z } from "zod/v4";
 import { eq } from "drizzle-orm";
-import { db, bnplItemsTable, storedValueItemsTable } from "@workspace/db";
+import { db, bnplItemsTable, storedValueItemsTable, bnplScheduleEntriesTable, storedValueTransactionsTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -88,6 +88,71 @@ router.delete("/bnpl/:id", async (req, res): Promise<void> => {
   res.status(204).end();
 });
 
+// ── BNPL schedule entries ─────────────────────────────────────────────────────
+
+const BnplScheduleInput = z.object({
+  bnplItemId: z.number().int(),
+  dueDate: z.string().min(1),
+  amount: z.number(),
+  status: z.enum(["scheduled", "paid", "missed", "skipped"]).default("scheduled"),
+  paidDate: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+});
+
+router.get("/bnpl-schedule", async (req, res): Promise<void> => {
+  const bnplItemId = req.query.bnplItemId ? Number(req.query.bnplItemId) : null;
+  const query = db.select().from(bnplScheduleEntriesTable).orderBy(bnplScheduleEntriesTable.dueDate);
+  const rows = bnplItemId
+    ? await db.select().from(bnplScheduleEntriesTable).where(eq(bnplScheduleEntriesTable.bnplItemId, bnplItemId)).orderBy(bnplScheduleEntriesTable.dueDate)
+    : await query;
+  res.json(rows.map(r => ({
+    id: r.id,
+    bnplItemId: r.bnplItemId,
+    dueDate: r.dueDate,
+    amount: n(r.amount),
+    status: r.status,
+    paidDate: r.paidDate ?? null,
+    notes: r.notes ?? null,
+  })));
+});
+
+router.post("/bnpl-schedule", async (req, res): Promise<void> => {
+  const parsed = BnplScheduleInput.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid input" }); return; }
+  const v = parsed.data;
+  const [row] = await db.insert(bnplScheduleEntriesTable).values({
+    bnplItemId: v.bnplItemId,
+    dueDate: v.dueDate,
+    amount: String(v.amount),
+    status: v.status,
+    paidDate: v.paidDate ?? null,
+    notes: v.notes ?? null,
+  }).returning();
+  res.status(201).json({ ...row, amount: n(row.amount) });
+});
+
+router.patch("/bnpl-schedule/:id", async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  const parsed = BnplScheduleInput.partial().safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid input" }); return; }
+  const v = parsed.data;
+  const updates: Record<string, unknown> = {};
+  if (v.bnplItemId !== undefined) updates.bnplItemId = v.bnplItemId;
+  if (v.dueDate !== undefined) updates.dueDate = v.dueDate;
+  if (v.amount !== undefined) updates.amount = String(v.amount);
+  if (v.status !== undefined) updates.status = v.status;
+  if (v.paidDate !== undefined) updates.paidDate = v.paidDate ?? null;
+  if (v.notes !== undefined) updates.notes = v.notes ?? null;
+  const [row] = await db.update(bnplScheduleEntriesTable).set(updates).where(eq(bnplScheduleEntriesTable.id, id)).returning();
+  if (!row) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...row, amount: n(row.amount) });
+});
+
+router.delete("/bnpl-schedule/:id", async (req, res): Promise<void> => {
+  await db.delete(bnplScheduleEntriesTable).where(eq(bnplScheduleEntriesTable.id, Number(req.params.id)));
+  res.status(204).end();
+});
+
 // ── Stored value items ────────────────────────────────────────────────────────
 
 const StoredValueInput = z.object({
@@ -150,6 +215,70 @@ router.patch("/stored-value/:id", async (req, res): Promise<void> => {
 
 router.delete("/stored-value/:id", async (req, res): Promise<void> => {
   await db.delete(storedValueItemsTable).where(eq(storedValueItemsTable.id, Number(req.params.id)));
+  res.status(204).end();
+});
+
+// ── Stored value transactions ─────────────────────────────────────────────────
+
+const StoredValueTransactionInput = z.object({
+  storedValueItemId: z.number().int(),
+  transactionDate: z.string().min(1),
+  type: z.enum(["top_up", "spend"]),
+  amount: z.number(),
+  description: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+});
+
+router.get("/stored-value-transactions", async (req, res): Promise<void> => {
+  const storedValueItemId = req.query.storedValueItemId ? Number(req.query.storedValueItemId) : null;
+  const rows = storedValueItemId
+    ? await db.select().from(storedValueTransactionsTable).where(eq(storedValueTransactionsTable.storedValueItemId, storedValueItemId)).orderBy(storedValueTransactionsTable.transactionDate)
+    : await db.select().from(storedValueTransactionsTable).orderBy(storedValueTransactionsTable.transactionDate);
+  res.json(rows.map(r => ({
+    id: r.id,
+    storedValueItemId: r.storedValueItemId,
+    transactionDate: r.transactionDate,
+    type: r.type,
+    amount: n(r.amount),
+    description: r.description ?? null,
+    notes: r.notes ?? null,
+  })));
+});
+
+router.post("/stored-value-transactions", async (req, res): Promise<void> => {
+  const parsed = StoredValueTransactionInput.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid input" }); return; }
+  const v = parsed.data;
+  const [row] = await db.insert(storedValueTransactionsTable).values({
+    storedValueItemId: v.storedValueItemId,
+    transactionDate: v.transactionDate,
+    type: v.type,
+    amount: String(v.amount),
+    description: v.description ?? null,
+    notes: v.notes ?? null,
+  }).returning();
+  res.status(201).json({ ...row, amount: n(row.amount) });
+});
+
+router.patch("/stored-value-transactions/:id", async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  const parsed = StoredValueTransactionInput.partial().safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid input" }); return; }
+  const v = parsed.data;
+  const updates: Record<string, unknown> = {};
+  if (v.storedValueItemId !== undefined) updates.storedValueItemId = v.storedValueItemId;
+  if (v.transactionDate !== undefined) updates.transactionDate = v.transactionDate;
+  if (v.type !== undefined) updates.type = v.type;
+  if (v.amount !== undefined) updates.amount = String(v.amount);
+  if (v.description !== undefined) updates.description = v.description ?? null;
+  if (v.notes !== undefined) updates.notes = v.notes ?? null;
+  const [row] = await db.update(storedValueTransactionsTable).set(updates).where(eq(storedValueTransactionsTable.id, id)).returning();
+  if (!row) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...row, amount: n(row.amount) });
+});
+
+router.delete("/stored-value-transactions/:id", async (req, res): Promise<void> => {
+  await db.delete(storedValueTransactionsTable).where(eq(storedValueTransactionsTable.id, Number(req.params.id)));
   res.status(204).end();
 });
 
