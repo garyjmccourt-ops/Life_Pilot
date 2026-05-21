@@ -1,0 +1,177 @@
+Review the current state of MYOH and Life Pilot and produce an implementation plan, gap analysis, and build update for the following missing capability areas.
+
+Context
+- MYOH already has Settings, Data, Defaults, and Generate Import wired in.
+- ImportGenerator is live in MYOH Settings.
+- TypeScript is compiling cleanly.
+- Current import/export supports:
+  - incomeSources
+  - incomeEntries
+  - bills
+  - arrearsItems
+  - tasks
+  - commsEntries
+  - weeklyEntries
+  - gigEntries
+  - budgetCategories
+  - scenarios
+- Household budgeting and rent arrears planning are already in progress.
+- We do NOT want to break existing import/export behavior.
+- We do want to extend the model cleanly so future imports, dashboards, and spending logic stay consistent.
+
+What appears to be missing
+1. BNPL does not appear to have a standalone import/generate-import layer.
+2. Afterpay and other BNPL products need to be wired to:
+   - payments
+   - liabilities / outstanding balance
+   - spendable or restricted purchasing capacity where relevant
+3. Gift card / stored value needs to be treated as:
+   - stored value
+   - spendable balance
+   - linked to purchases/payments where used
+4. We likely need a forwarded-email intake mechanism so users can send:
+   - agreements
+   - receipts
+   - bills
+   - payment confirmations
+   - arrears notices
+   - screenshots/PDFs/documents
+   into a controlled inbox for processing/import/review.
+
+Your task
+Please do all of the following:
+
+Phase 1 — Review what already exists
+- Inspect the current MYOH and Life Pilot data model, import/export structure, settings pages, and Generate Import flow.
+- Identify:
+  - what already supports BNPL indirectly
+  - what already supports stored value indirectly
+  - what already supports communications / documents indirectly
+  - where the gaps are
+- Be explicit about whether the issue is:
+  - missing schema
+  - missing UI
+  - missing import/export support
+  - missing linking logic
+  - missing reporting/dashboard logic
+  - missing workflow
+
+Phase 2 — Define requirements
+Create a clear requirements breakdown for these three capability areas:
+
+A. BNPL / instalment products
+Include support for:
+- Afterpay
+- generic BNPL providers
+- outstanding balance
+- scheduled repayments
+- missed payments / arrears status if relevant
+- linked purchases
+- linked payment entries
+- active limit / available limit if available
+- account status
+- due dates
+- whether item is household, personal, or shared
+- whether repayment is mandatory, overdue, or forecast only
+
+B. Stored value / gift cards / credits
+Include support for:
+- gift cards
+- prepaid balances
+- store credit
+- service/provider credit
+- landlord/rent credits if relevant
+- opening balance
+- top-ups
+- spends/redemptions
+- remaining spendable balance
+- expiry date
+- source / issuer
+- restrictions on use
+- linkage to purchases or bills where value is consumed
+
+C. Forward-to-email / intake inbox
+Include support for:
+- a dedicated inbound email address or intake channel
+- forwarding bills, receipts, agreements, notices, and screenshots
+- parsing attachments and metadata
+- storing source files
+- creating draft records for review before import
+- mapping inbound files to providers / arrears items / bills / payments / comms entries
+- audit trail showing original email source and attachments
+- review queue for unclassified or uncertain imports
+
+Phase 3 — Recommend the right architecture
+Recommend the best implementation approach, including:
+- whether these should live in MYOH only, Life Pilot only, or shared across both
+- what new entities/tables/models are needed
+- what relationships should exist between:
+  - bills
+  - payments
+  - arrears
+  - BNPL accounts
+  - stored value accounts
+  - source documents
+  - comms entries
+- what should be importable/exportable
+- what should appear in Generate Import
+- what should be settings-driven versus transaction-driven
+
+Phase 4 — Propose schema changes
+Draft proposed schema/model additions for:
+- BNPL accounts
+- BNPL payment schedule entries
+- stored value accounts
+- stored value transactions
+- inbound documents / source records
+- email intake records
+- file-to-record linking
+- review/import staging records
+
+Please keep naming consistent with the current app style.
+Please also recommend enum values where useful.
+
+Phase 5 — UI / workflow design
+Recommend the minimum viable UI changes for:
+- Settings
+- Generate Import
+- Bills / Payments
+- Comms / Documents
+- any new tabs or sections required
+
+Please distinguish:
+- MVP
+- Phase 2
+- Nice-to-have
+
+Phase 6 — Import/export requirements
+Specify exactly what should be added to import/export JSON for:
+- BNPL
+- stored value
+- inbound documents / intake
+- linked payments
+- linked credits
+
+Make sure the proposal is backward-compatible with the current MYOH export/import structure wherever possible.
+
+Phase 7 — Output format
+Return your answer in this structure:
+
+1. Current-state review
+2. Gap analysis
+3. Recommended architecture
+4. Required entities/models
+5. Required import/export changes
+6. Required UI changes
+7. Suggested build order
+8. Risks / edge cases
+9. MVP scope recommendation
+10. Optional future enhancements
+
+Important build rules
+- Do not remove or break existing import/export sections.
+- Prefer additive changes.
+- Reuse current naming and patterns where possible.
+- Be explicit where data belongs in MYOH vs Life Pilot.
+- Assume the user wants practical household-finance and arrears use, not generic fintech theory.
+- Focus on real workflows: repayments, overdue tracking, household use, credits, receipts, forwarded documents, and review-before-import.
