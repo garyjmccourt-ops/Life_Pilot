@@ -1,0 +1,78 @@
+Packet 6 — Gig Import Queue: expandable detail row
+
+Goal:
+Add an expandable detail row to each staged gig import in the Gig Import Queue so users can inspect the full import record before approving or rejecting it.
+
+Context:
+The queue currently shows only:
+- date
+- platform
+- person
+- gross
+- net
+- pay status
+- source ref
+
+The backend GET /api/gig-imports already returns the additional fields. No backend work is required.
+
+Instructions:
+1. Inspect GigImportQueue.tsx and confirm the data shape returned by GET /api/gig-imports.
+
+2. Add a chevron expand/collapse toggle to each table row.
+   - Use the app’s existing icon system if available.
+   - Place the toggle at the start of the row or near the actions column, whichever fits the existing table best.
+
+3. Rows should be collapsed by default.
+
+4. When a row is expanded, show a compact detail panel directly below the main row.
+
+5. The expanded detail panel should show the remaining available fields, including where present:
+   - tips
+   - fees
+   - fuel estimate
+   - hours worked
+   - deliveries
+   - notes
+   - any other useful returned import fields that are already available but not shown in the main row
+
+6. Keep the detail panel read-only.
+
+7. Do not add any new API calls.
+   Use the data already returned by GET /api/gig-imports.
+
+8. Expansion behaviour:
+   - Either one row expanded at a time or multiple rows expanded is acceptable.
+   - Choose the simpler, lower-risk implementation based on the existing component structure.
+   - If simple, use one expandedImportId state value.
+
+9. Make sure approve/reject buttons continue to work exactly as they do now.
+
+10. Make sure query invalidation after approve/reject still works.
+
+11. Use existing formatting helpers for currency, dates, hours, or numbers if available.
+
+12. If a field is missing or null, show a quiet placeholder such as:
+    —
+    Do not show undefined/null text.
+
+13. Preserve existing table layout and styling as much as possible.
+    The detail panel should be compact, readable, and visually connected to the row.
+
+Hard limits:
+- Do not change backend routes.
+- Do not change GET /api/gig-imports.
+- Do not change approve/reject endpoints.
+- Do not change database schema.
+- Do not add migrations.
+- Do not change auth, permissions, sessions, or CORS.
+- Do not change import processing logic.
+- Do not touch unrelated dashboard, stored value, BNPL, or Money Life files.
+- Do not rebuild the queue from scratch.
+
+After implementation, stop and report:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Risks or assumptions
+6. Recommended next packet

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { AlertTriangle, CheckCircle2, XCircle, CheckCheck, RefreshCw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, XCircle, CheckCheck, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -69,6 +69,7 @@ export default function GigImportQueue() {
   const [showAll, setShowAll] = useState(false);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const { data: imports = [], isLoading, refetch } = useQuery<GigImport[]>({
     queryKey: ["gig-imports", showAll],
@@ -183,6 +184,7 @@ export default function GigImportQueue() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/40 text-xs text-muted-foreground uppercase tracking-wide">
+                    <th className="w-8 px-2 py-2"></th>
                     <th className="px-4 py-2 text-left">Date</th>
                     <th className="px-4 py-2 text-left">Platform</th>
                     <th className="px-4 py-2 text-left">Person</th>
@@ -197,85 +199,150 @@ export default function GigImportQueue() {
                   </tr>
                 </thead>
                 <tbody>
-                  {imports.map((row) => (
-                    <tr key={row.id} className="border-b last:border-0 hover:bg-muted/20">
-                      <td className="px-4 py-2.5 tabular-nums">{formatDate(row.entryDate)}</td>
-                      <td className="px-4 py-2.5 capitalize">{row.platform}</td>
-                      <td className="px-4 py-2.5">{row.person}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">{formatCurrency(row.grossEarnings)}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">{formatCurrency(row.netIncome)}</td>
-                      <td className="px-4 py-2.5">
-                        <Badge variant="outline" className="text-xs capitalize">{row.paymentStatus}</Badge>
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <StatusBadge status={row.reviewStatus} />
-                        {row.rejectionReason && (
-                          <div className="text-[11px] text-muted-foreground mt-0.5 max-w-[160px] truncate" title={row.rejectionReason}>
-                            {row.rejectionReason}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span className="font-mono text-xs text-muted-foreground">{row.sourceRef}</span>
-                        <div className="text-[10px] text-muted-foreground/60">{row.sourceSystem}</div>
-                      </td>
-                      <td className="px-4 py-2.5 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-                        {formatDate(row.receivedAt)}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        {row.warnings && row.warnings.length > 0 ? (
-                          <div className="flex flex-col gap-1">
-                            {row.warnings.map((w, i) => (
-                              <div key={i} className="flex items-start gap-1 text-[11px] text-amber-700">
-                                <AlertTriangle className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                                <span>{w}</span>
+                  {imports.map((row) => {
+                    const isExpanded = expandedId === row.id;
+                    return (
+                      <Fragment key={row.id}>
+                        <tr className="border-b hover:bg-muted/20">
+                          <td className="w-8 px-2 py-2.5 text-center">
+                            <button
+                              onClick={() => setExpandedId(isExpanded ? null : row.id)}
+                              className="text-muted-foreground hover:text-foreground transition-colors"
+                              aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                            >
+                              {isExpanded
+                                ? <ChevronDown className="h-3.5 w-3.5" />
+                                : <ChevronRight className="h-3.5 w-3.5" />}
+                            </button>
+                          </td>
+                          <td className="px-4 py-2.5 tabular-nums">{formatDate(row.entryDate)}</td>
+                          <td className="px-4 py-2.5 capitalize">{row.platform}</td>
+                          <td className="px-4 py-2.5">{row.person}</td>
+                          <td className="px-4 py-2.5 text-right tabular-nums">{formatCurrency(row.grossEarnings)}</td>
+                          <td className="px-4 py-2.5 text-right tabular-nums">{formatCurrency(row.netIncome)}</td>
+                          <td className="px-4 py-2.5">
+                            <Badge variant="outline" className="text-xs capitalize">{row.paymentStatus}</Badge>
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <StatusBadge status={row.reviewStatus} />
+                            {row.rejectionReason && (
+                              <div className="text-[11px] text-muted-foreground mt-0.5 max-w-[160px] truncate" title={row.rejectionReason}>
+                                {row.rejectionReason}
                               </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                            )}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <span className="font-mono text-xs text-muted-foreground">{row.sourceRef}</span>
+                            <div className="text-[10px] text-muted-foreground/60">{row.sourceSystem}</div>
+                          </td>
+                          <td className="px-4 py-2.5 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+                            {formatDate(row.receivedAt)}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            {row.warnings && row.warnings.length > 0 ? (
+                              <div className="flex flex-col gap-1">
+                                {row.warnings.map((w, i) => (
+                                  <div key={i} className="flex items-start gap-1 text-[11px] text-amber-700">
+                                    <AlertTriangle className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                                    <span>{w}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                            )}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            {row.reviewStatus === "pending" && (
+                              <div className="flex flex-col gap-1.5">
+                                <div className="text-[11px] text-muted-foreground leading-tight">
+                                  Approving moves this record into live Gig Work and updates the weekly income rollup.
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 text-xs gap-1 text-red-700 border-red-200 hover:bg-red-50"
+                                    onClick={() => { setRejectingId(row.id); setRejectionReason(""); }}
+                                    disabled={approveMutation.isPending}
+                                  >
+                                    <XCircle className="h-3.5 w-3.5" /> Reject
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    className="h-7 text-xs gap-1 bg-green-700 hover:bg-green-800 text-white"
+                                    onClick={() => approveMutation.mutate(row.id)}
+                                    disabled={approveMutation.isPending}
+                                    title="Approve and move to Gig Work"
+                                  >
+                                    <CheckCheck className="h-3.5 w-3.5" /> Approve
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                            {row.reviewStatus === "rejected" && (
+                              <span className="text-xs text-muted-foreground">Rejected</span>
+                            )}
+                            {row.reviewStatus === "approved" && (
+                              <span className="text-xs text-green-700">Promoted</span>
+                            )}
+                            {row.reviewStatus === "duplicate" && (
+                              <span className="text-xs text-muted-foreground">Duplicate</span>
+                            )}
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="border-b bg-muted/10">
+                            <td colSpan={12} className="px-6 py-3">
+                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-2 text-xs">
+                                <div>
+                                  <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-medium">Tips</span>
+                                  <div className="tabular-nums font-medium mt-0.5">{formatCurrency(row.tips)}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-medium">Fees</span>
+                                  <div className="tabular-nums font-medium mt-0.5">{formatCurrency(row.fees)}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-medium">Fuel Estimate</span>
+                                  <div className="tabular-nums font-medium mt-0.5">{formatCurrency(row.fuelEstimate)}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-medium">Hours Worked</span>
+                                  <div className="mt-0.5">{row.hoursWorked ?? "—"}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-medium">Deliveries</span>
+                                  <div className="mt-0.5">{row.deliveriesCount ?? "—"}</div>
+                                </div>
+                                {(row.promotedGigEntryId != null || row.promotedAt != null) && (
+                                  <div>
+                                    <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-medium">Promoted Entry</span>
+                                    <div className="mt-0.5">
+                                      {row.promotedGigEntryId != null ? `#${row.promotedGigEntryId}` : "—"}
+                                      {row.promotedAt && (
+                                        <span className="text-muted-foreground ml-1">({formatDate(row.promotedAt)})</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                <div>
+                                  <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-medium">Created</span>
+                                  <div className="mt-0.5 text-muted-foreground">{formatDate(row.createdAt)}</div>
+                                </div>
+                                {row.notes && (
+                                  <div className="col-span-2 sm:col-span-3 md:col-span-4">
+                                    <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-medium">Notes</span>
+                                    <div className="mt-0.5 text-muted-foreground">{row.notes}</div>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
                         )}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        {row.reviewStatus === "pending" && (
-                          <div className="flex flex-col gap-1.5">
-                            <div className="text-[11px] text-muted-foreground leading-tight">
-                              Approving moves this record into live Gig Work and updates the weekly income rollup.
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs gap-1 text-red-700 border-red-200 hover:bg-red-50"
-                                onClick={() => { setRejectingId(row.id); setRejectionReason(""); }}
-                                disabled={approveMutation.isPending}
-                              >
-                                <XCircle className="h-3.5 w-3.5" /> Reject
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="h-7 text-xs gap-1 bg-green-700 hover:bg-green-800 text-white"
-                                onClick={() => approveMutation.mutate(row.id)}
-                                disabled={approveMutation.isPending}
-                                title="Approve and move to Gig Work"
-                              >
-                                <CheckCheck className="h-3.5 w-3.5" /> Approve
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        {row.reviewStatus === "rejected" && (
-                          <span className="text-xs text-muted-foreground">Rejected</span>
-                        )}
-                        {row.reviewStatus === "approved" && (
-                          <span className="text-xs text-green-700">Promoted</span>
-                        )}
-                        {row.reviewStatus === "duplicate" && (
-                          <span className="text-xs text-muted-foreground">Duplicate</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                      </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
