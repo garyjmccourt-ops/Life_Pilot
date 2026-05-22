@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { AlertTriangle, CheckCircle2, XCircle, CheckCheck, Info, RefreshCw, ExternalLink } from "lucide-react";
+import { AlertTriangle, CheckCircle2, XCircle, CheckCheck, RefreshCw } from "lucide-react";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -135,20 +135,12 @@ export default function GigImportQueue() {
         <div>
           <h1 className="font-serif text-2xl font-bold">Gig Import Queue</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Staged DoorDash / Gig_Pilot records awaiting review. No data has been written to live income records.
+            Staged DoorDash / Gig_Pilot records awaiting review. Approve to promote to Gig Work; Reject to dismiss with a reason.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-1.5 flex-shrink-0">
           <RefreshCw className="h-3.5 w-3.5" /> Refresh
         </Button>
-      </div>
-
-      {/* Notice banner */}
-      <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-md px-4 py-3 text-sm text-blue-800">
-        <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
-        <div>
-          <strong>Packet 1 — Staging only.</strong> Approve is visible but disabled. Promotion to Gig Work records will be enabled in a later packet once reviewed and explicitly approved.
-        </div>
       </div>
 
       {/* Stats row */}
@@ -302,13 +294,17 @@ export default function GigImportQueue() {
               The staged row will be marked as rejected and kept for audit purposes. It will not be deleted.
             </p>
             <div className="space-y-1">
-              <Label className="text-sm">Reason (optional)</Label>
+              <Label className="text-sm">Reason <span className="text-red-500">*</span></Label>
               <Input
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="e.g. duplicate entry, wrong week, incorrect amount"
                 className="text-sm"
+                autoFocus
               />
+              {rejectionReason.trim() === "" && (
+                <p className="text-[11px] text-muted-foreground">A reason is required before rejecting.</p>
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -316,7 +312,7 @@ export default function GigImportQueue() {
             <Button
               variant="destructive"
               onClick={() => rejectingId !== null && rejectMutation.mutate({ id: rejectingId, reason: rejectionReason })}
-              disabled={rejectMutation.isPending}
+              disabled={rejectMutation.isPending || rejectionReason.trim() === ""}
             >
               Confirm Reject
             </Button>

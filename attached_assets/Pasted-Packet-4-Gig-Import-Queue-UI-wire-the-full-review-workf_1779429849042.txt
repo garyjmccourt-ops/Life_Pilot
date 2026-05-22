@@ -1,0 +1,71 @@
+Packet 4 — Gig Import Queue UI: wire the full review workflow
+
+Goal:
+Make the Gig import staging queue fully operational by enabling approve and reject actions in the existing UI.
+
+Context:
+The backend endpoints are already implemented and transactionally safe:
+- PATCH /api/gig-imports/:id/approve
+- PATCH /api/gig-imports/:id/reject
+
+No backend work is required.
+
+Instructions:
+1. Inspect the existing GigImportQueue.tsx component.
+
+2. Remove the old Packet 1 staging-only banner/copy that says or implies:
+   - "Packet 1 — Staging only"
+   - "Approve is visible but disabled"
+   - any similar disabled-approve warning that is now outdated.
+
+3. Confirm the existing Approve button calls:
+
+   PATCH /api/gig-imports/:id/approve
+
+   If the approve mutation is already wired but disabled, enable it safely.
+
+4. Add a Reject action for each queued import item.
+
+5. The Reject flow should:
+   - open a small confirmation dialog or inline reject panel
+   - ask for a rejection reason
+   - require a non-empty rejectionReason before submitting
+   - call:
+
+     PATCH /api/gig-imports/:id/reject
+
+   with JSON body:
+
+     {
+       "rejectionReason": "<reason entered by user>"
+     }
+
+6. After either approve or reject succeeds:
+   - invalidate the existing gig imports queue query
+   - make sure the list re-fetches
+   - make sure visible queue counters update
+
+7. Optional, only if the app already has a toast system:
+   - show a success toast after approve
+   - show a success toast after reject
+   - show an error toast if either mutation fails
+
+8. Preserve the existing layout and styling unless a tiny adjustment is needed for the Reject button/dialog.
+
+Hard limits:
+- Do not change backend routes.
+- Do not change database schema.
+- Do not add migrations.
+- Do not change auth, permissions, sessions, or CORS.
+- Do not change import processing logic.
+- Do not rename API routes.
+- Do not touch unrelated pages.
+- Do not rebuild the queue component from scratch unless absolutely necessary.
+
+After implementation, stop and report:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Risks or assumptions
+6. Recommended next packet
