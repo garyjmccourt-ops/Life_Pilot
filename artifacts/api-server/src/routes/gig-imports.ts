@@ -232,14 +232,27 @@ router.patch("/gig-imports/:id/approve", async (req, res): Promise<void> => {
 
   try {
     const result = await db.transaction(async (tx) => {
-      // Re-read inside the transaction so concurrent approvals are caught.
-      const [row] = await tx
-        .select()
-        .from(gigIncomeImportsTable)
-        .where(eq(gigIncomeImportsTable.id, id));
+      // ── Atomic status transition ──────────────────────────────────────────
+      // Claim the row by updating reviewStatus from "pending" → "approved"
+      // in a single UPDATE statement.  Only one concurrent transaction can
+      // succeed because the WHERE clause is evaluated atomically; any other
+      // request that reaches this point will see 0 rows returned and take
+      // the sentinel path below.  If anything later in the transaction
+      // fails, the whole tx rolls back and reviewStatus reverts to "pending".
+      const [claimed] = await tx
+        .update(gigIncomeImportsTable)
+        .set({ reviewStatus: "approved" })
+        .where(
+          and(
+            eq(gigIncomeImportsTable.id, id),
+            eq(gigIncomeImportsTable.reviewStatus, "pending"),
+          ),
+        )
+        .returning();
 
-      if (!row || row.reviewStatus !== "pending") {
-        // Throw a sentinel so the outer catch can return 409 rather than 500.
+      if (!claimed) {
+        // Row is gone, already approved, rejected, or duplicate — all
+        // non-pending statuses fail the WHERE and return 0 rows.
         const err = new Error("ALREADY_APPROVED");
         (err as any).alreadyApproved = true;
         throw err;
@@ -247,26 +260,26 @@ router.patch("/gig-imports/:id/approve", async (req, res): Promise<void> => {
 
       // Build traceability note — source_system/source_ref have no
       // matching gig_entries column, so they travel in notes.
-      const traceNote = `[gig_pilot] source_ref: ${row.sourceRef} | source_system: ${row.sourceSystem}`;
-      const combinedNotes = row.notes
-        ? `${row.notes} | ${traceNote}`
+      const traceNote = `[gig_pilot] source_ref: ${claimed.sourceRef} | source_system: ${claimed.sourceSystem}`;
+      const combinedNotes = claimed.notes
+        ? `${claimed.notes} | ${traceNote}`
         : traceNote;
 
       // 1. Insert into gig_entries (all staging fields that have a column).
       const [gigEntry] = await tx
         .insert(gigEntriesTable)
         .values({
-          entryDate: row.entryDate,
-          platform: row.platform,
-          person: row.person,
-          grossEarnings: row.grossEarnings,
-          netIncome: row.netIncome,
-          tips: row.tips ?? "0",
-          fees: row.fees ?? "0",
-          fuelEstimate: row.fuelEstimate ?? "0",
-          hoursWorked: row.hoursWorked ?? null,
-          deliveriesCount: row.deliveriesCount ?? null,
-          paymentStatus: row.paymentStatus,
+          entryDate: claimed.entryDate,
+          platform: claimed.platform,
+          person: claimed.person,
+          grossEarnings: claimed.grossEarnings,
+          netIncome: claimed.netIncome,
+          tips: claimed.tips ?? "0",
+          fees: claimed.fees ?? "0",
+          fuelEstimate: claimed.fuelEstimate ?? "0",
+          hoursWorked: claimed.hoursWorked ?? null,
+          deliveriesCount: claimed.deliveriesCount ?? null,
+          paymentStatus: claimed.paymentStatus,
           notes: combinedNotes,
           fastPayAmount: "0",
           weeklyDepositAmount: "0",
@@ -285,12 +298,11 @@ router.patch("/gig-imports/:id/approve", async (req, res): Promise<void> => {
         .from(gigEntriesTable)
         .where(eq(gigEntriesTable.id, gigEntry.id));
 
-      // 4. Mark the staging row approved — only reached if all steps above
-      //    succeeded, so on any failure the whole block rolls back.
+      // 4. Write back promotedGigEntryId + promotedAt.  reviewStatus is
+      //    already "approved" from the atomic claim above.
       const [updatedStaging] = await tx
         .update(gigIncomeImportsTable)
         .set({
-          reviewStatus: "approved",
           promotedGigEntryId: gigEntry.id,
           promotedAt: new Date(),
         })
@@ -314,8 +326,7 @@ router.patch("/gig-imports/:id/approve", async (req, res): Promise<void> => {
   } catch (err: any) {
     if (err?.alreadyApproved) {
       res.status(409).json({
-        error: "Cannot approve: a concurrent request already approved this record",
-        currentReviewStatus: "approved",
+        error: "Import is no longer available for approval",
       });
       return;
     }
