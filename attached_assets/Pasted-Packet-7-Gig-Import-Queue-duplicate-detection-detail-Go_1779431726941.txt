@@ -1,0 +1,75 @@
+Packet 7 — Gig Import Queue: duplicate detection detail
+
+Goal:
+Show which existing gig entry a staged import duplicates when reviewStatus is "duplicate".
+
+Context:
+The Gig Import Queue can receive staged imports with:
+
+reviewStatus: "duplicate"
+
+The sourceRef is currently shown, but Gary and Sam cannot see which existing record was matched as the duplicate.
+
+Suggested field:
+The existing promotedGigEntryId field may already carry the original entry id for duplicate records.
+
+Instructions:
+1. Inspect the frontend GigImportQueue.tsx component and the data shape returned by GET /api/gig-imports.
+
+2. Inspect the backend gig import duplicate-detection logic only enough to confirm which field links a duplicate staged import to the existing gig entry.
+   Likely field:
+   promotedGigEntryId
+
+3. If GET /api/gig-imports already returns promotedGigEntryId, use it.
+
+4. If another duplicate-linkage field is already returned, use that instead and name it clearly in the implementation report.
+
+5. If no duplicate-linkage field is returned by GET /api/gig-imports, stop and report.
+   Do not add backend work in this packet.
+
+6. In the queue UI, when:
+
+   reviewStatus === "duplicate"
+
+   and a linked entry id is available, show a small badge or line:
+
+   Duplicates entry #<id>
+
+7. Placement:
+   Use whichever is safest in the current layout:
+   - in the Review/status cell, or
+   - in the expanded detail panel added in Packet 6
+
+8. If reviewStatus is "duplicate" but no linked id is available, show a quiet fallback:
+
+   Possible duplicate
+
+   Do not show undefined/null.
+
+9. Keep the badge/readout read-only.
+
+10. Preserve approve/reject behaviour exactly as-is.
+
+11. Preserve expand/collapse behaviour exactly as-is.
+
+12. Use existing Badge/status styling if available.
+    Avoid introducing a new styling system.
+
+Hard limits:
+- Do not change backend routes.
+- Do not change GET /api/gig-imports response shape.
+- Do not change duplicate-detection logic.
+- Do not change approve/reject endpoints.
+- Do not change database schema.
+- Do not add migrations.
+- Do not change auth, permissions, sessions, or CORS.
+- Do not touch unrelated Gig Pilot, Stored Value, BNPL, dashboard, or Money Life files.
+- Do not rebuild the queue component from scratch.
+
+After implementation, stop and report:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Risks or assumptions
+6. Recommended next packet
