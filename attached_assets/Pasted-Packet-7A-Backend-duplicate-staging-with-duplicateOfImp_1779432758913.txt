@@ -1,0 +1,71 @@
+Packet 7A — Backend duplicate staging with duplicateOfImportId
+
+Goal:
+Allow duplicate gig imports to appear in the staging queue as deliberate duplicate rows, linked to the original import row.
+
+Scope:
+- Add duplicateOfImportId integer column to gigIncomeImportsTable.
+- Replace the current full unique constraint/index on sourceSystem + sourceRef with a partial unique index that excludes reviewStatus = 'duplicate'.
+- Update import ingest logic so duplicate attempts are inserted as reviewStatus = 'duplicate'.
+- Set duplicateOfImportId to the original import row id.
+- Return duplicateOfImportId from GET /api/gig-imports.
+- No frontend changes in this packet.
+
+Instructions:
+1. Inspect the current gig import table/schema.
+
+2. Confirm the existing uniqueness constraint or index on:
+   sourceSystem + sourceRef
+
+3. Add nullable integer column:
+   duplicateOfImportId
+
+4. Create the required migration using the repo’s existing migration workflow.
+
+5. The migration should:
+   - add duplicateOfImportId
+   - drop the existing full unique constraint/index on sourceSystem + sourceRef
+   - create a partial unique index on sourceSystem + sourceRef where reviewStatus != 'duplicate'
+
+6. Preserve deduplication for normal rows:
+   - pending
+   - approved
+   - rejected
+   - any other non-duplicate status
+
+7. Allow deliberately marked duplicate rows to share sourceSystem + sourceRef.
+
+8. Inspect the current ingest logic using onConflictDoNothing().
+
+9. Replace silent duplicate ignore behaviour with explicit duplicate staging:
+   - Look up an existing non-duplicate import by sourceSystem + sourceRef.
+   - If no original exists, insert normally.
+   - If an original exists, insert a new row with:
+     reviewStatus = 'duplicate'
+     duplicateOfImportId = original.id
+   - Do not mutate the original row.
+   - Do not promote duplicate rows into the main gig entries table.
+
+10. Make sure duplicateOfImportId never points to the duplicate row itself.
+
+11. Update GET /api/gig-imports so each returned record includes:
+   duplicateOfImportId
+
+12. Add or update backend tests if existing test patterns are present.
+
+Hard limits:
+- Do not change frontend files.
+- Do not change approve endpoint behaviour.
+- Do not change reject endpoint behaviour.
+- Do not change auth, sessions, permissions, or CORS.
+- Do not alter unrelated tables.
+- Do not backfill existing data unless explicitly approved.
+- Do not touch Stored Value, BNPL, dashboard, or unrelated Money Life files.
+
+After implementation, stop and report:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Risks or assumptions
+6. Recommended next packet
