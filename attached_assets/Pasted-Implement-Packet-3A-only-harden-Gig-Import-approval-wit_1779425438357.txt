@@ -1,0 +1,73 @@
+Implement Packet 3A only: harden Gig Import approval with a DB transaction.
+
+Goal:
+Wrap PATCH /api/gig-imports/:id/approve in a database transaction so approving a staged Gig_Pilot import cannot leave MYOH in a half-promoted state.
+
+Important:
+This may affect the database/auth layer and needs express approval before implementation.
+
+Express approval for this packet:
+You may update the existing approve route in artifacts/api-server/src/routes/gig-imports.ts so the full approval flow runs inside a DB transaction.
+
+Do not implement bulk approve.
+Do not add GIG_PILOT_SHARED_SECRET yet.
+Do not stage real Gig_Pilot data yet.
+Do not change CORS.
+Do not change auth.
+Do not modify gig_entries schema.
+Do not modify income_entries schema.
+Do not modify weekly_entries.
+Do not modify budget records.
+Do not modify commercial Life Pilot.
+Do not push.
+Do not pull.
+
+Approval transaction must cover:
+1. Load pending staged row.
+2. Reject approval if review_status is not pending.
+3. Insert one row into gig_entries.
+4. Run the existing gig weekly income sync using the same transaction if the helper supports it.
+5. Update gig_income_imports:
+   - review_status = approved
+   - promoted_gig_entry_id = new gig_entries.id
+   - promoted_at = now
+6. Return the promoted gig entry id.
+
+Failure behaviour:
+If any step fails after the transaction starts:
+- no new gig_entries row should remain
+- staging row should remain pending
+- promoted_gig_entry_id should remain null
+- promoted_at should remain null
+- return a clear error response
+
+Double-click/idempotency behaviour:
+If the same staged row is approved twice:
+- second request must not create another gig_entries row
+- second request should return a safe message that the row is already approved or not pending
+
+Do not change syncGigWeekIncome logic.
+If the existing sync helper cannot accept a transaction safely, stop and report that limitation instead of making a risky workaround.
+
+Tests/checks:
+Run available API checks.
+Manually test:
+1. Approve one pending staged row successfully.
+2. Try approving the same row again.
+3. Confirm only one gig_entries row was created.
+4. Confirm the staging row is approved with promoted_gig_entry_id set.
+5. Confirm income_entries only changed through the existing gig sync pathway.
+6. Confirm no weekly_entries or budget records were directly changed.
+7. Confirm /api/gig/import-summary remains untouched.
+
+Hard stop after this packet.
+
+Report back with:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Whether the transaction wraps the gig sync
+6. Whether any income_entries changed via existing sync
+7. Risks or assumptions
+8. Recommended next packet

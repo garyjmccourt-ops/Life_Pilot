@@ -164,88 +164,121 @@ router.patch("/gig-imports/:id/approve", async (req, res): Promise<void> => {
     return;
   }
 
-  const [row] = await db
+  // Pre-flight read outside the transaction — avoids holding a tx open just
+  // to return a 404 or 409 for rows that are obviously not pending.
+  const [preCheck] = await db
     .select()
     .from(gigIncomeImportsTable)
     .where(eq(gigIncomeImportsTable.id, id));
 
-  if (!row) {
+  if (!preCheck) {
     res.status(404).json({ error: "Staged import not found" });
     return;
   }
-
-  // Prevent double-approval
-  if (row.reviewStatus !== "pending") {
+  if (preCheck.reviewStatus !== "pending") {
     res.status(409).json({
-      error: `Cannot approve: record is already "${row.reviewStatus}"`,
-      currentReviewStatus: row.reviewStatus,
-      promotedGigEntryId: row.promotedGigEntryId,
+      error: `Cannot approve: record is already "${preCheck.reviewStatus}"`,
+      currentReviewStatus: preCheck.reviewStatus,
+      promotedGigEntryId: preCheck.promotedGigEntryId,
     });
     return;
   }
 
-  // Build traceability note
-  const traceNote = `[gig_pilot] source_ref: ${row.sourceRef} | source_system: ${row.sourceSystem}`;
-  const combinedNotes = row.notes
-    ? `${row.notes} | ${traceNote}`
-    : traceNote;
+  try {
+    const result = await db.transaction(async (tx) => {
+      // Re-read inside the transaction so concurrent approvals are caught.
+      const [row] = await tx
+        .select()
+        .from(gigIncomeImportsTable)
+        .where(eq(gigIncomeImportsTable.id, id));
 
-  // Insert into gig_entries — maps all staging fields that have matching columns.
-  // Unmapped staging fields: source_system, source_ref → preserved in notes above.
-  const [gigEntry] = await db
-    .insert(gigEntriesTable)
-    .values({
-      entryDate: row.entryDate,
-      platform: row.platform,
-      person: row.person,
-      grossEarnings: row.grossEarnings,
-      netIncome: row.netIncome,
-      tips: row.tips ?? "0",
-      fees: row.fees ?? "0",
-      fuelEstimate: row.fuelEstimate ?? "0",
-      hoursWorked: row.hoursWorked ?? null,
-      deliveriesCount: row.deliveriesCount ?? null,
-      paymentStatus: row.paymentStatus,
-      notes: combinedNotes,
-      // Fields with no staging equivalent — left at column defaults
-      fastPayAmount: "0",
-      weeklyDepositAmount: "0",
-      otherExpenses: "0",
-    })
-    .returning();
+      if (!row || row.reviewStatus !== "pending") {
+        // Throw a sentinel so the outer catch can return 409 rather than 500.
+        const err = new Error("ALREADY_APPROVED");
+        (err as any).alreadyApproved = true;
+        throw err;
+      }
 
-  // Run the existing weekly income sync — this is identical to what happens
-  // when a shift is entered via the Gig Work UI (POST /api/gig).
-  const sync = await syncGigWeekIncome(gigEntry.entryDate);
+      // Build traceability note — source_system/source_ref have no
+      // matching gig_entries column, so they travel in notes.
+      const traceNote = `[gig_pilot] source_ref: ${row.sourceRef} | source_system: ${row.sourceSystem}`;
+      const combinedNotes = row.notes
+        ? `${row.notes} | ${traceNote}`
+        : traceNote;
 
-  // Re-fetch to pick up the incomeEntryId that sync just wrote back
-  const [refreshedGigEntry] = await db
-    .select()
-    .from(gigEntriesTable)
-    .where(eq(gigEntriesTable.id, gigEntry.id));
+      // 1. Insert into gig_entries (all staging fields that have a column).
+      const [gigEntry] = await tx
+        .insert(gigEntriesTable)
+        .values({
+          entryDate: row.entryDate,
+          platform: row.platform,
+          person: row.person,
+          grossEarnings: row.grossEarnings,
+          netIncome: row.netIncome,
+          tips: row.tips ?? "0",
+          fees: row.fees ?? "0",
+          fuelEstimate: row.fuelEstimate ?? "0",
+          hoursWorked: row.hoursWorked ?? null,
+          deliveriesCount: row.deliveriesCount ?? null,
+          paymentStatus: row.paymentStatus,
+          notes: combinedNotes,
+          fastPayAmount: "0",
+          weeklyDepositAmount: "0",
+          otherExpenses: "0",
+        })
+        .returning();
 
-  // Mark the staging row as approved
-  const [updatedStaging] = await db
-    .update(gigIncomeImportsTable)
-    .set({
-      reviewStatus: "approved",
-      promotedGigEntryId: gigEntry.id,
-      promotedAt: new Date(),
-    })
-    .where(eq(gigIncomeImportsTable.id, id))
-    .returning();
+      // 2. Run the existing weekly income sync inside the same transaction.
+      //    syncGigWeekIncome accepts an optional tx so every read/write it
+      //    performs is on the same connection and rolls back with the rest.
+      const sync = await syncGigWeekIncome(gigEntry.entryDate, tx);
 
-  res.status(200).json({
-    ok: true,
-    stagingRow: updatedStaging,
-    gigEntry: refreshedGigEntry,
-    weeklyIncome: {
-      incomeEntryId: sync.incomeEntryId,
-      weekEnding: sync.weekEnding,
-      isNew: sync.isNew,
-    },
-    note: "Record promoted to gig_entries. Weekly gig income rollup updated via existing sync pathway. income_entries updated only through sync, not directly.",
-  });
+      // 3. Re-fetch to pick up the incomeEntryId written back by sync.
+      const [refreshedGigEntry] = await tx
+        .select()
+        .from(gigEntriesTable)
+        .where(eq(gigEntriesTable.id, gigEntry.id));
+
+      // 4. Mark the staging row approved — only reached if all steps above
+      //    succeeded, so on any failure the whole block rolls back.
+      const [updatedStaging] = await tx
+        .update(gigIncomeImportsTable)
+        .set({
+          reviewStatus: "approved",
+          promotedGigEntryId: gigEntry.id,
+          promotedAt: new Date(),
+        })
+        .where(eq(gigIncomeImportsTable.id, id))
+        .returning();
+
+      return { stagingRow: updatedStaging, gigEntry: refreshedGigEntry, sync };
+    });
+
+    res.status(200).json({
+      ok: true,
+      stagingRow: result.stagingRow,
+      gigEntry: result.gigEntry,
+      weeklyIncome: {
+        incomeEntryId: result.sync.incomeEntryId,
+        weekEnding: result.sync.weekEnding,
+        isNew: result.sync.isNew,
+      },
+      note: "Record promoted to gig_entries. Weekly income rollup updated via existing sync pathway inside the same DB transaction. All steps committed atomically.",
+    });
+  } catch (err: any) {
+    if (err?.alreadyApproved) {
+      res.status(409).json({
+        error: "Cannot approve: a concurrent request already approved this record",
+        currentReviewStatus: "approved",
+      });
+      return;
+    }
+    // Any other error — transaction was rolled back automatically.
+    res.status(500).json({
+      error: "Approval failed — transaction rolled back, no records were changed",
+      detail: String(err?.message ?? err),
+    });
+  }
 });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

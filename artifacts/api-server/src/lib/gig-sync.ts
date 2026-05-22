@@ -9,6 +9,15 @@ import { eq, and, gte, lte } from "drizzle-orm";
 import { db, gigEntriesTable, incomeEntriesTable, incomeSourcesTable } from "@workspace/db";
 import { n } from "./calc";
 
+/**
+ * The transaction object Drizzle passes to db.transaction() callbacks.
+ * Derived directly from db so no extra imports are needed.
+ */
+type DrizzleTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/** Either the global db or an active transaction — both expose the same query API. */
+type DbOrTx = typeof db | DrizzleTx;
+
 /** Given any date string (YYYY-MM-DD), return the Monday and Sunday of that Mon–Sun week. */
 export function getWeekBounds(dateStr: string): { monday: string; sunday: string } {
   const date = new Date(dateStr + "T00:00:00Z");
@@ -41,18 +50,32 @@ export function fmtDate(dateStr: string): string {
  *
  * Returns the income entry id.
  */
-export async function syncGigWeekIncome(dateStr: string): Promise<{ incomeEntryId: number; weekEnding: string; isNew: boolean }> {
+/**
+ * Find-or-create a "Gig Work" income source, then find-or-create the weekly
+ * income entry for the week containing `dateStr`. Recalculates amounts from
+ * all gig entries in that Mon–Sun window and links them to the weekly entry.
+ *
+ * Pass `tx` (a Drizzle transaction) to run all operations inside that
+ * transaction. Omit `tx` (or pass undefined) to use the global `db`.
+ *
+ * Returns the income entry id.
+ */
+export async function syncGigWeekIncome(
+  dateStr: string,
+  tx?: DbOrTx,
+): Promise<{ incomeEntryId: number; weekEnding: string; isNew: boolean }> {
+  const qb = tx ?? db;
   const { monday, sunday } = getWeekBounds(dateStr);
   const tag = `gig_week:${sunday}`;
 
   // 1. Find or create the "Gig Work" income source
-  let [gigSource] = await db
+  let [gigSource] = await qb
     .select()
     .from(incomeSourcesTable)
     .where(eq(incomeSourcesTable.name, "Gig Work"));
 
   if (!gigSource) {
-    [gigSource] = await db
+    [gigSource] = await qb
       .insert(incomeSourcesTable)
       .values({
         name: "Gig Work",
@@ -64,7 +87,7 @@ export async function syncGigWeekIncome(dateStr: string): Promise<{ incomeEntryI
   }
 
   // 2. Sum all gig entries in this Mon–Sun window
-  const weekEntries = await db
+  const weekEntries = await qb
     .select()
     .from(gigEntriesTable)
     .where(and(
@@ -81,7 +104,7 @@ export async function syncGigWeekIncome(dateStr: string): Promise<{ incomeEntryI
   const sourceName = `Gig Work Week Ending ${fmtDate(sunday)}`;
 
   // 3. Find or create the weekly income entry (keyed by tag)
-  const [existing] = await db
+  const [existing] = await qb
     .select()
     .from(incomeEntriesTable)
     .where(eq(incomeEntriesTable.tags, tag));
@@ -90,7 +113,7 @@ export async function syncGigWeekIncome(dateStr: string): Promise<{ incomeEntryI
   let isNew = false;
 
   if (existing) {
-    const [updated] = await db
+    const [updated] = await qb
       .update(incomeEntriesTable)
       .set({
         sourceName,
@@ -104,7 +127,7 @@ export async function syncGigWeekIncome(dateStr: string): Promise<{ incomeEntryI
       .returning();
     weekIncomeId = updated.id;
   } else {
-    const [created] = await db
+    const [created] = await qb
       .insert(incomeEntriesTable)
       .values({
         dateReceived: sunday,
@@ -124,7 +147,7 @@ export async function syncGigWeekIncome(dateStr: string): Promise<{ incomeEntryI
 
   // 4. Link all gig entries in this week to the weekly income entry
   if (weekEntries.length > 0) {
-    await db
+    await qb
       .update(gigEntriesTable)
       .set({ incomeEntryId: weekIncomeId })
       .where(and(
