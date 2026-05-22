@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   CreditCard,
+  Inbox,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/income-bills", label: "Income & Bills", icon: Wallet },
   { href: "/gig-work", label: "Gig Work", icon: Bike },
+  { href: "/gig-imports", label: "Gig Imports", icon: Inbox },
   { href: "/family-budget", label: "Family Budget", icon: PieChart },
   { href: "/arrears", label: "Arrears", icon: AlertTriangle },
   { href: "/shopping", label: "Shopping", icon: ShoppingCart },

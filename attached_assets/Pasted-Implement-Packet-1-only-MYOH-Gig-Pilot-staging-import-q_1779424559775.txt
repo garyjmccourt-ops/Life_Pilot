@@ -1,0 +1,139 @@
+Implement Packet 1 only: MYOH Gig_Pilot staging import queue.
+
+Goal:
+Add a staging-only import flow so Gig_Pilot DoorDash income can land in MYOH for review without writing directly into live gig_entries, income_entries, budget records, weekly_entries, or household records.
+
+Important:
+This may affect the database/auth layer and needs express approval before implementation.
+
+Express approval for this packet:
+You may add a new staging table only.
+You may add additive route/page wiring only.
+You may not change existing live income, budget, auth, permissions, gig sync, importer, export, or CORS behaviour.
+
+Use Option B from the inspection report:
+Create a new dedicated /api/gig-imports route that always stages incoming Gig_Pilot records.
+
+Do not use or modify the existing /api/gig/import-summary endpoint.
+Do not modify artifacts/api-server/src/routes/gig.ts.
+Do not modify syncGigWeekIncome.
+Do not write into gig_entries on initial import.
+Do not write into income_entries.
+Do not update weekly_entries.
+Do not change app.ts CORS.
+Do not change auth.
+Do not push.
+Do not pull.
+
+Files to create:
+1. lib/db/src/schema/gigIncomeImports.ts
+2. artifacts/api-server/src/routes/gig-imports.ts
+3. artifacts/arrears-blueprint/src/pages/GigImportQueue.tsx
+
+Files to edit, additive only:
+1. lib/db/src/schema/index.ts
+   - export the new gigIncomeImports schema
+
+2. artifacts/api-server/src/routes/index.ts
+   - mount the new router at /gig-imports
+
+3. artifacts/arrears-blueprint/src/App.tsx
+   - add route for /gig-imports
+
+4. artifacts/arrears-blueprint/src/components/layout/Shell.tsx
+   - add a nav item under or near Gig Work labelled "Gig Imports"
+
+Staging table:
+Create gig_income_imports with fields suitable for staging only:
+
+- id
+- received_at
+- source_system
+- source_ref
+- entry_date
+- platform
+- person
+- gross_earnings
+- net_income
+- tips
+- fees
+- fuel_estimate
+- hours_worked
+- deliveries_count
+- payment_status
+- notes
+- review_status
+- promoted_gig_entry_id
+- promoted_at
+- rejection_reason
+- created_at
+
+Use review_status values:
+pending
+approved
+rejected
+duplicate
+
+Add a uniqueness/idempotency protection for source_system + source_ref if safe in Drizzle.
+
+API route:
+Create artifacts/api-server/src/routes/gig-imports.ts with:
+
+GET /api/gig-imports
+- list staged imports
+- default to pending first
+- include approved/rejected if query param requests it
+
+POST /api/gig-imports
+- stages incoming Gig_Pilot records only
+- accepts either one entry or a payload with entries[]
+- validates with Zod
+- requires source_system = "gig_pilot"
+- requires source_ref
+- validates person, platform, dates, amounts, payment_status
+- warns but does not reject if person is not Gary or Sam
+- detects duplicate source_system + source_ref
+- duplicate should not create a second pending import
+- do not write to gig_entries
+- do not write to income_entries
+
+PATCH /api/gig-imports/:id/reject
+- sets review_status = rejected
+- saves rejection_reason
+- does not delete the staged row
+
+PATCH /api/gig-imports/:id/approve
+- for this packet, do not promote to gig_entries yet
+- return a clear "approval promotion not implemented in this packet" response
+- leave the row pending or mark it only if no live table write is needed
+- promotion will be a later explicit packet
+
+Review UI:
+Create GigImportQueue page in MYOH only.
+
+Minimum UI:
+- table of staged imports
+- columns: entry_date, platform, person, gross_earnings, net_income, payment_status, review_status, received_at
+- show warning flags if available
+- show source_system and source_ref
+- reject action with reason
+- approve button may be visible but disabled or clearly marked "Approve in next packet"
+- no direct promotion in this packet
+
+Tests/checks:
+Run available typecheck, lint, build, or dev checks.
+Confirm API server starts.
+Confirm frontend route loads.
+Confirm POST /api/gig-imports stages data only.
+Confirm no rows are created in gig_entries or income_entries.
+Confirm existing /api/gig/import-summary still exists and was not changed.
+
+Hard stop after this packet.
+
+Report back with:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Risks or assumptions
+6. Recommended next packet

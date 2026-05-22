@@ -18,6 +18,7 @@ import shoppingRouter from "./shopping";
 import settingsRouter from "./settings";
 import bnplRouter from "./bnpl";
 import roadmapRouter from "./roadmap";
+import gigImportsRouter from "./gig-imports";
 
 const router: IRouter = Router();
 
@@ -40,5 +41,6 @@ router.use(shoppingRouter);
 router.use(settingsRouter);
 router.use(bnplRouter);
 router.use(roadmapRouter);
+router.use(gigImportsRouter);
 
 export default router;

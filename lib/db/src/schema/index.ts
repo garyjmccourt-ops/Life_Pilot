@@ -19,3 +19,4 @@ export * from "./storedValueItems";
 export * from "./storedValueTransactions";
 export * from "./gigProviders";
 export * from "./roadmapItems";
+export * from "./gigIncomeImports";

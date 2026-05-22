@@ -23,6 +23,7 @@ import Scenarios from "@/pages/Scenarios";
 import Settings from "@/pages/Settings";
 import Docs from "@/pages/Docs";
 import Bnpl from "@/pages/Bnpl";
+import GigImportQueue from "@/pages/GigImportQueue";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -55,6 +56,7 @@ function AppRouter() {
         <Route path="/settings" component={Settings} />
         <Route path="/docs" component={Docs} />
         <Route path="/bnpl" component={Bnpl} />
+        <Route path="/gig-imports" component={GigImportQueue} />
         <Route component={NotFound} />
       </Switch>
     </Shell>
