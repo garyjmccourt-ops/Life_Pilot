@@ -1,0 +1,75 @@
+Backend Packet 7A — Duplicate staging: store the row and linkage
+
+Goal:
+When a duplicate gig import arrives, keep a staged import row instead of silently doing nothing, and link it to the original import row.
+
+Scope:
+- Add duplicateOfImportId integer column to gigIncomeImportsTable.
+- Change duplicate import handling from onConflictDoNothing() to an upsert-style flow.
+- Duplicate rows should be stored with reviewStatus = "duplicate".
+- duplicateOfImportId should point to the original import row id based on sourceSystem + sourceRef.
+- Return duplicateOfImportId from GET /api/gig-imports.
+- No frontend changes in this packet.
+
+Instructions:
+1. Inspect the existing gig income import schema/table definition.
+   Find gigIncomeImportsTable.
+
+2. Add a nullable integer column:
+
+   duplicateOfImportId
+
+   It should reference the id of the original gig import row if the existing schema patterns support that safely.
+   If adding a formal foreign key would be inconsistent with the repo’s current style, add the nullable integer only and report the reason.
+
+3. Create the required migration using the project’s existing migration workflow.
+   Do not hand-edit production data.
+
+4. Inspect the current insert/import logic where onConflictDoNothing() is used for gig imports.
+
+5. Replace the silent duplicate ignore behaviour with a safe upsert-style approach.
+
+6. Matching rule:
+   A duplicate is identified by matching:
+
+   sourceSystem + sourceRef
+
+7. When an incoming import matches an existing row:
+   - keep or create/update a staging row for visibility
+   - set reviewStatus to "duplicate"
+   - set duplicateOfImportId to the original row id using a subquery or equivalent safe lookup
+   - do not promote it into the main gig entries table
+   - do not change the original row
+
+8. Be careful not to set duplicateOfImportId to the same row’s own id.
+   It must point to the original existing import row.
+
+9. If the current database constraint makes it impossible to store both the original and duplicate row with the same sourceSystem + sourceRef, stop and report the constraint issue.
+   Do not remove or weaken unique constraints without explicit approval.
+
+10. Update GET /api/gig-imports so returned import records include:
+
+   duplicateOfImportId
+
+11. Do not make frontend changes in this packet.
+
+12. Add or update tests if the repo has existing backend tests for gig import staging.
+
+Hard limits:
+- Do not change frontend files.
+- Do not change approve/reject behaviour.
+- Do not change promotion into main gig income entries.
+- Do not change auth, sessions, permissions, or CORS.
+- Do not alter unrelated tables.
+- Do not remove unique constraints unless explicitly approved.
+- Do not rename existing columns.
+- Do not backfill existing data unless explicitly approved.
+- Do not touch Stored Value, BNPL, dashboard, or unrelated Money Life files.
+
+After implementation, stop and report:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Risks or assumptions
+6. Recommended next packet
