@@ -682,6 +682,19 @@ export default function Bnpl() {
                         <div className="mt-1.5 w-full h-1.5 bg-muted rounded-full overflow-hidden">
                           <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(pct, 100)}%` }} />
                         </div>
+                        {sv.remainingBalance <= 0 && (
+                          <div className="mt-2 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded px-2.5 py-2 text-xs">
+                            <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-amber-500" />
+                            <div>
+                              <span className="font-medium text-amber-800">This card needs attention. </span>
+                              <span className="text-amber-700">
+                                {sv.remainingBalance < 0
+                                  ? "The stored value balance is below zero."
+                                  : "The stored value balance is now zero."}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                         {sv.expiryDate && (
                           <p className={`text-xs mt-1 ${expiring ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
                             {expiring ? "⚠️ " : ""}Expires: {sv.expiryDate}
