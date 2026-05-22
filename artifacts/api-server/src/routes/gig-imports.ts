@@ -6,6 +6,18 @@ import { syncGigWeekIncome } from "../lib/gig-sync";
 
 const router = Router();
 
+// ── Gig Pilot intake protection ───────────────────────────────────────────────
+// Read once at module load (i.e. server startup). If the secret is absent,
+// POST /api/gig-imports remains open — intentional for local/dev use.
+const GIG_PILOT_SHARED_SECRET = process.env.GIG_PILOT_SHARED_SECRET ?? "";
+
+if (!GIG_PILOT_SHARED_SECRET) {
+  console.warn(
+    "[Gig Pilot] GIG_PILOT_SHARED_SECRET is not set. " +
+    "POST /api/gig-imports intake protection is disabled for local/dev use.",
+  );
+}
+
 const KNOWN_PLATFORMS = ["doordash", "uber", "airtasker", "cash", "other"] as const;
 const KNOWN_PAYMENT_STATUSES = ["pending", "fast-paid", "deposited", "received"] as const;
 const KNOWN_REVIEW_STATUSES = ["pending", "approved", "rejected", "duplicate"] as const;
@@ -60,6 +72,15 @@ router.get("/gig-imports", async (req, res): Promise<void> => {
 
 // ── POST /gig-imports ─────────────────────────────────────────────────────────
 router.post("/gig-imports", async (req, res): Promise<void> => {
+  // Shared-secret guard — only enforced when the env var is set.
+  if (GIG_PILOT_SHARED_SECRET) {
+    const token = req.headers["x-gig-pilot-token"];
+    if (token !== GIG_PILOT_SHARED_SECRET) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+  }
+
   const parsed = PostBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Validation failed", issues: parsed.error.issues });
