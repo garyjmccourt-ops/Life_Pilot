@@ -1,0 +1,76 @@
+Packet 5B — Running balance column in the stored value transaction log
+
+Goal:
+Add a client-side running balance column to the stored value transaction log.
+
+Context:
+The transaction log already shows:
+- date
+- type
+- amount
+- description
+- notes
+
+The UI now warns when a stored value card balance is zero or negative. This packet helps users see which transaction caused that state.
+
+Instructions:
+1. Inspect the StoredValueTransactionLog component and confirm:
+   - the transaction data shape
+   - the transaction type values
+   - where startingValue is available
+   - the current visible sort order of the transaction log
+
+2. Add a new column labelled:
+
+   Balance
+
+3. Compute running balances client-side only.
+
+4. Calculation rule:
+   - Sort transactions ascending by date for calculation.
+   - Start from startingValue.
+   - Walk the sorted transactions in date order.
+   - For each transaction:
+     - top_up adds the amount
+     - spend subtracts the amount
+   - Store the balance after each transaction by transaction id.
+
+5. Display the calculated balance beside each transaction in the table.
+
+6. Keep the existing visible transaction order unless there is already a clear intended order.
+   Important:
+   - The calculation should use ascending date order.
+   - The display can remain in the existing table order.
+   - Match each displayed row to its calculated balance by transaction id.
+
+7. Highlight the Balance cell:
+   - normal styling when balance is above 0
+   - amber/attention styling when balance is exactly 0
+   - red/destructive styling when balance is below 0
+
+8. Use existing app styles or utility classes where available.
+   Do not introduce a new styling system.
+
+9. Use the existing currency formatting helper if one exists.
+
+10. If multiple transactions can share the same date, preserve a stable ordering using the existing array order or createdAt/id if available.
+    Do not change backend ordering.
+
+Hard limits:
+- Do not change backend routes.
+- Do not change database schema.
+- Do not add migrations.
+- Do not change stored value transaction creation logic.
+- Do not change stored value balance calculation source of truth.
+- Do not change auth, permissions, sessions, or CORS.
+- Do not persist the calculated running balance.
+- Do not touch unrelated money pages.
+- Do not rebuild the stored value screen.
+
+After implementation, stop and report:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Risks or assumptions
+6. Recommended next packet

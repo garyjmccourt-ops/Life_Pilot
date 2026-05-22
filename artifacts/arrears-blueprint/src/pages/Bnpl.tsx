@@ -331,6 +331,29 @@ function StoredValueTransactionLog({ sv }: { sv: StoredValueItem }) {
     });
   }
 
+  // Compute running balances client-side.
+  // Sort ascending by date then id for a stable walk; display order is unchanged.
+  const runningBalances = (() => {
+    const sorted = [...transactions].sort((a, b) =>
+      a.transactionDate !== b.transactionDate
+        ? a.transactionDate < b.transactionDate ? -1 : 1
+        : a.id - b.id,
+    );
+    const map = new Map<number, number>();
+    let bal = sv.startingValue;
+    for (const t of sorted) {
+      bal = t.type === "top_up" ? bal + t.amount : bal - t.amount;
+      map.set(t.id, bal);
+    }
+    return map;
+  })();
+
+  function balanceCellClass(b: number): string {
+    if (b < 0)  return "text-right font-medium text-red-600";
+    if (b === 0) return "text-right font-medium text-amber-600";
+    return "text-right font-medium";
+  }
+
   return (
     <div className="mt-3 border-t pt-3">
       <button
@@ -358,29 +381,34 @@ function StoredValueTransactionLog({ sv }: { sv: StoredValueItem }) {
                     <th className="text-left py-1 pr-2 font-medium">Date</th>
                     <th className="text-left py-1 pr-2 font-medium">Type</th>
                     <th className="text-right py-1 pr-2 font-medium">Amount</th>
+                    <th className="text-right py-1 pr-2 font-medium">Balance</th>
                     <th className="text-left py-1 pr-2 font-medium">Description</th>
                     <th className="text-left py-1 pr-2 font-medium">Notes</th>
                     <th className="py-1"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map(t => (
-                    <tr key={t.id} className="border-b border-muted/40">
-                      <td className="py-1 pr-2">{t.transactionDate}</td>
-                      <td className="py-1 pr-2">
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${TX_TYPE_COLORS[t.type] ?? "bg-gray-100 text-gray-600"}`}>
-                          {t.type === "top_up" ? "Top-up" : "Spend"}
-                        </span>
-                      </td>
-                      <td className="py-1 pr-2 text-right font-medium">{formatCurrency(t.amount)}</td>
-                      <td className="py-1 pr-2 text-muted-foreground">{t.description ?? "—"}</td>
-                      <td className="py-1 pr-2 text-muted-foreground italic">{t.notes ?? ""}</td>
-                      <td className="py-1 flex gap-0.5">
-                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => openEdit(t)}><Pencil className="h-3 w-3" /></Button>
-                        <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive" onClick={() => { if (confirm("Delete transaction?")) deleteTx.mutate(t.id); }}><Trash2 className="h-3 w-3" /></Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {transactions.map(t => {
+                    const bal = runningBalances.get(t.id) ?? 0;
+                    return (
+                      <tr key={t.id} className="border-b border-muted/40">
+                        <td className="py-1 pr-2">{t.transactionDate}</td>
+                        <td className="py-1 pr-2">
+                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${TX_TYPE_COLORS[t.type] ?? "bg-gray-100 text-gray-600"}`}>
+                            {t.type === "top_up" ? "Top-up" : "Spend"}
+                          </span>
+                        </td>
+                        <td className="py-1 pr-2 text-right font-medium">{formatCurrency(t.amount)}</td>
+                        <td className={`py-1 pr-2 ${balanceCellClass(bal)}`}>{formatCurrency(bal)}</td>
+                        <td className="py-1 pr-2 text-muted-foreground">{t.description ?? "—"}</td>
+                        <td className="py-1 pr-2 text-muted-foreground italic">{t.notes ?? ""}</td>
+                        <td className="py-1 flex gap-0.5">
+                          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => openEdit(t)}><Pencil className="h-3 w-3" /></Button>
+                          <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive" onClick={() => { if (confirm("Delete transaction?")) deleteTx.mutate(t.id); }}><Trash2 className="h-3 w-3" /></Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
