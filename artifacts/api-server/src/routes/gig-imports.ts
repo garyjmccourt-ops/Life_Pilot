@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import { db, gigIncomeImportsTable } from "@workspace/db";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { db, gigIncomeImportsTable, gigEntriesTable } from "@workspace/db";
+import { eq, desc, inArray } from "drizzle-orm";
+import { syncGigWeekIncome } from "../lib/gig-sync";
 
 const router = Router();
 
@@ -173,11 +174,77 @@ router.patch("/gig-imports/:id/approve", async (req, res): Promise<void> => {
     return;
   }
 
+  // Prevent double-approval
+  if (row.reviewStatus !== "pending") {
+    res.status(409).json({
+      error: `Cannot approve: record is already "${row.reviewStatus}"`,
+      currentReviewStatus: row.reviewStatus,
+      promotedGigEntryId: row.promotedGigEntryId,
+    });
+    return;
+  }
+
+  // Build traceability note
+  const traceNote = `[gig_pilot] source_ref: ${row.sourceRef} | source_system: ${row.sourceSystem}`;
+  const combinedNotes = row.notes
+    ? `${row.notes} | ${traceNote}`
+    : traceNote;
+
+  // Insert into gig_entries — maps all staging fields that have matching columns.
+  // Unmapped staging fields: source_system, source_ref → preserved in notes above.
+  const [gigEntry] = await db
+    .insert(gigEntriesTable)
+    .values({
+      entryDate: row.entryDate,
+      platform: row.platform,
+      person: row.person,
+      grossEarnings: row.grossEarnings,
+      netIncome: row.netIncome,
+      tips: row.tips ?? "0",
+      fees: row.fees ?? "0",
+      fuelEstimate: row.fuelEstimate ?? "0",
+      hoursWorked: row.hoursWorked ?? null,
+      deliveriesCount: row.deliveriesCount ?? null,
+      paymentStatus: row.paymentStatus,
+      notes: combinedNotes,
+      // Fields with no staging equivalent — left at column defaults
+      fastPayAmount: "0",
+      weeklyDepositAmount: "0",
+      otherExpenses: "0",
+    })
+    .returning();
+
+  // Run the existing weekly income sync — this is identical to what happens
+  // when a shift is entered via the Gig Work UI (POST /api/gig).
+  const sync = await syncGigWeekIncome(gigEntry.entryDate);
+
+  // Re-fetch to pick up the incomeEntryId that sync just wrote back
+  const [refreshedGigEntry] = await db
+    .select()
+    .from(gigEntriesTable)
+    .where(eq(gigEntriesTable.id, gigEntry.id));
+
+  // Mark the staging row as approved
+  const [updatedStaging] = await db
+    .update(gigIncomeImportsTable)
+    .set({
+      reviewStatus: "approved",
+      promotedGigEntryId: gigEntry.id,
+      promotedAt: new Date(),
+    })
+    .where(eq(gigIncomeImportsTable.id, id))
+    .returning();
+
   res.status(200).json({
-    ok: false,
-    id,
-    message: "Approval and promotion to gig_entries is not implemented in Packet 1. The staged row has not been modified. Promotion will be implemented in a later explicit packet.",
-    currentReviewStatus: row.reviewStatus,
+    ok: true,
+    stagingRow: updatedStaging,
+    gigEntry: refreshedGigEntry,
+    weeklyIncome: {
+      incomeEntryId: sync.incomeEntryId,
+      weekEnding: sync.weekEnding,
+      isNew: sync.isNew,
+    },
+    note: "Record promoted to gig_entries. Weekly gig income rollup updated via existing sync pathway. income_entries updated only through sync, not directly.",
   });
 });
 

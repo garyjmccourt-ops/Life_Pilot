@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { AlertTriangle, CheckCircle2, XCircle, Clock, Info, RefreshCw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, XCircle, CheckCheck, Info, RefreshCw, ExternalLink } from "lucide-react";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -76,6 +76,32 @@ export default function GigImportQueue() {
       const res = await fetch(`${BASE}api/gig-imports${showAll ? "?all=true" : ""}`);
       if (!res.ok) throw new Error("Failed to load staged imports");
       return res.json();
+    },
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`${BASE}api/gig-imports/${id}/approve`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Approve failed");
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Record approved and promoted",
+        description: `Moved to Gig Work (entry #${data.gigEntry?.id}). Weekly rollup updated for week ending ${data.weeklyIncome?.weekEnding ?? "—"}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["gig-imports"] });
+      queryClient.invalidateQueries({ queryKey: ["gig"] });
+      queryClient.invalidateQueries({ queryKey: ["income-entries"] });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Approve failed", description: err.message, variant: "destructive" });
     },
   });
 
@@ -220,24 +246,30 @@ export default function GigImportQueue() {
                       </td>
                       <td className="px-4 py-2.5">
                         {row.reviewStatus === "pending" && (
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-xs gap-1 text-red-700 border-red-200 hover:bg-red-50"
-                              onClick={() => { setRejectingId(row.id); setRejectionReason(""); }}
-                            >
-                              <XCircle className="h-3.5 w-3.5" /> Reject
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-xs gap-1 opacity-40 cursor-not-allowed"
-                              disabled
-                              title="Approve will be enabled in the next packet"
-                            >
-                              <Clock className="h-3.5 w-3.5" /> Approve (next packet)
-                            </Button>
+                          <div className="flex flex-col gap-1.5">
+                            <div className="text-[11px] text-muted-foreground leading-tight">
+                              Approving moves this record into live Gig Work and updates the weekly income rollup.
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs gap-1 text-red-700 border-red-200 hover:bg-red-50"
+                                onClick={() => { setRejectingId(row.id); setRejectionReason(""); }}
+                                disabled={approveMutation.isPending}
+                              >
+                                <XCircle className="h-3.5 w-3.5" /> Reject
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="h-7 text-xs gap-1 bg-green-700 hover:bg-green-800 text-white"
+                                onClick={() => approveMutation.mutate(row.id)}
+                                disabled={approveMutation.isPending}
+                                title="Approve and move to Gig Work"
+                              >
+                                <CheckCheck className="h-3.5 w-3.5" /> Approve
+                              </Button>
+                            </div>
                           </div>
                         )}
                         {row.reviewStatus === "rejected" && (

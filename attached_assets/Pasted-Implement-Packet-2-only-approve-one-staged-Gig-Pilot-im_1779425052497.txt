@@ -1,0 +1,95 @@
+Implement Packet 2 only: approve one staged Gig_Pilot import into MYOH gig_entries.
+
+Goal:
+Allow Gary to approve one pending staged Gig_Pilot record at a time from gig_income_imports into the existing MYOH gig_entries table.
+
+Important:
+This may affect the database/auth layer and needs express approval before implementation.
+
+Express approval for this packet:
+You may implement single-record approval from gig_income_imports into gig_entries.
+You may call the existing gig weekly income sync if it is already exported/reusable safely.
+You may update the staged row with review_status = approved, promoted_gig_entry_id, and promoted_at.
+You may update the Gig Import Queue UI so the Approve button works for one row at a time.
+
+Do not implement bulk approve yet.
+Do not change syncGigWeekIncome logic.
+Do not modify artifacts/api-server/src/routes/gig.ts unless absolutely required.
+Do not modify import.ts.
+Do not modify export.ts.
+Do not modify app.ts, CORS, auth, or permissions.
+Do not modify existing database schemas except if a tiny additive fix is required and clearly reported.
+Do not create or modify budget records directly.
+Do not create income_entries directly except through the existing approved gig sync behaviour.
+Do not update weekly_entries directly.
+Do not push.
+Do not pull.
+
+Approval behaviour:
+PATCH /api/gig-imports/:id/approve should:
+
+1. Load the staged import row.
+2. Reject approval if review_status is not pending.
+3. Insert one matching row into gig_entries using the staged data.
+4. Use the existing gig sync pathway so MYOH’s normal weekly gig income rollup behaviour runs.
+5. Update gig_income_imports:
+   - review_status = approved
+   - promoted_gig_entry_id = new gig_entries.id
+   - promoted_at = now
+6. Return the approved staging row and promoted gig entry id.
+7. Prevent double approval if the endpoint is clicked twice.
+
+Mapping guidance:
+- entry_date → gig_entries.entry_date
+- platform → gig_entries.platform
+- person → gig_entries.person
+- gross_earnings → gig_entries.gross_earnings
+- net_income → gig_entries.net_income
+- tips → matching field if one exists, otherwise include in notes/warnings
+- fees → matching field if one exists, otherwise include in notes/warnings
+- fuel_estimate → matching field if one exists, otherwise include in notes/warnings
+- hours_worked → matching field if one exists
+- deliveries_count → matching field if one exists
+- payment_status → gig_entries.payment_status
+- notes → include original notes plus source_system/source_ref for traceability
+
+If a staged field has no matching gig_entries column:
+Do not alter gig_entries schema in this packet.
+Preserve the information in notes if safe.
+Report any unmapped fields.
+
+UI behaviour:
+On GigImportQueue:
+- Enable Approve for pending rows only.
+- Keep Reject working.
+- After approval, refresh the queue.
+- Show approved status and promoted gig entry id when ?all=true or equivalent view is used.
+- Do not add bulk approve yet.
+- Add clear copy that approval moves the record into live Gig Work and may update the weekly gig income rollup.
+
+Tests/checks:
+Run available API and frontend checks.
+Manually test with the existing pending Sam record if safe.
+Confirm approving one pending row:
+- creates exactly one gig_entries row
+- updates the staging row to approved
+- sets promoted_gig_entry_id
+- does not create duplicates if approve is clicked twice
+- uses the existing gig sync behaviour
+- does not write directly to budget records
+- does not update weekly_entries directly
+- does not modify /api/gig/import-summary
+
+Before finishing:
+Report whether income_entries changed as a result of the existing gig sync. That is acceptable only if it happened through the existing gig sync pathway, not by new direct code in gig-imports.ts.
+
+Hard stop after this packet.
+
+Report back with:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Whether any income_entries were created/updated by existing sync
+6. Risks or assumptions
+7. Recommended next packet
