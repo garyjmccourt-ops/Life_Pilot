@@ -134,6 +134,7 @@ function BnplScheduleSection({ item }: { item: BnplItem }) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["bnpl-schedule", item.id] });
+      qc.invalidateQueries({ queryKey: ["bnpl"] });
       setEntryOpen(false);
       toast({ title: entryId ? "Entry updated" : "Entry added" });
     },
@@ -142,7 +143,11 @@ function BnplScheduleSection({ item }: { item: BnplItem }) {
 
   const deleteEntry = useMutation({
     mutationFn: (id: number) => fetch(`${BASE}api/bnpl-schedule/${id}`, { method: "DELETE" }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["bnpl-schedule", item.id] }); toast({ title: "Entry deleted" }); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["bnpl-schedule", item.id] });
+      qc.invalidateQueries({ queryKey: ["bnpl"] });
+      toast({ title: "Entry deleted" });
+    },
   });
 
   function openNew() {
@@ -168,8 +173,16 @@ function BnplScheduleSection({ item }: { item: BnplItem }) {
     });
   }
 
+  const hasPaidEntries = entries.some(e => e.status === "paid");
+
   return (
     <div className="mt-3 border-t pt-3">
+      {hasPaidEntries && (
+        <p className="text-[10px] text-emerald-600 mb-1.5 flex items-center gap-1">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          Balance recalculated from payments
+        </p>
+      )}
       <button
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full text-left"

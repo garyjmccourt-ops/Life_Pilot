@@ -145,6 +145,16 @@ router.patch("/bnpl-schedule/:id", async (req, res): Promise<void> => {
   if (v.notes !== undefined) updates.notes = v.notes ?? null;
   const [row] = await db.update(bnplScheduleEntriesTable).set(updates).where(eq(bnplScheduleEntriesTable.id, id)).returning();
   if (!row) { res.status(404).json({ error: "Not found" }); return; }
+
+  // Recalculate parent BNPL item's remaining balance from all paid schedule entries
+  const allEntries = await db.select().from(bnplScheduleEntriesTable).where(eq(bnplScheduleEntriesTable.bnplItemId, row.bnplItemId));
+  const paidSum = allEntries.filter(e => e.status === "paid").reduce((s, e) => s + n(e.amount), 0);
+  const [parentItem] = await db.select().from(bnplItemsTable).where(eq(bnplItemsTable.id, row.bnplItemId));
+  if (parentItem) {
+    const newBalance = Math.max(0, n(parentItem.originalAmount) - paidSum);
+    await db.update(bnplItemsTable).set({ remainingBalance: String(newBalance) }).where(eq(bnplItemsTable.id, row.bnplItemId));
+  }
+
   res.json({ ...row, amount: n(row.amount) });
 });
 
