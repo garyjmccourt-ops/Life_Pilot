@@ -1,4 +1,5 @@
-import { pgTable, serial, text, numeric, integer, date, timestamp, unique } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, numeric, integer, date, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const gigIncomeImportsTable = pgTable("gig_income_imports", {
   id: serial("id").primaryKey(),
@@ -21,10 +22,13 @@ export const gigIncomeImportsTable = pgTable("gig_income_imports", {
   promotedGigEntryId: integer("promoted_gig_entry_id"),
   promotedAt: timestamp("promoted_at"),
   rejectionReason: text("rejection_reason"),
+  duplicateOfImportId: integer("duplicate_of_import_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => ({
-  sourceUnique: unique("gig_income_imports_source_unique").on(table.sourceSystem, table.sourceRef),
-}));
+}, (table) => [
+  uniqueIndex("gig_income_imports_source_unique")
+    .on(table.sourceSystem, table.sourceRef)
+    .where(sql`${table.reviewStatus} <> 'duplicate'`),
+]);
 
 export type GigIncomeImportRow = typeof gigIncomeImportsTable.$inferSelect;
 export type GigIncomeImportInsert = typeof gigIncomeImportsTable.$inferInsert;

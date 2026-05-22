@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { db, gigIncomeImportsTable, gigEntriesTable } from "@workspace/db";
-import { eq, desc, inArray } from "drizzle-orm";
+import { eq, desc, inArray, and, ne } from "drizzle-orm";
 import { syncGigWeekIncome } from "../lib/gig-sync";
 
 const router = Router();
@@ -110,31 +110,52 @@ router.post("/gig-imports", async (req, res): Promise<void> => {
         warnings.push("entryDate is more than 12 months ago");
       }
 
-      const [inserted] = await db
-        .insert(gigIncomeImportsTable)
-        .values({
-          sourceSystem: entry.sourceSystem,
-          sourceRef: entry.sourceRef,
-          entryDate: entry.entryDate,
-          platform: entry.platform,
-          person: entry.person,
-          grossEarnings: String(entry.grossEarnings),
-          netIncome: String(entry.netIncome),
-          tips: String(entry.tips ?? 0),
-          fees: String(entry.fees ?? 0),
-          fuelEstimate: String(entry.fuelEstimate ?? 0),
-          hoursWorked: entry.hoursWorked != null ? String(entry.hoursWorked) : null,
-          deliveriesCount: entry.deliveriesCount ?? null,
-          paymentStatus: entry.paymentStatus,
-          notes: entry.notes ?? null,
-          reviewStatus: "pending",
-        })
-        .onConflictDoNothing()
-        .returning();
+      // Look up any existing non-duplicate row with the same (sourceSystem, sourceRef).
+      const [existing] = await db
+        .select({ id: gigIncomeImportsTable.id })
+        .from(gigIncomeImportsTable)
+        .where(
+          and(
+            eq(gigIncomeImportsTable.sourceSystem, entry.sourceSystem),
+            eq(gigIncomeImportsTable.sourceRef, entry.sourceRef),
+            ne(gigIncomeImportsTable.reviewStatus, "duplicate"),
+          ),
+        )
+        .limit(1);
 
-      if (!inserted) {
-        results.push({ sourceRef: entry.sourceRef, status: "duplicate" });
+      const importValues = {
+        sourceSystem: entry.sourceSystem,
+        sourceRef: entry.sourceRef,
+        entryDate: entry.entryDate,
+        platform: entry.platform,
+        person: entry.person,
+        grossEarnings: String(entry.grossEarnings),
+        netIncome: String(entry.netIncome),
+        tips: String(entry.tips ?? 0),
+        fees: String(entry.fees ?? 0),
+        fuelEstimate: String(entry.fuelEstimate ?? 0),
+        hoursWorked: entry.hoursWorked != null ? String(entry.hoursWorked) : null,
+        deliveriesCount: entry.deliveriesCount ?? null,
+        paymentStatus: entry.paymentStatus,
+        notes: entry.notes ?? null,
+      };
+
+      if (existing) {
+        // A canonical row already exists — stage a duplicate row pointing to it.
+        const [dupeRow] = await db
+          .insert(gigIncomeImportsTable)
+          .values({
+            ...importValues,
+            reviewStatus: "duplicate",
+            duplicateOfImportId: existing.id,
+          })
+          .returning();
+        results.push({ sourceRef: entry.sourceRef, status: "duplicate", id: dupeRow.id });
       } else {
+        const [inserted] = await db
+          .insert(gigIncomeImportsTable)
+          .values({ ...importValues, reviewStatus: "pending" })
+          .returning();
         results.push({ sourceRef: entry.sourceRef, status: "staged", id: inserted.id, warnings });
       }
     } catch (err) {

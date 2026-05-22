@@ -1,0 +1,84 @@
+Backend Packet 7A — Path A duplicate staging with partial unique index
+
+Goal:
+Allow deliberately marked duplicate gig import rows to be stored in the staging table, while preserving deduplication for normal pending/approved/rejected imports.
+
+Scope:
+- Add duplicateOfImportId integer column to gigIncomeImportsTable.
+- Drop the existing full unique constraint/index on sourceSystem + sourceRef.
+- Replace it with a partial unique index on sourceSystem + sourceRef where reviewStatus != 'duplicate'.
+- Update ingest logic so duplicate imports are inserted as reviewStatus = 'duplicate'.
+- Set duplicateOfImportId to the original import row id.
+- Return duplicateOfImportId from GET /api/gig-imports.
+- No frontend changes in this packet.
+
+Instructions:
+1. Inspect the current gigIncomeImportsTable schema and current migration state.
+
+2. Confirm the existing uniqueness constraint or index that enforces uniqueness on:
+
+   sourceSystem + sourceRef
+
+3. Add nullable integer column:
+
+   duplicateOfImportId
+
+   Use the repo’s existing column naming style.
+
+4. Create a migration that:
+   - adds duplicateOfImportId
+   - drops the current full unique constraint/index on sourceSystem + sourceRef
+   - creates a partial unique index on sourceSystem + sourceRef for non-duplicate records only
+
+   Target behaviour:
+   - pending/approved/rejected records remain deduplicated
+   - duplicate records can share sourceSystem + sourceRef intentionally
+
+5. Use the database’s supported partial-index syntax.
+   For PostgreSQL-style syntax, the intended shape is:
+
+   CREATE UNIQUE INDEX ... 
+   ON gig_income_imports (source_system, source_ref)
+   WHERE review_status <> 'duplicate';
+
+   Adjust names to match the actual table/column names.
+
+6. Inspect the ingest logic currently using onConflictDoNothing().
+
+7. Replace silent duplicate ignore behaviour with explicit duplicate staging.
+
+8. Ingest behaviour:
+   - First look up the original existing non-duplicate import row by sourceSystem + sourceRef.
+   - If no original exists, insert the import normally.
+   - If an original exists, insert a new staging row with:
+     reviewStatus = 'duplicate'
+     duplicateOfImportId = original.id
+   - Do not promote the duplicate into the main gig entries table.
+   - Do not update or mutate the original row.
+
+9. Make sure duplicateOfImportId never points to the duplicate row itself.
+
+10. Update GET /api/gig-imports to include:
+
+   duplicateOfImportId
+
+11. Add or update tests if the repo already has backend import tests.
+
+12. Do not make frontend changes in this packet.
+
+Hard limits:
+- Do not change frontend files.
+- Do not change approve/reject route behaviour.
+- Do not change auth, sessions, permissions, or CORS.
+- Do not alter unrelated tables.
+- Do not backfill existing production-like data unless explicitly approved.
+- Do not change main gig entry promotion logic except to prevent duplicates from being promoted.
+- Do not touch Stored Value, BNPL, dashboard, or unrelated Money Life files.
+
+After implementation, stop and report:
+1. Changed files
+2. What was completed
+3. What was not touched
+4. Tests/checks run
+5. Risks or assumptions
+6. Recommended next packet
