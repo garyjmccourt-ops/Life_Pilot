@@ -35,6 +35,7 @@ type GigImport = {
   promotedGigEntryId: number | null;
   promotedAt: string | null;
   rejectionReason: string | null;
+  duplicateOfImportId: number | null;
   createdAt: string;
   warnings: string[];
 };
@@ -225,6 +226,13 @@ export default function GigImportQueue() {
                           </td>
                           <td className="px-4 py-2.5">
                             <StatusBadge status={row.reviewStatus} />
+                            {row.reviewStatus === "duplicate" && (
+                              <div className="text-[11px] text-muted-foreground mt-0.5">
+                                {row.duplicateOfImportId != null
+                                  ? `Duplicates import #${row.duplicateOfImportId}`
+                                  : "Possible duplicate"}
+                              </div>
+                            )}
                             {row.rejectionReason && (
                               <div className="text-[11px] text-muted-foreground mt-0.5 max-w-[160px] truncate" title={row.rejectionReason}>
                                 {row.rejectionReason}
@@ -323,6 +331,16 @@ export default function GigImportQueue() {
                                       {row.promotedAt && (
                                         <span className="text-muted-foreground ml-1">({formatDate(row.promotedAt)})</span>
                                       )}
+                                    </div>
+                                  </div>
+                                )}
+                                {row.reviewStatus === "duplicate" && (
+                                  <div>
+                                    <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-medium">Original Import</span>
+                                    <div className="mt-0.5">
+                                      {row.duplicateOfImportId != null
+                                        ? `Import #${row.duplicateOfImportId}`
+                                        : "Possible duplicate"}
                                     </div>
                                   </div>
                                 )}
