@@ -8,6 +8,8 @@ import {
   incomeEntriesTable,
   tasksTable,
   gigEntriesTable,
+  bnplItemsTable,
+  storedValueItemsTable,
 } from "@workspace/db";
 import { n, toWeekly } from "../lib/calc";
 
@@ -26,7 +28,7 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
   const weekStart = monday.toISOString().slice(0, 10);
   const weekEnd = sunday.toISOString().slice(0, 10);
 
-  const [income, bills, arrears, tasks, gigEntries, weekIncomeEntries] = await Promise.all([
+  const [income, bills, arrears, tasks, gigEntries, weekIncomeEntries, bnplItems, storedValueItems] = await Promise.all([
     db.select().from(incomeSourcesTable),
     db.select().from(billsTable),
     db.select().from(arrearsItemsTable),
@@ -34,6 +36,8 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
     db.select().from(gigEntriesTable),
     db.select().from(incomeEntriesTable)
       .where(and(gte(incomeEntriesTable.dateReceived, weekStart), lte(incomeEntriesTable.dateReceived, weekEnd))),
+    db.select().from(bnplItemsTable),
+    db.select().from(storedValueItemsTable),
   ]);
 
   const weeklyIncome =
@@ -73,6 +77,19 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
     (a) => a.riskLevel === "high" && a.status !== "completed",
   ).length;
 
+  const bnplWeeklyCommitment =
+    Math.round(
+      bnplItems
+        .filter((b) => b.status === "active")
+        .reduce((s, b) => s + toWeekly(n(b.instalmentAmount), b.instalmentFrequency), 0) * 100,
+    ) / 100;
+  const storedValueAvailable =
+    Math.round(
+      storedValueItems.reduce((s, v) => s + n(v.remainingBalance), 0) * 100,
+    ) / 100;
+  const adjustedWeeklySurplus =
+    Math.round((weeklySurplus - bnplWeeklyCommitment + storedValueAvailable) * 100) / 100;
+
   // Calculate gig income from last 7 days — exclude entries already linked to an income record
   // (those are counted via income_entries to avoid double-counting)
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
@@ -108,6 +125,9 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
     highRiskCount,
     weeklyGigIncome,
     pendingGigPayout,
+    bnplWeeklyCommitment,
+    storedValueAvailable,
+    adjustedWeeklySurplus,
   });
 });
 

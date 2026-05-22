@@ -130,24 +130,26 @@ function SummaryCards() {
           <TrendingDown className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(summary.weeklyOut)}</div>
+          <div className="text-2xl font-bold">{formatCurrency(summary.weeklyOut + summary.bnplWeeklyCommitment)}</div>
           <p className="text-xs text-muted-foreground mt-1">
-            Bills: {formatCurrency(summary.weeklyBills)} | Arrears: {formatCurrency(summary.weeklyArrears)}
+            Bills: {formatCurrency(summary.weeklyBills)} | Arrears: {formatCurrency(summary.weeklyArrears)} | BNPL: {formatCurrency(summary.bnplWeeklyCommitment)}
           </p>
         </CardContent>
       </Card>
 
-      <Card className={summary.weeklySurplus >= 0 ? "bg-primary/5 border-primary/20" : "bg-destructive/5 border-destructive/20"}>
+      <Card className={summary.adjustedWeeklySurplus >= 0 ? "bg-primary/5 border-primary/20" : "bg-destructive/5 border-destructive/20"}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Weekly Surplus</CardTitle>
-          <Wallet className={summary.weeklySurplus >= 0 ? "h-4 w-4 text-primary" : "h-4 w-4 text-destructive"} />
+          <Wallet className={summary.adjustedWeeklySurplus >= 0 ? "h-4 w-4 text-primary" : "h-4 w-4 text-destructive"} />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${summary.weeklySurplus >= 0 ? "text-primary" : "text-destructive"}`}>
-            {formatCurrency(summary.weeklySurplus)}
+          <div className={`text-2xl font-bold ${summary.adjustedWeeklySurplus >= 0 ? "text-primary" : "text-destructive"}`}>
+            {formatCurrency(summary.adjustedWeeklySurplus)}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Available buffer
+            {summary.storedValueAvailable > 0
+              ? `After BNPL & ${formatCurrency(summary.storedValueAvailable)} stored value`
+              : "After BNPL commitments"}
           </p>
         </CardContent>
       </Card>

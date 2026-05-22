@@ -956,6 +956,9 @@ export interface DashboardSummary {
   highRiskCount: number;
   weeklyGigIncome: number;
   pendingGigPayout: number;
+  bnplWeeklyCommitment: number;
+  storedValueAvailable: number;
+  adjustedWeeklySurplus: number;
 }
 
 export interface ArrearsMatrixRow {
