@@ -292,6 +292,7 @@ function StoredValueTransactionLog({ sv }: { sv: StoredValueItem }) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["stored-value-transactions", sv.id] });
+      qc.invalidateQueries({ queryKey: ["stored-value"] });
       setTxOpen(false);
       toast({ title: txId ? "Transaction updated" : "Transaction added" });
     },
@@ -300,7 +301,11 @@ function StoredValueTransactionLog({ sv }: { sv: StoredValueItem }) {
 
   const deleteTx = useMutation({
     mutationFn: (id: number) => fetch(`${BASE}api/stored-value-transactions/${id}`, { method: "DELETE" }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["stored-value-transactions", sv.id] }); toast({ title: "Transaction deleted" }); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["stored-value-transactions", sv.id] });
+      qc.invalidateQueries({ queryKey: ["stored-value"] });
+      toast({ title: "Transaction deleted" });
+    },
   });
 
   function openNew() {

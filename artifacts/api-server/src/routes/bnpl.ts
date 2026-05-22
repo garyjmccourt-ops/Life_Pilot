@@ -255,6 +255,15 @@ router.get("/stored-value-transactions", async (req, res): Promise<void> => {
   })));
 });
 
+async function recalcStoredValueBalance(storedValueItemId: number): Promise<void> {
+  const allTx = await db.select().from(storedValueTransactionsTable).where(eq(storedValueTransactionsTable.storedValueItemId, storedValueItemId));
+  const [parent] = await db.select().from(storedValueItemsTable).where(eq(storedValueItemsTable.id, storedValueItemId));
+  if (!parent) return;
+  const delta = allTx.reduce((s, t) => t.type === "top_up" ? s + n(t.amount) : s - n(t.amount), 0);
+  const newBalance = Math.max(0, n(parent.startingValue) + delta);
+  await db.update(storedValueItemsTable).set({ remainingBalance: String(newBalance) }).where(eq(storedValueItemsTable.id, storedValueItemId));
+}
+
 router.post("/stored-value-transactions", async (req, res): Promise<void> => {
   const parsed = StoredValueTransactionInput.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid input" }); return; }
@@ -267,6 +276,7 @@ router.post("/stored-value-transactions", async (req, res): Promise<void> => {
     description: v.description ?? null,
     notes: v.notes ?? null,
   }).returning();
+  await recalcStoredValueBalance(v.storedValueItemId);
   res.status(201).json({ ...row, amount: n(row.amount) });
 });
 
@@ -284,11 +294,15 @@ router.patch("/stored-value-transactions/:id", async (req, res): Promise<void> =
   if (v.notes !== undefined) updates.notes = v.notes ?? null;
   const [row] = await db.update(storedValueTransactionsTable).set(updates).where(eq(storedValueTransactionsTable.id, id)).returning();
   if (!row) { res.status(404).json({ error: "Not found" }); return; }
+  await recalcStoredValueBalance(row.storedValueItemId);
   res.json({ ...row, amount: n(row.amount) });
 });
 
 router.delete("/stored-value-transactions/:id", async (req, res): Promise<void> => {
-  await db.delete(storedValueTransactionsTable).where(eq(storedValueTransactionsTable.id, Number(req.params.id)));
+  const id = Number(req.params.id);
+  const [existing] = await db.select().from(storedValueTransactionsTable).where(eq(storedValueTransactionsTable.id, id));
+  await db.delete(storedValueTransactionsTable).where(eq(storedValueTransactionsTable.id, id));
+  if (existing) await recalcStoredValueBalance(existing.storedValueItemId);
   res.status(204).end();
 });
 
