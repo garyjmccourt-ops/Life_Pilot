@@ -217,6 +217,10 @@ router.patch("/gig-imports/:id/approve", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Staged import not found" });
     return;
   }
+  if (preCheck.reviewStatus === "duplicate") {
+    res.status(409).json({ error: "Duplicate imports cannot be approved" });
+    return;
+  }
   if (preCheck.reviewStatus !== "pending") {
     res.status(409).json({
       error: `Cannot approve: record is already "${preCheck.reviewStatus}"`,
