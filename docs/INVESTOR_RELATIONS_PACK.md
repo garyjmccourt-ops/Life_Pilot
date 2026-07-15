@@ -1,348 +1,209 @@
 # Life Pilot Investor Relations Pack
 
-Last updated: 2026-05-30
+Last updated: 2026-07-15
 
-## Purpose
+## Status and authority
 
-This document is the working investor relations pack for Life Pilot.
+This is an investor, funder and strategic-partner working document. It is not an offer document, financial forecast or final pitch deck.
 
-It is intended to support investor, funder, strategic partner, and advisor conversations. It is not a final pitch deck, investment memorandum, financial forecast, or offer document.
+The authoritative product document is `docs/LIFE_PILOT_SOURCE_OF_TRUTH_v1.0.md`.
 
-All claims should remain grounded until testing evidence exists.
+## The problem Life Pilot was created to solve
 
-## Plain-English summary
+People experiencing social and economic pressure rarely face one isolated problem.
 
-Life Pilot is a personal life-navigation system for when real life gets complicated.
+A smaller decision about a bill, shift, appointment, document or household commitment can affect work, income, home stability, family responsibilities and future options.
 
-It helps people bring scattered life information into view, see what needs attention, compare what could happen next, and take the next practical step.
+The systems around people are fragmented across banks, employers, government services, support organisations, calendars, emails, forms and memory. When pressure rises, it becomes harder to see the relationship between decisions or know what to do next.
 
-Core line:
-
-> For when life throws a whole lot of life at you.
-
-Supporting promise:
-
-> See what matters. Plan what's next. Take the next practical step.
-
-## The problem
-
-Real life does not arrive neatly.
-
-People often have to manage:
-
-- Bills and arrears.
-- Irregular income.
-- Job search or work changes.
-- Household admin.
-- Appointments and reporting dates.
-- Documents and evidence.
-- Chosen family and support networks.
-- Identity-safe information.
-- Decisions under pressure.
-
-The problem is not only organisation. The problem is that important signals are scattered across memory, messages, documents, apps, bank accounts, calendars, support relationships, and service systems.
-
-When these signals are scattered, people lose options.
+Life Pilot was created to make those connections visible and support practical learning and action without shame or overwhelm.
 
 ## The product
 
-Life Pilot brings the important pieces into view.
+Life Pilot is a personal life-navigation platform.
 
-It is built around four core areas:
-
-1. Life Admin
-2. Financial Life
-3. Future Life
-4. People & Support Network
-
-The system helps users:
+It brings important real-life signals into one explainable view so a person can:
 
 - See what matters now.
-- Understand what needs attention.
-- Model what could happen next.
-- Identify practical options.
+- Understand how money links to wider life decisions.
+- Compare a controlled set of practical scenarios.
+- Plan what may happen next.
 - Take the next practical step.
-- Share support information safely where appropriate.
 
-## Why now
+> For when life throws a whole lot of life at you.
 
-Life Pilot sits at the intersection of several real-world pressures:
+> See what matters. Plan what's next. Take the next practical step.
 
-- Cost-of-living pressure.
-- Irregular work and income.
-- Rising household admin complexity.
-- Fragmented support systems.
-- More people managing mixed work, care, money, health, identity, and household obligations.
-- Growing need for practical digital tools that are respectful, non-shaming, and safe.
+## Primary customer and end user
 
-Life Pilot is not trying to turn real life into a productivity fantasy. It is trying to make real life visible enough to act on.
+The primary commercial customers are:
 
-## Product ecosystem
+- Government and local government.
+- NGOs and not-for-profits.
+- Community organisations and social enterprises.
+- Employment, housing, financial wellbeing and family-support services.
+- Place-based and cohort-funded programs.
 
-### Life Pilot Core
+The end user is the person or household navigating life.
 
-The umbrella platform and main product.
+The partner model must preserve user agency. Life Pilot must not become a surveillance or case-management product by default. Sharing must be consent-based and user-controlled.
 
-Focus:
+## The Life Signal
 
-- Everyday life admin.
-- Financial visibility.
-- Future Life planning.
-- People and support networks.
+The Life Signal is the defining capability.
 
-### Job Pilot
+It converts information from across the platform into an understandable view of:
 
-A companion product for job search, applications, tasks, evidence, reporting, and next steps.
+- What matters now.
+- What needs attention.
+- What may happen next.
+- What practical action can be taken.
 
-### Gig Pilot
+Signals must be traceable and explainable. Life Pilot does not use mystical prediction or unsupported certainty.
 
-A companion product for irregular income, gig work, platform/source activity, expenses, evidence, and Life Pilot integration.
+## Four Core Life Areas
 
-### real Life Pilot
+The commercial core uses four stable Life Areas:
 
-A social-impact overlay for support workflows, safety controls, cultural and identity safety, referral pathways, evidence packs, and partner/support-worker contexts.
+1. Home Life.
+2. Work Life.
+3. Family Life.
+4. Future Life.
 
-Positioning:
+Money is a foundational signal across all four areas. It is not a fifth bucket.
+
+Shared Life Tools - including activity, calendar, documents/evidence, people/providers, shopping and budget checks, notifications and Control Centre - operate across the four areas.
+
+## Real Life and Business Life
+
+Real Life and Business Life are activated layers.
+
+They appear only when circumstances, onboarding, pressure signals or user consent make them relevant. They are not default buckets and are not current MVP build priorities.
+
+Real Life positioning:
 
 > Support for when life gets very real.
 
-## Current build and asset position
+The standard Life Pilot experience is designed for everyday life. Real Life activates when life becomes unusually complex, pressured or disrupted.
 
-Current known progress:
+## Current MVP
 
-- Life Pilot Core repository exists.
-- Gig Pilot repository exists.
-- Job Pilot repository exists.
-- MYOH private prototype/foundation exists and has informed Life Pilot Core.
-- Approved primary logo SVG exists in repository.
-- Approved brand asset source-of-truth exists in repository.
-- Replit build brief exists in repository history.
-- GTM-style build plan exists in repository history.
-- Commercial context material exists in Drive.
-- Brand tokens, UI rules, and commercial readiness material exist in Drive.
-- Financial Life functionality has advanced through arrears, BNPL, stored value, dashboard, and scenario planning work.
-- Gig Pilot and Job Pilot have early build foundations.
+**Target:** Q3 FY2026-27, between 1 January and 31 March 2027.
 
-## Commercial pathways to test
+The MVP includes:
 
-These are pathways to test, not locked decisions.
+- Life Pilot Starter.
+- Life Signal dashboard.
+- Four Core Life Areas.
+- Minimum Life Tools needed for the core journey.
+- Money-linked visibility across the Life Areas.
+- Next Practical Step guidance.
+- Controlled basic scenario planning.
+- Explainable signal and scenario logic.
+- A product experience suitable for structured partner testing.
 
-### Direct user model
+## Scenario planning and AI discipline
 
-A consumer/household-facing Life Pilot subscription or freemium model.
+Basic scenario planning already exists.
 
-Potential value:
+The MVP uses a fixed library of scenarios with limited adjustability. Users may change a small number of defined inputs and view the effect on priorities and next practical steps.
 
-- Personal visibility.
-- Reduced overwhelm.
-- Practical planning.
-- Better life-admin follow-through.
+This is rules-led scenario planning, not open-ended AI prediction.
 
-### Partner-funded access
+Before an AI layer is introduced, Life Pilot must establish which model produces reliable, repeatable and understandable signals. AI may later assist interpretation, but it must sit on top of a validated model.
 
-NFP, social enterprise, workforce, wellbeing, or community partners fund access for cohorts.
+This staged approach is a trust and safety advantage, not a technology limitation.
 
-Potential value:
+## Active product priorities
 
-- Better support context.
-- Earlier pressure visibility.
-- Practical next-step planning.
-- Safer user-approved sharing.
+1. Life Pilot commercial MVP.
+2. Main Job Pilot.
+3. Job Pilot Lite, built in Google AI Studio.
 
-### Social-impact licensing
+Everything else is parked unless Gary explicitly promotes it, including Gig Pilot, Trade Pilot, Business Life, Real Life activated workflows, Receipt Scanner, Receipt Scanner Pro and advanced AI.
 
-Partners use Life Pilot in supported settings, with safety, consent, and practical action workflows.
+## Commercial pathway
 
-Potential value:
+The current commercial wedge is organisation-supported access and structured testing through government, NGO, NFP, community and social-enterprise partners.
 
-- Better service navigation.
-- Support-worker-friendly context.
-- Evidence packs.
-- Practical action pathways.
+Potential models to validate include:
 
-### Companion app expansion
+- Partner-funded cohort access.
+- Social-impact licensing with strict consent controls.
+- Government or service-program procurement.
+- Direct user access where appropriate.
+- Employment-service pathways through Job Pilot.
 
-Job Pilot and Gig Pilot provide focused use cases with future Life Pilot integration.
-
-Potential value:
-
-- Employment and job-search support.
-- Irregular income visibility.
-- Evidence and reporting support.
-- Better link between work, money, and life admin.
+No commercial model should be treated as final until evidence is gathered.
 
 ## Evidence plan
 
-Before strong investor claims are made, Life Pilot should produce evidence around:
+Before stronger investor or impact claims are made, Life Pilot needs evidence for:
 
-- User comprehension.
-- Setup friction.
-- Retention and repeat use.
-- Whether users can identify what needs attention.
-- Whether Future Life scenarios support decisions.
-- Whether users take practical next steps.
-- Whether support-sharing controls are trusted.
-- Whether partner contexts create value without surveillance.
-- Which commercial pathway has strongest demand.
+- User comprehension of the Life Signal.
+- Consistency of signal outputs.
+- Which scenario inputs materially affect results.
+- Whether users understand the relationship between money and wider life decisions.
+- Whether next-step prompts support practical action.
+- Setup friction and repeat use.
+- Trust in consent and sharing controls.
+- Partner value without surveillance.
+- Which customer and funding model is sustainable.
 
-## Core testing partner strategy
+## Why now
 
-The next evidence step is a core testing partner pack.
+Life Pilot sits at the intersection of:
 
-A first testing partner should help validate:
-
-- Real user problem fit.
-- Language and trust.
-- Safety/consent expectations.
-- Practical support workflows.
-- Which life signals matter most.
-- Whether Life Pilot is useful before crisis-only intervention.
-
-Potential partner types:
-
-- NFPs.
-- Social enterprises.
-- Place-based partners.
-- Employment support programs.
-- Financial wellbeing programs.
-- Community support organisations.
-- Morella-style or Narawindi-style testing partners.
+- Cost-of-living pressure.
+- Fragmented government and support systems.
+- Irregular work and income.
+- Growing household administration.
+- Increasing demand for respectful, practical digital support.
+- The need for explainable decision tools rather than opaque AI recommendations.
 
 ## Use-of-funds logic
 
-If investment, grant, or strategic funding is pursued, likely use-of-funds categories include:
+Likely funding uses include:
 
-1. Product hardening.
-2. Privacy, consent, and safe-sharing controls.
-3. Partner testing.
-4. UX and accessibility improvements.
-5. Evidence collection and evaluation.
-6. Commercial model testing.
-7. Companion app integration planning.
-8. Security and data governance readiness.
-9. Brand/pitch/partner material production.
+1. MVP hardening.
+2. Signal-model and scenario validation.
+3. Privacy, consent and safe-sharing controls.
+4. Partner testing and evaluation.
+5. Accessibility and UX.
+6. Security and data-governance readiness.
+7. Commercial model testing.
+8. Evidence collection.
 
-## What must be true before raising serious capital
+## Key risks and controls
 
-Before a serious raise, Life Pilot should have:
+### Scope risk
 
-- Clean repository documentation.
-- Current brand rules.
-- Current product scope.
-- A working demo/prototype path.
-- A partner testing plan.
-- Evidence capture plan.
-- A clear first commercial wedge.
-- Privacy and consent assumptions documented.
-- A credible roadmap.
-- Risks and mitigations documented.
+Control: keep the build anchored to Life Pilot MVP and the three active priorities.
 
-## Risks and mitigations
+### AI reliability risk
 
-### Risk: product scope becomes too broad
+Control: validate the rules model before adding AI interpretation.
 
-Mitigation:
+### Partner-surveillance risk
 
-Keep MVP anchored to Life Pilot Core and a small number of high-value pressure signals.
+Control: user-controlled consent, minimal sharing and clear boundaries.
 
-### Risk: social-impact positioning becomes generic welfare language
+### Product-language drift
 
-Mitigation:
+Control: use the locked source of truth before any deck, prompt, README or public material.
 
-Keep real Life Pilot as an overlay and keep inclusion in core product behaviour.
+### Overclaiming
 
-### Risk: partner use becomes surveillance
-
-Mitigation:
-
-Prioritise user-controlled sharing, consent, safe export settings, and clear boundaries.
-
-### Risk: companion apps distract from core
-
-Mitigation:
-
-Keep Job Pilot and Gig Pilot as companion lanes until core product value is validated.
-
-### Risk: brand drift
-
-Mitigation:
-
-Use the Brand Rules document as the check before any deck, prompt, Canva asset, or public material.
-
-### Risk: unsupported claims
-
-Mitigation:
-
-Use testing language until evidence supports stronger claims.
+Control: use testing language until evidence supports stronger claims.
 
 ## Investor narrative
 
-Life Pilot is being built from lived experience into a practical product ecosystem.
+Most technology helps people manage separate tasks.
 
-The opportunity is to create a warm, mature, trusted life-navigation system that helps people and support contexts deal with real-life complexity before everything becomes crisis-only.
+Life Pilot helps people understand how the parts of life connect.
 
-It has:
+It is being built for people and households navigating real social and economic pressure, and for the organisations trying to support them through fragmented systems.
 
-- A clear problem.
-- A practical product foundation.
-- Companion app pathways.
-- Social-impact relevance.
-- Commercial model options.
-- A grounded brand.
-- A testing pathway.
+The immediate goal is disciplined: deliver a reliable commercial MVP, validate the Life Signal and scenario model, and gather evidence through safe partner testing.
 
-The next stage is not hype. It is evidence.
-
-## Investor Q&A working draft
-
-### Is this a productivity app?
-
-No. Life Pilot is a life-navigation system. Productivity tools usually assume stable conditions and task optimisation. Life Pilot is for real-life complexity: money, work, admin, support, and decisions under pressure.
-
-### Is this a welfare app?
-
-No. Life Pilot is a core personal life-navigation product with a social-impact overlay. Inclusion and safety belong in the core system.
-
-### Is MYOH the product?
-
-No. MYOH is the private/local prototype foundation. Life Pilot is the external product direction.
-
-### Is the product ready for large-scale rollout?
-
-No. It needs structured testing, product hardening, and partner validation before large-scale rollout claims.
-
-### What is the first commercial wedge?
-
-Still to be validated. Likely wedges include direct household users, partner-funded access, employment/irregular-income support, or social-impact partner testing.
-
-### What is the next proof point?
-
-A small, safe core testing partner engagement that validates usefulness, trust, language, and next-step behaviour.
-
-## Brand and language rules for investor material
-
-Use:
-
-- Grounded commercial language.
-- Evidence-led claims.
-- Real Life Signal positioning.
-- Practical next-step framing.
-- Mature, trusted, human tone.
-
-Avoid:
-
-- Overclaiming impact.
-- Productivity-bro language.
-- Charity/welfare clichés.
-- Mystical prediction language.
-- Cockpit/airline/pilot-wing concepts.
-- Treating people as problems to be managed.
-- Treating inclusion as a marketing layer.
-
-## Current status
-
-Draft created for repository alignment.
-
-Next step:
-
-Turn this into a concise investor-facing deck or memo once the testing partner plan and first evidence milestones are clearer.
+The next stage is not hype. It is reliability, trust and evidence.
