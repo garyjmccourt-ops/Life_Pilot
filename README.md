@@ -1,147 +1,137 @@
 # Life Pilot
 
-Last updated: 2026-05-30
+Last updated: 2026-07-15
 
-## Project
+## Locked source of truth
 
-Life Pilot is a personal life-navigation system built from lived experience.
+The authoritative product document is:
 
-It helps people bring the scattered parts of real life into view — money, work, home, documents, people, support, identity, obligations, income changes, reporting dates, and decisions — then see what matters, plan what's next, and take the next practical step.
+- `docs/LIFE_PILOT_SOURCE_OF_TRUTH_v1.0.md`
+
+Where material conflicts, that locked document takes precedence unless Gary later makes an explicit written decision.
+
+## Product
+
+Life Pilot is a personal life-navigation platform built to help people understand how the connected parts of life affect one another, especially where social and economic pressure is present.
+
+It helps people bring money, work, home, family, future decisions, documents, people, providers, obligations and activity into one practical view, then:
+
+> See what matters. Plan what's next. Take the next practical step.
 
 Core line:
 
 > For when life throws a whole lot of life at you.
 
-Supporting promise:
-
-> See what matters. Plan what's next. Take the next practical step.
-
-## Current source-of-truth warning
-
-This repository should be treated as the preferred project source of truth when available.
-
-Older uploads, Canva outputs, Drive files, Replit text, and chat history may contain superseded wording. Do not treat older material as locked, approved, or current unless it matches the latest repository documentation or Gary's latest explicit correction.
-
-Current correction to preserve:
-
-- Use `Future Life` as the current bucket language.
-- Do not treat `Future View / What If Planner` as current top-level bucket language unless Gary explicitly reinstates it.
-
-## Product ecosystem
-
-### Life Pilot Core
-
-The umbrella personal life-navigation platform.
-
-Core areas:
-
-1. Life Admin
-2. Financial Life
-3. Future Life
-4. People & Support Network
-
-### MYOH / Manage Your Own Household
-
-MYOH is the private/local working model and prototype foundation for Life Pilot, currently used by Gary and Sam.
-
-MYOH is not a separate active public product. Do not market it, externally position it, or broadly rename its internal code/database/schema/auth/storage concepts without Gary's explicit approval.
-
-### Job Pilot
-
-A Life Pilot companion app for job search, job capture, AI scoring, applications, tasks, evidence, reporting, and next steps.
-
-### Gig Pilot
-
-A Life Pilot companion app for irregular income, gig work, source/platform tracking, costs, earnings evidence, and future Life Pilot integration.
-
-Gig Pilot must remain platform/source agnostic. It must not become DoorDash-only, delivery-only, or hustle-culture.
-
-### real Life Pilot
-
-The social-impact overlay for Life Pilot.
-
-Positioning:
-
-> Support for when life gets very real.
-
-real Life Pilot is not a separate generic welfare app and not where inclusion lives exclusively. Inclusion belongs in core Life Pilot.
-
-## Brand direction
-
 Theme:
 
-> Life Pilot — Real Life Signal
+> Life Pilot - Real Life Signal
+
+## Primary commercial customer
+
+The primary customer context is organisation-supported access and testing through:
+
+- Government and local government.
+- NGOs and not-for-profits.
+- Community organisations and social enterprises.
+- Employment, housing, financial wellbeing and family-support services.
+
+The end user is the person or household navigating real life. User agency, consent and non-shaming design are mandatory.
+
+## Locked product architecture
+
+### Life Pilot Starter
+
+The always-on commercial core and current MVP focus.
+
+### Four Core Life Areas
+
+These are the only default top-level Life Areas:
+
+1. Home Life.
+2. Work Life.
+3. Family Life.
+4. Future Life.
+
+Money is a foundational signal across all four areas. It is not a fifth bucket. Support also works across the four areas rather than becoming a default Support Life bucket.
+
+### Life Tools
+
+Shared tools operating across the four Life Areas, including activity, calendar overlay, documents/evidence, people/providers, shopping and budget checks, notifications and Control Centre.
+
+### Activated layers
+
+- Real Life - activated when life becomes unusually difficult or complex.
+- Business Life - activated for relevant self-employment or business contexts.
+
+Activated layers are not default buckets and are not current MVP build priorities.
+
+### Companion products
+
+- Job Pilot.
+- Job Pilot Lite.
+- Gig Pilot.
+- Trade Pilot.
+
+## MVP target and scope
+
+**Target:** Q3 FY2026-27 (1 January to 31 March 2027).
+
+MVP includes:
+
+- Life Signal dashboard.
+- Four Core Life Areas.
+- Minimum Life Tools needed for the core journey.
+- Money-linked visibility across the Life Areas.
+- Next Practical Step guidance.
+- Controlled basic scenario planning.
+- Explainable signal and scenario logic.
+- A product experience suitable for structured partner testing.
+
+Basic scenario planning already exists. It uses a fixed library of scenarios with limited adjustability. It is rules-led and explainable, not open-ended AI prediction. Advanced AI must wait until the underlying signal model has been shown to produce reliable, repeatable results.
+
+## Current priorities
+
+### Active
+
+1. Life Pilot commercial MVP.
+2. Main Job Pilot.
+3. Job Pilot Lite, built in Google AI Studio.
+
+### Parked
+
+Everything else is parked unless Gary explicitly promotes it, including Gig Pilot, Trade Pilot, Business Life, Real Life activated workflows, Receipt Scanner, Receipt Scanner Pro, advanced AI and other future operating ideas.
+
+## MYOH boundary
+
+MYOH / Manage Your Own Household is the private working model and prototype foundation currently used by Gary and Sam.
+
+It is not a separate public product. Do not market it, externally position it or broadly rename its internal code, database, schema, auth, permissions or stored data without Gary's explicit approval.
+
+## Brand direction
 
 Look and feel:
 
 > A warm, grown-up life-navigation notebook meets a practical dashboard.
 
-Use:
+Use warm sand and near-white surfaces, deep slate text, deep teal primary actions and signal orange only for next actions and important attention markers. The four-dash motif must match the approved GPS colours, order and proportions.
 
-- Warm sand / off-white backgrounds.
-- Near-white cards.
-- Deep slate text.
-- Deep teal-green primary actions.
-- Signal orange for next actions and attention markers.
-- Subtle spectrum line only as a restrained inclusion signal.
-- Rounded rectangular dashboard/app frames.
-- Simple horizon or route lines.
-- Small waypoint markers.
-
-Avoid:
-
-- Cockpit.
-- Control tower.
-- Captain.
-- Planes.
-- Pilot wings.
-- Airline/travel branding.
-- Cartoon people or cartoon icons.
-- Charity/welfare clichés.
-- Large rainbow blocks.
-- Generic SaaS gradients.
-- Productivity-bro language.
-- Mystical prediction language.
+Avoid cockpit, airline, captain, plane, wings, cartoon, charity-cliche, generic SaaS and mystical-prediction language or visuals.
 
 ## Repository documentation
 
 Key docs:
 
-- `docs/CURRENT_STATUS.md` — current working status and immediate priorities.
-- `docs/ECOSYSTEM_AUDIT.md` — ecosystem audit and source-of-truth map.
-- `docs/BRAND_RULES.md` — brand rules, voice, visuals, and drift controls.
-- `docs/COMMERCIAL_DEVELOPMENT.md` — commercial development direction.
-- `docs/CORE_TESTING_PARTNER_PACK.md` — partner testing pack foundation.
-- `docs/INVESTOR_RELATIONS_PACK.md` — investor/funder/advisor pack foundation.
-- `docs/REPLIT_HANDOFF.md` — safe handoff for Replit/Build GPT work.
-- `archive/superseded/OUTDATED_LANGUAGE.md` — superseded terms and rejected directions.
+- `docs/LIFE_PILOT_SOURCE_OF_TRUTH_v1.0.md` - locked product authority.
+- `docs/CURRENT_STATUS.md` - current operating status.
+- `docs/ECOSYSTEM_AUDIT.md` - ecosystem and source-drift audit.
+- `docs/BRAND_RULES.md` - brand and visual guardrails.
+- `docs/COMMERCIAL_DEVELOPMENT.md` - commercial pathway and customer strategy.
+- `docs/CORE_TESTING_PARTNER_PACK.md` - partner testing foundation.
+- `docs/INVESTOR_RELATIONS_PACK.md` - investor and funder narrative.
+- `docs/REPLIT_HANDOFF.md` - safe implementation handoff.
 
 ## Build safety
 
-Do not change any of the following without explicit approval from Gary:
+Do not change database schema, migrations, data models, seed data, auth, permissions, production-like stored data or broad MYOH internal names without Gary's explicit approval.
 
-- Database schema.
-- Migrations.
-- Data models.
-- Auth.
-- Permissions.
-- Seed data.
-- Production-like stored data.
-- Broad MYOH internal names.
-- User identity or export/share permission logic.
-
-## Current working priority
-
-Documentation and source-of-truth cleanup first.
-
-Then:
-
-1. Review current app UI labels against brand rules.
-2. Confirm current bucket language.
-3. Prepare safe Replit handoff.
-4. Build partner and investor-facing deck/memo versions from the repository docs.
-5. Return to product build only after the current source of truth is clear.
-
-## Next safe action
-
-Use `docs/CURRENT_STATUS.md` before starting new work.
+Documentation alignment does not authorise implementation changes.
