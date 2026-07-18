@@ -1,9 +1,48 @@
 # Life Pilot Locked Source of Truth v1.0
 
 **Status:** LOCKED  
-**Effective date:** 15 July 2026  
+**Effective date:** 18/07/2026
 **Target:** Commercial MVP in Q3 FY2026-27 (1 January to 31 March 2027)  
 **Owner:** Gary McCourt
+
+AI Production Rule (Locked)
+
+This document is normative, not descriptive. It is the single authoritative specification for all Life Pilot planning, design, implementation, documentation, marketing, asset generation and AI-assisted production.
+
+Before producing any Life Pilot output, AI systems, GPTs, agents, Replit, Codex or other automated tools must use this document as the primary source of truth.
+
+If any conflict exists between:
+
+chat history,
+memory,
+previous prompts,
+uploaded files,
+older repository documents,
+Canva assets,
+prototypes,
+implementation notes,
+generated images, or
+inferred wording,
+
+this document takes precedence.
+
+AI must not:
+
+rename approved terminology;
+substitute similar wording;
+resurrect historical or superseded language;
+invent features, hierarchy or product structure;
+reinterpret locked copy;
+"improve" approved messaging;
+merge concepts from earlier iterations; or
+infer missing information where this document already provides an approved answer.
+
+Where uncertainty exists, AI must preserve the existing terminology and structure rather than attempting to optimise or modernise it.
+
+Every generated asset, document, prompt, specification, image or implementation must be verifiably consistent with this Source of Truth.
+
+Any proposed deviation requires Gary's explicit approval and an update to this document before implementation.
+
 
 ## Authority
 
