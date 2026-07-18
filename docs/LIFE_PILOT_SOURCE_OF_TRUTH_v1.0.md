@@ -43,6 +43,8 @@ Every generated asset, document, prompt, specification, image or implementation 
 
 Any proposed deviation requires Gary's explicit approval and an update to this document before implementation.
 
+When producing assets, AI is operating as a production system, not a creative collaborator. Reproduction of the approved specification takes precedence over optimisation or reinterpretation.
+
 
 ## Authority
 
