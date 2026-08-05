@@ -148,9 +148,9 @@ Activated layers are not default buckets and are not part of the current MVP bui
 - Job Pilot.
 - Job Pilot Lite.
 - Gig Pilot.
-- Trade Pilot.
+  
 
-### Level 7 - Future Tools
+### Level 7 - Future Tools & Companion Products
 
 Parked until validated or explicitly approved:
 
@@ -158,6 +158,8 @@ Parked until validated or explicitly approved:
 - Receipt Scanner Pro.
 - Advanced scenario intelligence.
 - Other future tools approved through change control.
+- Trade Pilot.
+- NutriPilot
 
 ### Level 8 - Assistants and Guided Helpers
 
