@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title desc">
+<title id="title">Life Pilot brand mark</title><desc id="desc">Approved rounded-square Life Signal gauge mark</desc>
+<rect x="2" y="2" width="96" height="96" rx="22" fill="#F9F7F1"/>
+<rect x="18" y="18" width="64" height="64" rx="16" fill="#FCFAF8" stroke="#172B36" stroke-width="5"/>
+<rect x="27" y="27" width="46" height="46" rx="12" fill="none" stroke="#E0DBD1" stroke-width="2.5"/>
+<path d="M33 64 Q49 43 66 43" fill="none" stroke="#437070" stroke-width="6" stroke-linecap="round"/>
+<circle cx="67" cy="43" r="6" fill="#F57A1F"/><circle cx="67" cy="43" r="2.5" fill="#FCFAF8"/>
+<path d="M30 65 H66" stroke="#E0DBD1" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M31 74 H39 M43 74 H51 M55 74 H63 M67 74 H75" stroke="#437070" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M43 74 H51" stroke="#F57A1F" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M55 74 H63" stroke="#B85C85" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M67 74 H75" stroke="#5C7A8A" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
