@@ -45,6 +45,8 @@ G0 Source and scope: coordinator confirms authority, baseline, privacy boundary 
 
 G1 Documentation: Gary approves foundation additions, test scope, governance and evidence rules. A rejected or incomplete packet returns to drafting.
 
+G1A Approved source promotion and verification: after Gary approves a change to the controlled foundation, product scope, policy or other baseline, promote only the approved changes to its authorised canonical source. Record the approval, source/version, exact resulting revision, superseded reference and readback evidence in the source index. If merge, relocation or canonical replacement is needed, obtain the applicable approval before performing it. Implementation that depends on the changed baseline is blocked until promotion and verification are complete. When no baseline changes are required, record a justified not-applicable disposition against the approved version. A review branch and a verbal approval are not proof that promotion happened.
+
 G2 Project and build: Gary approves plan, exact repository/branch/base revision, implementation slice, test matrix and exclusions. Schema, authentication, permissions, seed/real data and migration proposals must be explicit; general build approval is not a blanket approval for them.
 
 G3 Technical assurance: independent reviewer checks submitted revision and test evidence. Blocker or material failures stop progression. Failed/inconclusive assurance cannot be represented as acceptance.
@@ -73,9 +75,11 @@ Stop the affected test or action on suspected leakage, unauthorised access, inco
 
 ## Repository procedure
 
-Use a documentation-only branch. Preserve main and existing PRs. Review the diff for accidental code, fixtures with real data or unrelated edits. Record source and resulting commits. No merge, branch deletion or history rewrite is implied by this task.
+Use a documentation-only branch. Preserve main and existing PRs. Review the diff for accidental code, fixtures with real data or unrelated edits. Record source and resulting commits. No merge, branch deletion or history rewrite is implied by this task. Any source promotion needing merge remains pending separate approval and verification under G1A.
 
 After build approval, use a bounded implementation branch with requirement-linked commits. Run checks on the actual candidate revision. Keep independent test evidence separate from implementation claims.
+
+The instantiated capability inventory and source index are in FIRST_TEST_CONTROL_REGISTER.md. Its unavailable and unassigned entries are explicit gaps, not implied approvals.
 
 ## Initial decision register
 
