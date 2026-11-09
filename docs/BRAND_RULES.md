@@ -1,6 +1,8 @@
 # Life Pilot Brand Rules
 
-Last updated: 2026-05-30
+Review candidate updated: 2026-11-09
+
+Status: documentation-only review candidate. Product terminology aligns with docs/LIFE_PILOT_SOURCE_OF_TRUTH_v1.0.md. First-test scope and gates are proposed in FIRST_TEST_DOCUMENTATION_APPROVAL.md; no participant approach, implementation or publication is authorised.
 
 ## Purpose
 
@@ -158,12 +160,14 @@ Avoid:
 
 ## Product architecture language
 
-Current corrected core areas:
+The locked Core Life Areas are:
 
-1. Life Admin
-2. Financial Life
-3. Future Life
-4. People & Support Network
+1. Home Life
+2. Work Life
+3. Family Life
+4. Future Life
+
+Money and support operate across these areas. Historical labels Life Admin, Financial Life and People & Support Network must not be used as the default top-level architecture.
 
 Outdated unless Gary explicitly reinstates it:
 
@@ -198,24 +202,13 @@ It must remain platform/source agnostic.
 
 Do not make it DoorDash-only, delivery-only, or hustle-culture.
 
-## real Life Pilot rule
+## Real Life activated layer
 
-real Life Pilot is the social-impact overlay for Life Pilot.
+Real Life is an activated layer, not a separate default public product or the standard Life Pilot experience.
 
-Positioning:
+Positioning: "Support for when life gets very real."
 
-> Support for when life gets very real.
-
-It is not a separate generic welfare app.
-
-Inclusion belongs in core Life Pilot, not only in real Life Pilot.
-
-Hard rule:
-
-No token modules. Every real Life Pilot feature must either:
-
-1. Change the app experience in a culturally safe or identity-safe way; or
-2. Help the user complete a practical action.
+Its workflows are parked outside the current MVP priority. Inclusion belongs in core Life Pilot. Future activated-layer features require an approved scope and must provide a practical, culturally safe or identity-safe benefit.
 
 ## Canva review rule
 
@@ -233,7 +226,7 @@ Save only if the output could belong across:
 - Pitch deck
 - GitHub/Replit docs
 - Partner materials
-- real Life Pilot social-impact materials
+- approved Real Life material
 
 Reject if it feels:
 
