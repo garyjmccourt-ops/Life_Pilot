@@ -42,7 +42,7 @@ The purpose of testing is to learn what is useful, safe, clear, and practical be
 
 ## What Life Pilot is
 
-Life Pilot is a personal life-navigation system.
+Life Pilot is a personal life-navigation platform.
 
 It helps users bring together:
 
@@ -83,6 +83,8 @@ The four Core Life Areas are Home Life, Work Life, Family Life and Future Life. 
 A companion app for job search, job capture, applications, tasks, evidence, reporting, and next steps.
 
 ### Gig Pilot
+
+Status: parked. Gig Pilot integration and implementation are outside the current first-test and MVP scope unless Gary explicitly promotes them through change control.
 
 A companion app for irregular income, gig work, platform/source tracking, costs, earnings evidence, and future Life Pilot integration.
 
@@ -155,7 +157,7 @@ Testing must be based on:
 - Clear participant consent.
 - Plain-English explanation of what is being tested.
 - No surprise sharing.
-- User-controlled export/sharing where possible.
+- User-controlled, consent-based export/sharing with no default disclosure. If these controls are unavailable, sharing must remain disabled.
 - Safe display names where relevant.
 - Separation of legal name and chosen/safe display name where needed.
 - Optional pronouns.
