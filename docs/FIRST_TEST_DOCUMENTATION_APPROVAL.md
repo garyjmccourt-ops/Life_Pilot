@@ -6,7 +6,7 @@ Decision authority: Gary. This packet does not authorise code, deployment, publi
 
 ## Purpose and requested decision
 
-Approve or revise the foundation additions, first-test boundary, governance procedure and evidence requirements below. The approved product Source of Truth remains unchanged until Gary approves a controlled revision. The project plan is a proposal, not authority to start implementation.
+Approve or revise the foundation additions, first-test boundary, governance procedure and evidence requirements below. The approved product Source of Truth remains unchanged until Gary approves a controlled revision. The project plan is a proposal, not authority to start implementation. Where approval changes a controlled baseline, G1A requires promotion to the approved canonical source and readback verification before implementation; approval in chat alone does not complete that source-control step. The current approved commercial MVP target is January–March 2027; delivery feasibility remains unvalidated.
 
 The delivery sequence is documentation approval, project-plan approval, build, testing, and final investor pack. Website implementation follows the same code gate. Website copy and demonstration instructions may be reviewed now.
 
