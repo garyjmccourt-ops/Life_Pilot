@@ -12,6 +12,8 @@ Deliver a bounded, explainable Life Pilot demonstration, test it against recorde
 
 P1 Documentation: review the foundation, first-test scope, governance, website brief and demo instructions. Correct historical terminology in derivative records. Output: G1 decision with exact document versions. Owner: coordinator prepares; Gary decides.
 
+P1A Approved source promotion: for each approved change affecting a controlled baseline, perform only the authorised source update and verify its exact revision and readback under G1A. If a merge or canonical-location decision is required, return to Gary. Output: verified approved source index or a reasoned not-applicable disposition. Dependent implementation cannot start while this step is pending.
+
 P2 Project plan: confirm implementation owner, environment, repository baseline, available budget, estimated effort, scenario rules and test matrix. Output: G2 bounded build packet. This phase cannot close before G1.
 
 P3 Build: implement only the approved slice and website scope. Prefer existing compatible components and preserve private MYOH structures. Output: candidate revision, implementation notes and maker tests. Starts only after G2.
@@ -42,7 +44,7 @@ WP07 Investor production. Deliver final narrative/deck, one-page summary, eviden
 
 ## Scheduling
 
-No fixed delivery date is promised before implementation discovery. The historical commercial MVP window is January–March 2027, not an evidenced forecast for this plan.
+No fixed delivery date is promised before implementation discovery. The current approved commercial MVP target is January–March 2027. Delivery feasibility remains unvalidated; the target is retained and is not silently superseded by this first-test plan.
 
 Planning assumption for one bounded synthetic demo: documentation review 1–2 working sessions; implementation readiness 1 session; build 3–8 focused working days; independent testing and correction 2–5 days; final investor production 1–3 days. These are estimates, not commitments, and exclude participant recruitment, procurement, legal review and production release. Validate after G1/G2. Human review availability and technical gaps may dominate elapsed time.
 
@@ -50,7 +52,7 @@ No external spend is authorised. Any paid service, subscription, domain, hosting
 
 ## Critical path
 
-Approved scope → confirmed baseline and rules → build approval → candidate → independent tests → corrections and retest → demonstration acceptance → final investor evidence.
+Approved scope → approved-source promotion and verification where applicable → confirmed baseline and rules → build approval → candidate → independent tests → corrections and retest → demonstration acceptance → final investor evidence.
 
 Website copy can progress during documentation; website code cannot bypass G2. Commercial research and GTM planning may progress without outreach. Parked products are not parallel work packages.
 
