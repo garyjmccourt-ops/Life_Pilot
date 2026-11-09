@@ -1,6 +1,8 @@
 # Life Pilot Core Testing Partner Pack
 
-Last updated: 2026-05-30
+Review candidate updated: 2026-11-09
+
+Status: documentation-only review candidate. Product terminology aligns with docs/LIFE_PILOT_SOURCE_OF_TRUTH_v1.0.md. First-test scope and gates are proposed in FIRST_TEST_DOCUMENTATION_APPROVAL.md; no participant approach, implementation or publication is authorised.
 
 ## Purpose
 
@@ -72,21 +74,7 @@ Life Pilot is not:
 
 ## Current product areas
 
-### Life Admin
-
-Tasks, calendar, documents, home routines, appointments, obligations, and everyday admin.
-
-### Financial Life
-
-Income, bills, arrears, safe-to-spend, budget visibility, reporting dates, BNPL/stored value, and financial pressure signals.
-
-### Future Life
-
-Scenario planning, pressure weeks, income drops, bill shock, arrears catch-up, option comparison, and next practical steps.
-
-### People & Support Network
-
-Chosen family, trusted contacts, household members, support workers, recruiters, providers, communication preferences, pronouns, and identity-safe relationship records.
+The four Core Life Areas are Home Life, Work Life, Family Life and Future Life. Money and support are cross-platform signals, not separate default areas. Shared Life Tools include activity, calendar, documents/evidence and people/providers.
 
 ## Companion app context
 
@@ -100,19 +88,9 @@ A companion app for irregular income, gig work, platform/source tracking, costs,
 
 Gig Pilot is platform/source agnostic. It must not become DoorDash-only, delivery-only, or hustle-culture.
 
-## Social-impact overlay context
+## Activated layer context
 
-real Life Pilot is the social-impact overlay for Life Pilot.
-
-Positioning:
-
-> Support for when life gets very real.
-
-The testing partner may help validate future support workflows, but inclusion is part of core Life Pilot, not only the overlay.
-
-Hard rule:
-
-No token modules. Every social-impact feature must either change the app experience in a culturally safe or identity-safe way, or help the user complete a practical action.
+Real Life is an activated layer with the positioning "Support for when life gets very real." It is not the default experience and its workflows are outside the current first test. Business Life is also parked. Inclusion and non-shaming design belong in the core experience.
 
 ## What the partner helps test
 
@@ -134,7 +112,7 @@ A core testing partner helps test:
 Depending on the test design, participants may:
 
 - Create a simple Life Pilot profile.
-- Add sample or real life-admin items.
+- Use fictional examples in the first demonstration. Real participant data requires a separately approved pilot protocol.
 - Add bills, obligations, or reporting dates.
 - Add job/gig/work-related activity if relevant.
 - Add trusted contacts or support preferences.
@@ -295,7 +273,7 @@ Avoid:
 
 ## Current status
 
-Draft created for repository source-of-truth alignment.
+Historical partner-testing foundation, now aligned for documentation review. The first demonstration is synthetic; the participant activities in this document are future pilot possibilities, not current authority.
 
 Next step:
 
