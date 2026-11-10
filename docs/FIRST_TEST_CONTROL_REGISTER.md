@@ -1,6 +1,6 @@
 # Life Pilot First Test Control Register
 
-Version: 0.1. Status: review candidate. Updated: 9 November 2026.
+Version: 0.1. Status: review candidate. Updated: 10 November 2026 (draft Drive-index reconciliation).
 Owner: Gary McCourt. Maintainer: Folio. Scope: documentation and first-test approval packet.
 This register records observed availability and evidence, not deployment or approval of new capabilities.
 
@@ -58,3 +58,47 @@ ACT02 Verify ABN and legal trading identity only when required: pending, owner G
 ACT03 Confirm approved non-code canonical destinations: pending Gary decision before any relocation or canonical replacement.
 ACT04 Assign implementer, independent tester and specialist reviewers: pending G2 readiness.
 ACT05 Validate January–March 2027 target feasibility against scope, resources and baseline: pending project-plan assessment. Target remains approved.
+
+## Drive review reconciliation — 10 November 2026
+
+This section records the actual review documents; it is not approval, source promotion or an assertion that all draft bodies match GitHub. Owner: Gary McCourt. Maintainer: Folio. All entries below are **v0.1, Draft for Gary review, dated 10 November 2026**. Approval reference: **pending**. Approved master ID: **not designated by this packet**.
+
+Human-review/customer-facing documents belong in Google Drive; GitHub holds code and AI working instructions. Existing approved sources remain unchanged. The established personal-project home is [Garys Personal / Life Pilot / LifePilot / Life_Pilot_Records_and_Product_Governance](https://drive.google.com/drive/folders/1jySbew4Khj5L1VqgNSfVHyrsIHw8H3pV), folder ID `1jySbew4Khj5L1VqgNSfVHyrsIHw8H3pV`. No permission changes were made; inherited access must not be described as verified owner-only access.
+
+The eight branch-derived review documents originated at commit `855d11dabd16b51a0a08fe48f8c38d32152ff539` on `docs/first-test-approval-2026-11-09`. The following links retain their stable Drive IDs. Native creation and content readback were verified on 10 November. New Drive-only review drafts are indexed here, not silently copied into competing GitHub masters.
+
+| Record | Human-review document and Drive ID | Source / reconciliation state |
+|---|---|---|
+| LP-R01 | [Life Pilot Project Charter](https://docs.google.com/document/d/11mPLESje0M6lrp68UEXqFoN0UWk19A2_zvtMyEGJmJI/edit?usp=drivesdk) — `11mPLESje0M6lrp68UEXqFoN0UWk19A2_zvtMyEGJmJI` | New 10 November charter consolidation; current Drive candidate includes latest roadmap exclusion. |
+| LP-R02 | [Life Pilot Review Register Policy and Role Advice](https://docs.google.com/document/d/1tNicU30aczHUS0XTDbRs6QIYYrLIVFLKLLCjewALij8/edit?usp=drivesdk) — `1tNicU30aczHUS0XTDbRs6QIYYrLIVFLKLLCjewALij8` | New 10 November policy, register and role advice; Drive candidate is the detailed human-review record. |
+| LP-R03 | [Life Pilot First Test Documentation Approval](https://docs.google.com/document/d/1CZ6EUISlClyjRYSpf8Wap8eNVAHwfgYpceSEqadu3bI/edit?usp=drivesdk) — `1CZ6EUISlClyjRYSpf8Wap8eNVAHwfgYpceSEqadu3bI` | `docs/FIRST_TEST_DOCUMENTATION_APPROVAL.md` at `855d11dabd16b51a0a08fe48f8c38d32152ff539`. |
+| LP-R04 | [Life Pilot Governance and Skills Procedure](https://docs.google.com/document/d/1yFTQCAsXaQOKTdCSI9nZJ_c6fIDm7RvqgFayT3fU8sE/edit?usp=drivesdk) — `1yFTQCAsXaQOKTdCSI9nZJ_c6fIDm7RvqgFayT3fU8sE` | `docs/FIRST_TEST_GOVERNANCE_PROCEDURE.md` at `855d11dabd16b51a0a08fe48f8c38d32152ff539`. |
+| LP-R05 | [Life Pilot First Test Control Register](https://docs.google.com/document/d/1CzOWPz1UfbpDa4iU2eBRksjpvIMPCO6zJJFgWtkP23o/edit?usp=drivesdk) — `1CzOWPz1UfbpDa4iU2eBRksjpvIMPCO6zJJFgWtkP23o` | `docs/FIRST_TEST_CONTROL_REGISTER.md` at `855d11dabd16b51a0a08fe48f8c38d32152ff539`. Drive copy retains the source snapshot; this GitHub register now adds the Drive-ID reconciliation. Not byte-identical. |
+| LP-R06 | [Life Pilot Project Plan](https://docs.google.com/document/d/15fBuEGp0j1KpChwTgMg3KgRbrv4fEMB-CRCe5yX0Ztk/edit?usp=drivesdk) — `15fBuEGp0j1KpChwTgMg3KgRbrv4fEMB-CRCe5yX0Ztk` | `docs/FIRST_TEST_PROJECT_PLAN.md` at `855d11dabd16b51a0a08fe48f8c38d32152ff539`. |
+| LP-R07 | [Life Pilot Website and Demo Brief](https://docs.google.com/document/d/1VGkT8UvEAhbeSQvEHqLW9boY0yI00cJjf9PlTkp-clw/edit?usp=drivesdk) — `1VGkT8UvEAhbeSQvEHqLW9boY0yI00cJjf9PlTkp-clw` | `docs/WEBSITE_AND_DEMO_BRIEF.md` at `855d11dabd16b51a0a08fe48f8c38d32152ff539`. |
+| LP-R08 | [Life Pilot Core Testing Partner Pack](https://docs.google.com/document/d/1Z7qHEt66h3la7yGQbhviHyBRp3fyWnX7rA1VFEkjpwo/edit?usp=drivesdk) — `1Z7qHEt66h3la7yGQbhviHyBRp3fyWnX7rA1VFEkjpwo` | `docs/CORE_TESTING_PARTNER_PACK.md` at `855d11dabd16b51a0a08fe48f8c38d32152ff539`. |
+| LP-R09 | [Life Pilot Brand Rules](https://docs.google.com/document/d/1JTnDf5gkvkqRaPySyGPmOV-lq02demj6gvw7mC4m89U/edit?usp=drivesdk) — `1JTnDf5gkvkqRaPySyGPmOV-lq02demj6gvw7mC4m89U` | `docs/BRAND_RULES.md` at `855d11dabd16b51a0a08fe48f8c38d32152ff539`. |
+| LP-R10 | [Life Pilot Controlled Document Template](https://docs.google.com/document/d/1epWuqW3rU975Ov4ZtPDxlXuicv8E4C6mHUKhkw6saOA/edit?usp=drivesdk) — `1epWuqW3rU975Ov4ZtPDxlXuicv8E4C6mHUKhkw6saOA` | New 10 November Life Pilot template candidate; no installed skill. |
+| LP-R11 | [Life Pilot First Test Packet Manifest](https://docs.google.com/document/d/1EHss03NhvSg34U13SFsNjhX0fYzPpNPnS99ZaFmbsOQ/edit?usp=drivesdk) — `1EHss03NhvSg34U13SFsNjhX0fYzPpNPnS99ZaFmbsOQ` | `docs/FIRST_TEST_PACKET_MANIFEST.md` at `855d11dabd16b51a0a08fe48f8c38d32152ff539`. Drive manifest has the expanded 16-record review index; branch manifest is the older source snapshot. |
+| LP-EXPLAINER | [Life Pilot Investor and Council One Page Explainer](https://docs.google.com/document/d/1XujbnLYHejEMIEp7y8ZojGbcwMYlixVw0bwsYjunZZY/edit?usp=drivesdk) — `1XujbnLYHejEMIEp7y8ZojGbcwMYlixVw0bwsYjunZZY` | New budget-led review narrative; historical visual 1oI4KLvdLP-nVf-2XlDZRcLijAscpwdfr; unchanged approved SVG blob b9cc3da59385fae5fe34cb5f4fc793a9e4c3e1f4. |
+| LP-GTM | [Life Pilot Go to Market Plan](https://docs.google.com/document/d/1gn7ggKMo_zRlqQI1oO6MuIdqtz5QHg2bMzIJGpQ6m-0/edit?usp=drivesdk) — `1gn7ggKMo_zRlqQI1oO6MuIdqtz5QHg2bMzIJGpQ6m-0` | New independent review plan, informed by docs/COMMERCIAL_DEVELOPMENT.md baseline blob 1f0601cb27252c980fca38dc3ea8a88bc3b43577. |
+| LP-INVESTMENT | [Life Pilot Investment Readiness Plan](https://docs.google.com/document/d/1V7pSbP5L901UCJmXSdjyvBP1aaiVozbTQ1QwepGlbd4/edit?usp=drivesdk) — `1V7pSbP5L901UCJmXSdjyvBP1aaiVozbTQ1QwepGlbd4` | New independent review plan, informed by docs/INVESTOR_RELATIONS_PACK.md baseline blob 90a4bb0fbed6f9d233abf65c62f2d5794f796420. |
+| LP-ECOSYSTEM | [Life Pilot Ecosystem Assessment](https://docs.google.com/document/d/1nPDccoincSwtnVOyUlI4GqH9IDmINnip4yyqVddnNic/edit?usp=drivesdk) — `1nPDccoincSwtnVOyUlI4GqH9IDmINnip4yyqVddnNic` | New source-based review; includes 10 November Workforce Australia evidence reconciliation, not an app test. |
+| LP-BRAND-KIT | [Life Pilot Brand Kit Specification](https://docs.google.com/document/d/1-VfmzJxHBk2e2F85syHQVO5dEuTLSwkNdydVKsW21zw/edit?usp=drivesdk) — `1-VfmzJxHBk2e2F85syHQVO5dEuTLSwkNdydVKsW21zw` | New brand specification candidate, grounded in APPROVED_BRAND_ASSETS.md and approved primary SVG; no built website or kit approval. |
+
+### Current direction preserved
+
+- Budgeting and money management lead the vision; Real Life Signal should help identify achievable improvements. Home Life, Work Life, Family Life and Future Life remain the four areas, with money cross-cutting. Later user clarification is for controlled reconciliation, not build authority.
+- Initial demonstration remains a proposed synthetic Life Pilot Starter, explainable signal and controlled scenario. Job Pilot capture/tracking and budget/goals links are a potential future investor roadmap only, excluded from the initial demo/build. Job Pilot Lite and the authenticated government app have not been inspected.
+- Workforce Australia official guidance supports user-submitted job title/employer/application-date reporting lists up to 20 jobs per reporting period, subject to applicable rules. External applications require separate reporting; saving is not applying or reporting. Requirements vary and income reporting is separate. No automatic compliance, guaranteed points, government integration or app-test claim is made. See LP-ECOSYSTEM for linked official guidance and the future hypothesis.
+- GTM and investment drafts remain independently updateable; no validated demand, funding, partnerships or outcomes are claimed. Preserve original visuals, approved SVG and reusable ecosystem ideas. No role or skill has been removed, repurposed, installed or activated.
+
+### Synchronisation and promotion status
+
+**Draft index reconciliation: recorded here. Approved-copy synchronisation: NOT PERFORMED. Documentation approval: PENDING. Merge: NOT AUTHORISED/PERFORMED. Code, publication and external sharing: NOT PERFORMED.**
+
+LP-R02 contains the detailed human-review register/policy. LP-R11 links the review packet. This GitHub register is the developer-facing index, not another approved non-code master. Drive-specific edits and new documents are deliberately not claimed to be fully replicated into the older branch bodies. The separate charter, explainer, GTM, investment, ecosystem and brand-specification content must be read at their linked current Drive drafts when considering approval.
+
+Keep existing approved Drive copies unchanged during branch work. Gary must identify the exact approved revision/delta and authorise any merge. After that merge, read the merged commit, update only the matching approved Drive copy (preserve its stable ID where supported), and record approval, prior/resulting versions, merge commit, Drive ID, updater, timestamp and content readback. Where an approved copy does not yet exist, establish its master designation explicitly. Pending/failed sync stays visible and blocks dependent implementation; preserve a recoverable prior approved revision.
+
+PROM02 and ACT03 clarification: the human-review destination is now established above; approval/master designation and any authorised promotion remain pending. The filename-v1.1/heading-v1.0 discrepancy in SRC02 remains unresolved and is not newer approval. Baseline main `fbca62c17d634f7bbbfa827cec29c83196e14a58` is preserved.
